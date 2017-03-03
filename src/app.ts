@@ -3,11 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 const WARCStream = require('warc');
-const WARCParser = new WARCStream();
 
+
+const dataFolder = './data/';
 
 // read filenames inside the specified folder
-const dataFolder = './data/';
 fs.readdir(dataFolder, (err, files) => {
     files.forEach(file => {
 
@@ -15,6 +15,7 @@ fs.readdir(dataFolder, (err, files) => {
         if (path.extname(file).match(/\.wet|\.wat|\.warc/)){
 
             // open each file in the folder as stream and pipe it to the warc parser
+            const WARCParser = new WARCStream();
             fs.createReadStream(dataFolder + file).pipe(WARCParser).on('data', data => {
 
                 // log content of each entry in console
