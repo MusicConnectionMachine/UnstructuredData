@@ -1,0 +1,5 @@
+Files in this folder contain paths to the actual data files of the January 2017 Crawl.
+Unpack the .gz archive and don't forget to add "https://commoncrawl.s3.amazonaws.com/" in front of each path.
+
+Source: http://commoncrawl.org/2017/02/january-2017-crawl-archive-now-available/
+All other crawls here: http://commoncrawl.org/the-data/get-started/
