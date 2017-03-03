@@ -1,0 +1,12 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "dependencies": {
+    "typescript": "^2.2.1",
+    "warc": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.0",
+    "typescript": "^2.2.0"
+  }
+}
