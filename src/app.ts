@@ -5,6 +5,7 @@ const https = require('https');
 const path = require('path');
 const WARCStream = require('warc');
 
+const parser = require('./parser');
 
 // download web archive file
 function downloadFile(fileURL : string, directory : string) : void {
@@ -45,7 +46,8 @@ function digestFile(filepath : string) : void {
 
             // log content of each entry in console
             const content: string = data.content.toString('utf8');
-            console.log(content);
+            var stems = parser.parse(content);
+
         });
     }
 }
