@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // require some stuff
 var fs = require('fs');
 var path = require('path');
 var WARCStream = require('warc');
+var unpacker_1 = require("./unpacker");
 var dataFolder = './data/';
 // read filenames inside the specified folder
 fs.readdir(dataFolder, function (err, files) {
@@ -18,3 +21,5 @@ fs.readdir(dataFolder, function (err, files) {
         }
     });
 });
+var file = "gzip.zip";
+unpacker_1.unpackZipFile(dataFolder + file, dataFolder);

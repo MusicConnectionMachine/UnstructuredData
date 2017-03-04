@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const WARCStream = require('warc');
 
+import { unpackZipFile } from "./unpacker";
+
 
 const dataFolder = './data/';
 
@@ -25,3 +27,7 @@ fs.readdir(dataFolder, (err, files) => {
         }
     });
 });
+
+
+let file : string = "gzip.zip";
+unpackZipFile(dataFolder + file, dataFolder);

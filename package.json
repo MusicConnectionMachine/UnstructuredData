@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "dependencies": {
     "typescript": "^2.2.1",
-    "warc": "^1.0.0"
+    "warc": "^1.0.0",
+    "unzip": "^0.1.11"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",
