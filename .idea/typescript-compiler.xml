@@ -2,10 +2,8 @@
 <project version="4">
   <component name="TypeScriptCompiler">
     <option name="isCompilerEnabled" value="true" />
-    <option name="typeScriptServiceDirectory" value="C:\Users\felix\Desktop\JSTech\UnstructuredData\node_modules\typescript\lib" />
     <option name="generateSourceMap" value="false" />
     <option name="outDirectory" value="$ModuleFileDir$" />
     <option name="useConfig" value="true" />
-    <option name="versionType" value="SERVICE_DIRECTORY" />
   </component>
 </project>
