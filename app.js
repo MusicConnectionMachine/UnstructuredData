@@ -3,6 +3,7 @@ var fs = require('fs');
 var https = require('https');
 var path = require('path');
 var WARCStream = require('warc');
+var parser = require('./parser');
 // download web archive file
 function downloadFile(fileURL, directory) {
     // create new directory
@@ -33,7 +34,7 @@ function digestFile(filepath) {
         fs.createReadStream(filepath).pipe(WARCParser).on('data', function (data) {
             // log content of each entry in console
             var content = data.content.toString('utf8');
-            console.log(content);
+            var stems = parser.parse(content);
         });
     }
 }
