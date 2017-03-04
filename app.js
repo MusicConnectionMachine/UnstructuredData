@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 // require some stuff
 var fs = require('fs');
 var path = require('path');
 var WARCStream = require('warc');
-var unpacker_1 = require("./unpacker");
 var dataFolder = './data/';
 // read filenames inside the specified folder
 fs.readdir(dataFolder, function (err, files) {
@@ -21,5 +18,27 @@ fs.readdir(dataFolder, function (err, files) {
         }
     });
 });
-var file = "gzip.zip";
-unpacker_1.unpackZipFile(dataFolder + file, dataFolder);
+/*
+
+// Unpacker usage:
+import { Unpacker } from "./unpacker";
+let unp = new Unpacker();
+
+// gzip example with output filename & callback
+
+let file1 : string = "CC-MAIN-20170116095119-00000-ip-10-171-10-70.ec2.internal.warc.wet.gz";
+unp.unpackGZipFileToFile(dataFolder + file1, dataFolder, "result.wet", function() {
+    console.log("ready!");
+});
+
+
+// gzip example 2: filename & callback are optional, this will also work:
+
+unp.unpackGZipFileToFile(dataFolder + file3, dataFolder);
+
+
+// unzip example
+
+let file2 : string = "data.zip";
+unp.unpackZipFileToFile(dataFolder + file2, dataFolder);
+*/ 

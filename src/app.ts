@@ -4,8 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const WARCStream = require('warc');
 
-import { unpackZipFile } from "./unpacker";
-
 
 const dataFolder = './data/';
 
@@ -29,5 +27,27 @@ fs.readdir(dataFolder, (err, files) => {
 });
 
 
-let file : string = "gzip.zip";
-unpackZipFile(dataFolder + file, dataFolder);
+/*
+
+// Unpacker usage:
+import { Unpacker } from "./unpacker";
+let unp = new Unpacker();
+
+// gzip example with output filename & callback
+
+let file1 : string = "CC-MAIN-20170116095119-00000-ip-10-171-10-70.ec2.internal.warc.wet.gz";
+unp.unpackGZipFileToFile(dataFolder + file1, dataFolder, "result.wet", function() {
+    console.log("ready!");
+});
+
+
+// gzip example 2: filename & callback are optional, this will also work:
+
+unp.unpackGZipFileToFile(dataFolder + file3, dataFolder);
+
+
+// unzip example
+
+let file2 : string = "data.zip";
+unp.unpackZipFileToFile(dataFolder + file2, dataFolder);
+*/
