@@ -42,3 +42,6 @@ jspm_packages
 .idea/workspace.xml
 .idea/compiler.xml
 .idea/copyright
+
+#Ignore transpiled files
+out
