@@ -2,10 +2,9 @@
   "name": "application-name",
   "version": "0.0.1",
   "dependencies": {
-    "warc": "^1.0.0",
+    "natural": "^0.5.0",
     "unzip": "^0.1.11",
-    "hx-tokenizer": "^1.0.0",
-    "node-snowball": "^0.1.12"
+    "warc": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",
