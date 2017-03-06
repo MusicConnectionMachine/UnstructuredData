@@ -1,9 +1,9 @@
 export class Unpacker {
 
-    fs = require('fs');
-    unzip = require('unzip');
-    zlib = require('zlib');
-    path = require('path');
+    static fs = require('fs');
+    static unzip = require('unzip');
+    static zlib = require('zlib');
+    static path = require('path');
 
 
     /**
@@ -13,7 +13,7 @@ export class Unpacker {
      * @param filename              (optional) name for the output file
      * @param callback              (optional) function that will be called once the file is unpacked (no parameters)
      */
-    public unpackGZipFileToFile(gzipFilePath : string,
+    public static unpackGZipFileToFile(gzipFilePath : string,
                                 outputFolderPath : string,
                                 filename? : string,
                                 callback? : () => void) : void {
@@ -28,9 +28,9 @@ export class Unpacker {
             let spl = gzipFilePath.split("/");
             outputFileName = spl[spl.length - 1].replace(".gz", "");
         }
-        let outputFilePath : string = this.path.join(outputFolderPath, outputFileName);
-        outputFilePath = this.path.normalize(outputFilePath);
-        gzipFilePath = this.path.normalize(gzipFilePath);
+        let outputFilePath : string = Unpacker.path.join(outputFolderPath, outputFileName);
+        outputFilePath = Unpacker.path.normalize(outputFilePath);
+        gzipFilePath = Unpacker.path.normalize(gzipFilePath);
         //do not use the same name for input & output
         if (outputFilePath == gzipFilePath) {
             outputFilePath += ".unpacked";
@@ -38,9 +38,9 @@ export class Unpacker {
         }
 
         // unpack
-        const gunzip = this.zlib.createGunzip();
-        let input = this.fs.createReadStream(gzipFilePath);
-        let output = this.fs.createWriteStream(outputFilePath);
+        const gunzip = Unpacker.zlib.createGunzip();
+        let input = Unpacker.fs.createReadStream(gzipFilePath);
+        let output = Unpacker.fs.createWriteStream(outputFilePath);
         input.pipe(gunzip).pipe(output);
 
         // call callback if defined
@@ -58,13 +58,13 @@ export class Unpacker {
      * @param zipFilePath           path to the .zip file
      * @param outputFolderPath      path to the output folder, folder must exist!
      */
-    public unpackZipFileToFile(zipFilePath : string,
+    public static unpackZipFileToFile(zipFilePath : string,
                                outputFolderPath : string) : void {
 
-        let fs2 = this.fs;
-        let input = this.fs.createReadStream(zipFilePath);
+        let fs2 = Unpacker.fs;
+        let input = Unpacker.fs.createReadStream(zipFilePath);
 
-        input.pipe(this.unzip.Parse())
+        input.pipe(Unpacker.unzip.Parse())
             .on('entry', function (entry) {
 
                 let fileName = entry.path;

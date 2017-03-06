@@ -5,9 +5,31 @@ const path = require('path');
 const WARCStream = require('warc');
 
 import { Downloader } from "./downloader";
+import { Unpacker } from "./unpacker";
 
-const crawlUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
-new Downloader.downloadFile(crawlUrl, './data', console.log);
+const crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
+const dataFolder = './data/';
+const fileName = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
+
+Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, function(err) {
+    // downloader is ready
+    if (err) {
+        console.log(err);
+        return;
+
+    } else {
+        console.log("downloading complete!");
+
+    }
+
+    // download ok -> unpack
+    Unpacker.unpackGZipFileToFile(dataFolder + fileName, dataFolder, undefined, function() {
+        console.log("unpacking complete!");
+
+        // we can start digesting here
+    });
+
+});
 
 
 
@@ -24,34 +46,8 @@ function digestFile(filepath : string) : void {
 
             // log content of each entry in console
             const content: string = data.content.toString('utf8');
-            var stems = parser.parse(content);
+            let stems = parser.parse(content);
 
         });
     }
 }
-
-/*
-
-// Unpacker usage:
-import { Unpacker } from "./unpacker";
-let unp = new Unpacker();
-
-// gzip example with output filename & callback
-let dataFolder = "./data/";
-let file1 : string = "CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz";
-unp.unpackGZipFileToFile(dataFolder + file1, dataFolder, undefined, function() {
-    console.log("ready!");
-});
-
-
-// gzip example 2: filename & callback are optional, this will also work:
-
-unp.unpackGZipFileToFile(dataFolder + file3, dataFolder);
-
-
-// unzip example
-
-let file2 : string = "data.zip";
-unp.unpackZipFileToFile(dataFolder + file2, dataFolder);
-
-*/
