@@ -36,9 +36,9 @@ import { Unpacker } from "./unpacker";
 let unp = new Unpacker();
 
 // gzip example with output filename & callback
-
-let file1 : string = "CC-MAIN-20170116095119-00000-ip-10-171-10-70.ec2.internal.warc.wet.gz";
-unp.unpackGZipFileToFile(dataFolder + file1, dataFolder, "result.wet", function() {
+let dataFolder = "./data/";
+let file1 : string = "CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz";
+unp.unpackGZipFileToFile(dataFolder + file1, dataFolder, undefined, function() {
     console.log("ready!");
 });
 
