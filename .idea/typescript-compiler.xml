@@ -5,6 +5,6 @@
     <option name="generateSourceMap" value="false" />
     <option name="outDirectory" value="$ModuleFileDir$" />
     <option name="useConfig" value="true" />
-    <option name="versionType" value="EMBEDDED" />
+    <option name="showAllErrors" value="true" />
   </component>
 </project>

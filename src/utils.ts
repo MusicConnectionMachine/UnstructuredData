@@ -1,16 +1,14 @@
 export class UnsupportedProtocolError extends Error {
-    constructor(message: string) {
-        super();
+    constructor(message? : string) {
+        super(message);
         this.name = 'UnsupportedProtocolError';
-        this.message = (message || '');
     }
 }
 
 
 export class AlreadyExistsError extends Error {
-    constructor(message : string) {
-        super();
+    constructor(message? : string) {
+        super(message);
         this.name = 'AlreadyExistsError';
-        this.message = (message || '');
     }
 }
