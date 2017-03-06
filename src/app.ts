@@ -7,7 +7,8 @@ const WARCStream = require('warc');
 import { Downloader } from "./downloader";
 
 const crawlUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
-new Downloader.downloadFile(crawlUrl, './data');
+new Downloader.downloadFile(crawlUrl, './data', console.log);
+
 
 
 const parser = require('./parser');

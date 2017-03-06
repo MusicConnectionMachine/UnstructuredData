@@ -20,7 +20,10 @@ export class Downloader {
 
         // extract filename from url
         const filename = Downloader.path.basename(parsedURL.path);
-        const filepath = Downloader.path.join(outDir, filename);
+        const filepath = Downloader.path.join(
+            Downloader.path.normalize(outDir),
+            filename
+        );
 
         // check if file already exists
         if (Downloader.fs.existsSync(filepath)){
@@ -45,14 +48,20 @@ export class Downloader {
     }
 }
 
-function UnsupportedProtocolError(message : string) {
-    this.name = 'UnsupportedProtocolError';
-    this.message = (message || '');
-}
-UnsupportedProtocolError.prototype = Error.prototype;
 
-function AlreadyExistsError(message : string) {
-    this.name = 'AlreadyExistsError';
-    this.message = (message || '');
+class UnsupportedProtocolError extends Error {
+    constructor(message: string) {
+        super();
+        this.name = 'UnsupportedProtocolError';
+        this.message = (message || '');
+    }
 }
-AlreadyExistsError.prototype = Error.prototype;
+
+
+class AlreadyExistsError extends Error {
+    constructor(message : string) {
+        super();
+        this.name = 'AlreadyExistsError';
+        this.message = (message || '');
+    }
+}
