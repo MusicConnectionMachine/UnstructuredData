@@ -4,7 +4,7 @@
   "dependencies": {
     "typescript": "^2.2.1",
     "warc": "^1.0.0",
-    "unzip": "^0.1.11"
+    "unzip": "^0.1.11",
     "hx-tokenizer": "^1.0.0",
     "node-snowball": "^0.1.12"
   },
