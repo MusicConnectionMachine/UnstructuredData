@@ -13,7 +13,7 @@ export class Downloader {
      * @param outDir                path to folder which the file will be downloaded to
      * @param callback              (optional) function that will be called once the file is downloaded
      */
-    public downloadFile(fileURL : string, outDir : string, callback : (err : Error) => void) : void {
+    public downloadFile(fileURL : string, outDir : string, callback? : (err : Error) => void) : void {
 
         let err : Error;
         let parsedURL = this.url.parse(fileURL);
