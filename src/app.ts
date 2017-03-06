@@ -1,9 +1,18 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 
+const fs = require('fs');
+
 const crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
 const dataFolder = './data/';
 const fileName = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
+
+// create folder or use existing one
+try {
+    fs.mkdirSync(dataFolder);
+} catch(e) {
+    if ( e.code != 'EEXIST' ) throw e;
+}
 
 Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, err => {
 
@@ -29,7 +38,6 @@ Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, err => {
 
 /** commented out for now as it's not the main focus right now */
 /*
-const fs = require('fs');
 const path = require('path');
 const WARCStream = require('warc');
 const parser = require('./parser');
