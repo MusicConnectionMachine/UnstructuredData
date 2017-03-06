@@ -1,10 +1,10 @@
 export class Downloader {
 
-    fs = require('fs');
-    url = require('url');
-    path = require('path');
-    http = require('http');
-    https = require('https');
+    static fs = require('fs');
+    static url = require('url');
+    static path = require('path');
+    static http = require('http');
+    static https = require('https');
 
 
     /**
@@ -13,27 +13,27 @@ export class Downloader {
      * @param outDir                path to folder which the file will be downloaded to
      * @param callback              (optional) function that will be called once the file is downloaded
      */
-    public downloadFile(fileURL : string, outDir : string, callback? : (err : Error) => void) : void {
+    public static downloadFile(fileURL : string, outDir : string, callback? : (err : Error) => void) : void {
 
         let err : Error;
-        let parsedURL = this.url.parse(fileURL);
+        let parsedURL = Downloader.url.parse(fileURL);
 
         // extract filename from url
-        const filename = this.path.basename(parsedURL.path);
-        const filepath = this.path.join(outDir, filename);
+        const filename = Downloader.path.basename(parsedURL.path);
+        const filepath = Downloader.path.join(outDir, filename);
 
         // check if file already exists
-        if (this.fs.existsSync(filepath)){
+        if (Downloader.fs.existsSync(filepath)){
             err = new AlreadyExistsError(filepath + ' already exists');
             if (callback) { callback(err); }
         } else {
-            let outputFile = this.fs.createWriteStream(filepath);
+            let outputFile = Downloader.fs.createWriteStream(filepath);
 
             // download file
             if (parsedURL.protocol === 'https:') {
-                this.https.get(fileURL, response => { response.pipe(outputFile); });
+                Downloader.https.get(fileURL, response => { response.pipe(outputFile); });
             } else if (parsedURL.protocol === 'http:') {
-                this.http.get(fileURL, response => { response.pipe(outputFile); });
+                Downloader.http.get(fileURL, response => { response.pipe(outputFile); });
             } else {
                 err = new UnsupportedProtocolError(parsedURL.protocol + ' unsupported');
             }
