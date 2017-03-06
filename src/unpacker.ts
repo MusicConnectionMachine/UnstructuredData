@@ -18,7 +18,7 @@ export class Unpacker {
     public static unpackGZipFileToFile(gzipFilePath : string,
                                 outputFolderPath : string,
                                 filename? : string,
-                                callback? : (err? : Error) => void) : void {
+                                callback? : (err? : Error, filepath? : string) => void) : void {
 
         // filename
         let outputFileName : string;
@@ -51,7 +51,7 @@ export class Unpacker {
 
             // call callback if defined
             output.on("close", function () {
-                if (callback) { callback(); }
+                if (callback) { callback(undefined, outputFilePath); }
             });
         }
     }
