@@ -1,3 +1,5 @@
+import {AlreadyExistsError, UnsupportedProtocolError} from './utils';
+
 export class Downloader {
 
     static fs = require('fs');
@@ -13,7 +15,7 @@ export class Downloader {
      * @param outDir                path to folder which the file will be downloaded to
      * @param callback              (optional) function that will be called once the file is downloaded
      */
-    public static downloadFile(fileURL : string, outDir : string, callback? : (err : Error) => void) : void {
+    public static downloadFile(fileURL : string, outDir : string, callback? : (err? : Error) => void) : void {
 
         let err : Error;
         let parsedURL = Downloader.url.parse(fileURL);
@@ -45,23 +47,5 @@ export class Downloader {
                 if (callback) { callback(err); }
             });
         }
-    }
-}
-
-
-class UnsupportedProtocolError extends Error {
-    constructor(message: string) {
-        super();
-        this.name = 'UnsupportedProtocolError';
-        this.message = (message || '');
-    }
-}
-
-
-class AlreadyExistsError extends Error {
-    constructor(message : string) {
-        super();
-        this.name = 'AlreadyExistsError';
-        this.message = (message || '');
     }
 }

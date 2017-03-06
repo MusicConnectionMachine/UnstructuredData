@@ -1,3 +1,5 @@
+import {AlreadyExistsError} from './utils';
+
 export class Unpacker {
 
     static fs = require('fs');
@@ -16,7 +18,7 @@ export class Unpacker {
     public static unpackGZipFileToFile(gzipFilePath : string,
                                 outputFolderPath : string,
                                 filename? : string,
-                                callback? : () => void) : void {
+                                callback? : (err? : Error) => void) : void {
 
         // filename
         let outputFileName : string;
@@ -25,8 +27,7 @@ export class Unpacker {
             outputFileName = filename;
         } else {
             // no filename provided -> take from gzipFilePath & remove ".gz"
-            let spl = gzipFilePath.split("/");
-            outputFileName = spl[spl.length - 1].replace(".gz", "");
+            outputFileName = Unpacker.path.basename(gzipFilePath).replace(".gz", "");
         }
         let outputFilePath : string = Unpacker.path.join(outputFolderPath, outputFileName);
         outputFilePath = Unpacker.path.normalize(outputFilePath);
@@ -39,14 +40,20 @@ export class Unpacker {
 
         // unpack
         const gunzip = Unpacker.zlib.createGunzip();
-        let input = Unpacker.fs.createReadStream(gzipFilePath);
-        let output = Unpacker.fs.createWriteStream(outputFilePath);
-        input.pipe(gunzip).pipe(output);
 
-        // call callback if defined
-        output.on("close", function () {
-            if (callback) { callback(); }
-        });
+        if (Unpacker.fs.existsSync(outputFilePath)){
+            let err = new AlreadyExistsError(outputFilePath + ' already exists');
+            if (callback) { callback(err); }
+        } else {
+            let input = Unpacker.fs.createReadStream(gzipFilePath);
+            let output = Unpacker.fs.createWriteStream(outputFilePath);
+            input.pipe(gunzip).pipe(output);
+
+            // call callback if defined
+            output.on("close", function () {
+                if (callback) { callback(); }
+            });
+        }
     }
 
     /**
@@ -76,7 +83,7 @@ export class Unpacker {
                     entry.autodrain();
                 }
 
-                entry.pipe(fs2.createWriteStream(outputFolderPath + "/" + fileName));
+                entry.pipe(fs2.createWriteStream(Unpacker.path.join(outputFolderPath, fileName)));
 
             });
     }
