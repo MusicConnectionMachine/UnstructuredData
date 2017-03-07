@@ -4,4 +4,3 @@ import {TestRuns} from "./test-runs";
 
 //TestRuns.testDownloadUnpackingAndStemming();
 TestRuns.testTLD();
-
