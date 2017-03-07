@@ -2,6 +2,7 @@ import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./web-page";
+import { LanguageExtractor } from "./language-extractor";
 
 /**
  * Playground for testing.
@@ -96,11 +97,12 @@ export class TestRuns {
      * Load already downloaded and unpacked file and get TLDs.
      */
     static testTLD() {
-        TestRuns.prepareEnvironment();
 
+        TestRuns.prepareEnvironment();
         let entryID = 0;
 
-        // we can start digesting here
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+
         // open file as stream and pipe it to the warc parser
         const WARCParser = new TestRuns.WARCStream();
         const filepath = TestRuns.dataFolder + (TestRuns.fileName.replace(".gz", ""));
@@ -121,6 +123,51 @@ export class TestRuns {
             entryID++;
         });
     };
+    //endregion
+
+    //region LanguageExtractor
+    static testLanguageExtractor() {
+
+        TestRuns.prepareEnvironment();
+        let entryID = 0;
+
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+
+        const WARCParser = new TestRuns.WARCStream();
+        const filepath = TestRuns.dataFolder + (TestRuns.fileName.replace(".gz", ""));
+
+        // Extract english pages
+        LanguageExtractor.extractWETPages(filepath, 'eng', (err,filepath) => {
+            if (err) {
+                console.log(err);
+                return;
+            } else {
+                console.log("English pages extraction complete!");
+            }
+
+            // pages were extracted and written to ANOTHER WET file
+            // open file as stream and pipe it to the warc parser
+            this.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
+
+                // log content of each entry in console
+                let p = new WebPage(data);
+                let stems = WordPreprocessor.process(p.content);
+
+                console.log("\n\n---------------------\nTLD: "+ p.getTLD() + "\n---------------------");
+                console.log(stems);
+
+                entryID++;
+                if (entryID > 100) process.exit();
+            });
+
+
+        });
+
+
+    }
+
+
+
     //endregion
 
 

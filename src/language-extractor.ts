@@ -22,10 +22,10 @@ export class LanguageExtractor {
             if(callback) {
                 callback(err);
             }
+            return;
         }
-        else {
-            var outputFile = wetDataFilePath.replace(".wet","_"+searchLanguage+".wet");
-        }
+
+        let outputFile = wetDataFilePath.replace(".wet","_"+searchLanguage+".wet");
 
         if (LanguageExtractor.fs.existsSync(outputFile)) {
             let err = new AlreadyExistsError(outputFile + ' already exists');
@@ -53,7 +53,7 @@ export class LanguageExtractor {
                 // If website matches the language write to file
                 if (LanguageExtractor.franc(testString).match(searchLanguage)) {
                     writeStream.write(data.protocol.toString('utf8') + '\n');
-                    for (var property in data.headers) {
+                    for (let property in data.headers) {
                         writeStream.write(property + ': ' + data.headers[property] + '\n');
                     }
                     writeStream.write('\n' + content + '\n');

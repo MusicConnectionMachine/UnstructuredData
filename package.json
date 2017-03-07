@@ -4,7 +4,8 @@
   "dependencies": {
     "natural": "^0.5.0",
     "unzip": "^0.1.11",
-    "warc": "^1.0.0"
+    "warc": "^1.0.0",
+    "franc": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",
