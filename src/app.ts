@@ -16,37 +16,41 @@ const fileName = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc
 try {
     fs.mkdirSync(dataFolder);
 } catch(e) {
-    if ( e.code != 'EEXIST' ) throw e;
+    if (e.code != 'EEXIST') { throw e; }
 }
 
 
 Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, (err, filepath) => {
 
     // downloader is ready
-    if (err) { console.log(err); }
-    else {
+    if (err) {
+        console.log(err);
+        return;
+    } else {
         console.log("downloading complete!");
-
-        // download ok -> unpack
-        Unpacker.unpackGZipFileToFile(filepath, dataFolder, undefined, (err, filepath) => {
-            if (err) { console.log(err); }
-            else {
-                console.log("unpacking complete!");
-
-                // TODO: Language filter
-
-                // we can start digesting here
-                // open file as stream and pipe it to the warc parser
-                const WARCParser = new WARCStream();
-                fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
-
-                    // log content of each entry in console
-                    const content: string = data.content.toString('utf8');
-                    let stems = WordPreprocessor.process(content);
-                    console.log(stems);
-                });
-            }
-        });
     }
+
+    // download ok -> unpack
+    Unpacker.unpackGZipFileToFile(filepath, dataFolder, undefined, (err, filepath) => {
+        if (err) {
+            console.log(err);
+            return;
+        } else {
+            console.log("unpacking complete!");
+        }
+
+        // TODO: Language filter
+
+        // we can start digesting here
+        // open file as stream and pipe it to the warc parser
+        const WARCParser = new WARCStream();
+        fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
+
+            // log content of each entry in console
+            const content: string = data.content.toString('utf8');
+            let stems = WordPreprocessor.process(content);
+            console.log(stems);
+        });
+    });
 });
 
