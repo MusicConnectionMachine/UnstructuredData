@@ -41,7 +41,7 @@ Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, (err, filepath) => 
         }
 
         // Extract english pages
-        LanguageExtractor.extractWETPages("./data/CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet", 'eng', (err,filepath) => {
+        LanguageExtractor.extractWETPages(filepath, 'eng', (err,filepath) => {
             if (err) {
                 console.log(err);
                 return;
@@ -54,10 +54,10 @@ Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, (err, filepath) => 
             const WARCParser = new WARCStream();
             fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
 
-                // log content of each entry in console
-                const content: string = data.content.toString('utf8');
-                let stems = WordPreprocessor.process(content);
-                console.log(stems);
+            // log content of each entry in console
+            const content: string = data.content.toString('utf8');
+            let stems = WordPreprocessor.process(content);
+            console.log(stems);
             });
         });
     });
