@@ -1,6 +1,7 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
+import { LanguageExtractor } from "./language-extractor";
 
 const fs = require('fs');
 const path = require('path');
@@ -39,18 +40,25 @@ Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, (err, filepath) => 
             console.log("unpacking complete!");
         }
 
-        // TODO: Language filter
+        // Extract english pages
+        LanguageExtractor.extractWETPages("./data/CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet", 'eng', (err,filepath) => {
+            if (err) {
+                console.log(err);
+                return;
+            } else {
+                console.log("English pages extraction complete!");
+            }
 
-        // we can start digesting here
-        // open file as stream and pipe it to the warc parser
-        const WARCParser = new WARCStream();
-        fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
+            // we can start digesting here
+            // open file as stream and pipe it to the warc parser
+            const WARCParser = new WARCStream();
+            fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
 
-            // log content of each entry in console
-            const content: string = data.content.toString('utf8');
-            let stems = WordPreprocessor.process(content);
-            console.log(stems);
+                // log content of each entry in console
+                const content: string = data.content.toString('utf8');
+                let stems = WordPreprocessor.process(content);
+                console.log(stems);
+            });
         });
     });
 });
-
