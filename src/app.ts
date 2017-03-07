@@ -1,6 +1,7 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
+import { WebPage } from "./web-page";
 
 const fs = require('fs');
 const path = require('path');
@@ -40,16 +41,27 @@ Downloader.downloadFile(crawlBaseUrl + fileName, dataFolder, (err, filepath) => 
         }
 
         // TODO: Language filter
+        // TODO: Term filter
+
+        let i = 0;
 
         // we can start digesting here
         // open file as stream and pipe it to the warc parser
         const WARCParser = new WARCStream();
         fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
 
+            let p = new WebPage(data);
+
             // log content of each entry in console
-            const content: string = data.content.toString('utf8');
+            const content: string = p.content;
             let stems = WordPreprocessor.process(content);
-            console.log(stems);
+
+            // print only the first result
+            if (i == 1) {
+                console.log(p);
+                console.log(stems);
+            }
+            i++;
         });
     });
 });

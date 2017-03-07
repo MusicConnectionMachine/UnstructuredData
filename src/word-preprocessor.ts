@@ -34,7 +34,7 @@ export class WordPreprocessor {
      * as values. If two tokens have the same stem, the stems entry will contain the sum of both their
      * occurences.
      *
-     * @param tokenlist Object containing tokens as keys and occurences as values
+     * @param tokenlist Object containing tokens as keys and the number of occurences as values: {'terminator': 2}
      * @returns {{}} Object containing stemmed tokens as keys and occurences as values.
      */
     private static stem(tokenlist : Object) : Object{
@@ -42,7 +42,7 @@ export class WordPreprocessor {
 
         for(let token in tokenlist) {
 
-            //Check if a steam for the token has already been hashed, if not create stem and hash it.
+            //Check if a stem for the token has already been hashed, if not create stem and hash it.
             if(!(token in WordPreprocessor.stemHashes)) {
                 WordPreprocessor.stemHashes[token] = WordPreprocessor.natural.PorterStemmer.stem(token);
             }
