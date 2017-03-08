@@ -9,7 +9,6 @@ export class LanguageExtractor {
 
     static path = require('path');
     static fs = require('fs');
-    static franc = require('franc');
     static cld = require('cld');
     static WARCStream = require('warc');
 
