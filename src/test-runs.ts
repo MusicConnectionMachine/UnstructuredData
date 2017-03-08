@@ -190,6 +190,7 @@ export class TestRuns {
     static testLanguageExtractor_slightly_better() {
         TestRuns.prepareEnvironment();
         let entryID = 0;
+        let timeStart = new Date().getTime();
 
 
         // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
@@ -206,6 +207,7 @@ export class TestRuns {
                 + "\tTLD: "+ p.getTLD() + " "
                 + "\tIsEnglish: " + LanguageExtractor.isWebPageInLanguage(p, 'eng') + " "
                 + "\tIsWebPage: " + p.isWebPage() + " "
+                + "\tTimePassed: " + ((new Date().getTime()) - timeStart)
                 + "\tURI: " + p.getURI()
             );
             entryID++;
