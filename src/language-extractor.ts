@@ -10,6 +10,7 @@ export class LanguageExtractor {
     static path = require('path');
     static fs = require('fs');
     static franc = require('franc');
+    static cld = require('cld');
     static WARCStream = require('warc');
 
 
@@ -59,19 +60,22 @@ export class LanguageExtractor {
 
             let page : WebPage = new WebPage(data);
             // write only if the web page object is in english AND really represents a web page (and not the first entry of a WET file)
-            if (this.isWebPageInLanguage(page, searchLanguage) && page.isWebPage()) {
-                console.log("writing  entry #" + entryID + "!");
 
-                writeStream.write(data.protocol.toString('utf8') + '\n');
-                for (let property in data.headers) {
-                    writeStream.write(property + ': ' + data.headers[property] + '\n');
+            let tld = page.getTLD();
+            this.isWebPageInLanguage(page, searchLanguage, tld, function(result : boolean) {
+                if(result) {
+                    console.log('writing entry #' + entryID + '!');
+
+                    writeStream.write(data.protocol.toString('utf8') + '\n');
+                    for (let property in data.headers) {
+                        writeStream.write(property + ': ' + data.headers[property] + '\n');
+                    }
+                    writeStream.write('\n' + page.content + '\n');
+                } else {
+                    console.log('skipping entry #' + entryID + '!');
                 }
-                writeStream.write('\n' + page.content + '\n');
-
-
-            } else {
-                console.log("skipping entry #" + entryID + "!");
-            }
+                entryID++;
+            });
 
             entryID++;
         }).on('end', function() {
@@ -100,7 +104,8 @@ export class LanguageExtractor {
      * @param searchLanguage        language string
      * @returns {boolean}
      */
-    public static isWebPageInLanguage(page : WebPage, searchLanguage: string) : boolean {
+    public static isWebPageInLanguage(page : WebPage, searchLanguage : string, tld : string,
+                                      callback: (result : boolean) => void) {
         const content: string = page.content;
 
         // Search from the middle of the website
@@ -108,7 +113,14 @@ export class LanguageExtractor {
         const testStringEnd: number = (content.length / 2) + 250 < content.length ? (content.length / 2) + 250 : content.length;
         const testString = content.substring(testStringStart, testStringEnd);
 
-        return !! (LanguageExtractor.franc(testString).match(searchLanguage));
+        LanguageExtractor.cld.detect(testString, { tldHint: tld}, function(err, result) {
+            if(err) {
+                console.log(err);
+                return false;
+            } else {
+                callback(result.reliable && result.languages[0].code == searchLanguage);
+            }
+        });
     }
 
 }

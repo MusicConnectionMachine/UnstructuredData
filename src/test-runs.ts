@@ -199,19 +199,29 @@ export class TestRuns {
         const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
 
 
-        TestRuns.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
+        let stream = TestRuns.fs.createReadStream(filepath).pipe(WARCParser);
+
+        stream.on('data', data => {
 
             let p = new WebPage(data);
 
-            console.log("Entry #" + entryID
-                + "\tTLD: "+ p.getTLD() + " "
-                + "\tIsEnglish: " + LanguageExtractor.isWebPageInLanguage(p, 'eng') + " "
-                + "\tIsWebPage: " + p.isWebPage() + " "
-                + "\tTimePassed: " + ((new Date().getTime()) - timeStart)
-                + "\tURI: " + p.getURI()
-            );
-            entryID++;
+            let tld = p.getTLD();
+
+            LanguageExtractor.isWebPageInLanguage(p, 'en', tld, function(result : boolean) {
+                console.log("Entry #" + entryID
+                    + "\tTLD: "+ tld + " "
+                    + "\tIsEnglish: " + result + " "
+                    + "\tIsWebPage: " + p.isWebPage() + " "
+                    + "\tTimePassed: " + ((new Date().getTime()) - timeStart)
+                    + "\tURI: " + p.getURI()
+                );
+                entryID++;
+            });
         });
+
+        stream.on('end', () => {
+            console.log('finished. Time passed: ' + ((new Date().getTime()) - timeStart));
+        })
 
     }
     //endregion
