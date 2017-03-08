@@ -3,6 +3,7 @@
  */
 
 import {AlreadyExistsError,UnsupportedFileFormat} from './utils';
+import {WebPage} from "./web-page";
 
 export class LanguageExtractor {
 
@@ -11,7 +12,19 @@ export class LanguageExtractor {
     static franc = require('franc');
     static WARCStream = require('warc');
 
-    // To extract pages of specified language
+
+    /**
+     * This function reads all web page entries from the WET file on "wetDataFilePath".
+     * Each entry is converted into a WebPage object, afterwards language detection is performed.
+     * All WebPage objects that have the specified language are written into another WET file
+     * Output file name is generated from the input file name.
+     *
+     * This is super slow! :P
+     *
+     * @param wetDataFilePath   path to the input WET file
+     * @param searchLanguage    language string
+     * @param callback          callback
+     */
     public static extractWETPages(wetDataFilePath: string,
                                   searchLanguage: string,
                                   callback? : (err? : Error, filepath? : string) => void) : void {
@@ -32,37 +45,70 @@ export class LanguageExtractor {
             if (callback) {
                 callback(err);
             }
+            return;
         }
-        else{
 
-            // open each file in the folder as stream and pipe it to the warc parser
-            const WARCParser = new LanguageExtractor.WARCStream();
+        // open each file in the folder as stream and pipe it to the warc parser
+        const WARCParser = new LanguageExtractor.WARCStream();
+        let entryID = 0;
 
-            //open the output file
-            const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
-            LanguageExtractor.fs.createReadStream(wetDataFilePath).pipe(WARCParser).on('data', data => {
+        //open the output file
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        const readStream = LanguageExtractor.fs.createReadStream(wetDataFilePath);
+        readStream.pipe(WARCParser).on('data', data => {
 
-                // write only english content to a new file
-                const content: string = data.content.toString('utf8');
+            let page : WebPage = new WebPage(data);
+            // write only if the web page object is in english AND really represents a web page (and not the first entry of a WET file)
+            if (this.isWebPageInLanguage(page, searchLanguage) && page.isWebPage()) {
+                console.log("writing  entry #" + entryID + "!");
 
-                // Search from the middle of the website
-                const testStringStart: number = (content.length / 2) - 250 > 0 ? (content.length / 2) - 250 : 0;
-                const testStringEnd: number = (content.length / 2) + 250 < content.length ? (content.length / 2) + 250 : content.length;
-                const testString = content.substring(testStringStart, testStringEnd);
-
-                // If website matches the language write to file
-                if (LanguageExtractor.franc(testString).match(searchLanguage)) {
-                    writeStream.write(data.protocol.toString('utf8') + '\n');
-                    for (let property in data.headers) {
-                        writeStream.write(property + ': ' + data.headers[property] + '\n');
-                    }
-                    writeStream.write('\n' + content + '\n');
+                writeStream.write(data.protocol.toString('utf8') + '\n');
+                for (let property in data.headers) {
+                    writeStream.write(property + ': ' + data.headers[property] + '\n');
                 }
-            });
+                writeStream.write('\n' + page.content + '\n');
 
+
+            } else {
+                console.log("skipping entry #" + entryID + "!");
+            }
+
+            entryID++;
+        }).on('end', function() {
+            // read stream ready
+            // just to be sure we set a 100ms timeout
+            // last entry should be written by then
+            setTimeout(function () {
+                writeStream.close();
+            }, 10);
+        });
+
+        writeStream.on("close", function() {
+            // calling a callback in another callback
             if (callback) {
                 callback(undefined, outputFile);
             }
-        }
+        });
+
     }
+
+
+    /**
+     * Filter function. Returns true if the specified web page is in the specified language.
+     *
+     * @param page                  web page object (constructed from WARC parser data)
+     * @param searchLanguage        language string
+     * @returns {boolean}
+     */
+    public static isWebPageInLanguage(page : WebPage, searchLanguage: string) : boolean {
+        const content: string = page.content;
+
+        // Search from the middle of the website
+        const testStringStart: number = (content.length / 2) - 250 > 0 ? (content.length / 2) - 250 : 0;
+        const testStringEnd: number = (content.length / 2) + 250 < content.length ? (content.length / 2) + 250 : content.length;
+        const testString = content.substring(testStringStart, testStringEnd);
+
+        return !! (LanguageExtractor.franc(testString).match(searchLanguage));
+    }
+
 }
