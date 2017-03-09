@@ -162,7 +162,7 @@ export class TestRuns {
 
             // pages were extracted and written to ANOTHER WET file
             // open file as stream and pipe it to the warc parser
-            this.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
+            TestRuns.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
 
                 // log content of each entry in console
                 let p = new WebPage(data);
@@ -227,5 +227,42 @@ export class TestRuns {
     //endregion
 
 
+    /**
+     * Load already downloaded and unpacked WET file, feed it to WARC parser, create a WebPage
+     * object from each entry and filter the results with LanguageExtractor directly and feed them
+     * into the WordPreprocessor No temporary buffering on the disk.
+     */
+    //region Pre-Processing
+    static testPreProcessingChain() {
+        TestRuns.prepareEnvironment();
+        let timeStart = new Date().getTime();
+
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+
+        const WARCParser = new TestRuns.WARCStream();
+        const filepath = TestRuns.path.join(TestRuns.dataFolder, TestRuns.fileName_unpacked);
+
+
+        let stream = TestRuns.fs.createReadStream(filepath).pipe(WARCParser);
+
+        stream.on('data', data => {
+
+            let p = new WebPage(data);
+
+            let tld = p.getTLD();
+
+            LanguageExtractor.isWebPageInLanguage(p, 'en', tld, function(result : boolean) {
+                if (result) {
+                    WordPreprocessor.process(p.content);
+                }
+            });
+        });
+
+        stream.on('end', () => {
+            console.log('finished. Time passed: ' + ((new Date().getTime()) - timeStart));
+        })
+
+    }
+    //endregion
 
 }
