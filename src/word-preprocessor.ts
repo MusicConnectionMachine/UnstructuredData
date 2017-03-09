@@ -1,5 +1,6 @@
 export class WordPreprocessor {
 
+    static snowball = require('node-snowball');
     static natural = require('natural');
     static tokenizer = new WordPreprocessor.natural.WordTokenizer();
     static stemHashes = {};
@@ -44,7 +45,10 @@ export class WordPreprocessor {
 
             //Check if a stem for the token has already been hashed, if not create stem and hash it.
             if(!(token in WordPreprocessor.stemHashes)) {
+                /*
                 WordPreprocessor.stemHashes[token] = WordPreprocessor.natural.PorterStemmer.stem(token);
+                */
+                WordPreprocessor.stemHashes[token] = WordPreprocessor.snowball.stemword(token, 'english');
             }
 
             /*
