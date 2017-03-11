@@ -8,4 +8,5 @@ import {TestRuns} from "./test-runs";
 // there runs assume that the file is already downloaded -> no waiting
 //TestRuns.testTLD();
 //TestRuns.testLanguageExtractor_super_slow();
-TestRuns.testPreProcessingChain();
+//TestRuns.testPreProcessingChain();
+TestRuns.testTermSearch();
