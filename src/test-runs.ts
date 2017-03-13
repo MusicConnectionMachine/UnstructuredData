@@ -15,6 +15,7 @@ export class TestRuns {
     static fs = require('fs');
     static path = require('path');
     static WARCStream = require('warc');
+    //static rwStream = require("read-write-stream");
 
     static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
     static dataFolder = './data/';
@@ -208,7 +209,7 @@ export class TestRuns {
 
             let tld = p.getTLD();
 
-            LanguageExtractor.isWebPageInLanguage(p, 'en', tld, function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
                 console.log("Entry #" + entryID
                     + "\tTLD: "+ tld + " "
                     + "\tIsEnglish: " + result + " "
@@ -250,10 +251,9 @@ export class TestRuns {
 
             let p = new WebPage(data);
 
-            let tld = p.getTLD();
-
-            LanguageExtractor.isWebPageInLanguage(p, 'en', tld, function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
                 if (result) {
+                    console.log("processing result ");
                     WordPreprocessor.process(p.content);
                 }
             });
@@ -325,5 +325,71 @@ export class TestRuns {
     }
 
     //endregion
+
+
+    /**
+     * Downloads and unpacks the WET file without temporary caching on disk.
+     * Only the unpacked result is written on disk. No processing.
+     */
+    public static testStreamedDownloadAndUnpacking() {
+        Downloader.getResponse(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & write to file
+            let decompressed = Unpacker.decompressGZipStream(response);
+            let output = Unpacker.fs.createWriteStream(TestRuns.path.join(TestRuns.dataFolder, TestRuns.fileName_unpacked));
+            decompressed.pipe(output);
+
+        });
+    }
+
+
+    public static testStreamedDownloadUnpackingAndProcessing() {
+        console.log("Sending request... ");
+
+        Downloader.getResponse(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("start receiving and decompressing data... (starting timer)");
+
+            let timeStart = new Date().getTime();
+            let entryID = 0;
+
+            // unpack & feed into WARC parser
+            let decompressed = Unpacker.decompressGZipStream(response);
+            const WARCParser = new TestRuns.WARCStream();
+            decompressed.pipe(WARCParser).on('data', data => {
+
+                // getting WET entries here
+
+                let p = new WebPage(data);
+                let tld = p.getTLD();
+
+
+                // run LanguageExtractor, WordPreprocessor here
+                // run LanguageExtractor, WordPreprocessor here
+                // run LanguageExtractor, WordPreprocessor here
+
+
+                // print only a few entries
+                if (entryID % 100 == 0) {
+                    let duration = new Date().getTime() -  timeStart;
+                    console.log("entry #" + entryID
+                        + "\tTLD: " + tld
+                        + " \t\ttime passed: " + duration + " ms"
+                        + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms");
+                }
+                entryID++;
+
+
+            });
+
+        });
+    }
 
 }
