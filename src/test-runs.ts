@@ -42,7 +42,7 @@ export class TestRuns {
 
         console.log("starting download ...");
 
-        Downloader.downloadFile(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, TestRuns.dataFolder, (err, filepath) => {
+        Downloader.downloadToFile(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, TestRuns.dataFolder, (err, filepath) => {
 
             // downloader is ready
             if (err) {
