@@ -4,6 +4,7 @@ import {TestRuns} from "./test-runs";
 
 // run this to download file
 TestRuns.testDownloadUnpackingAndStemming();
+//TestRuns.testStreams();
 
 // there runs assume that the file is already downloaded -> no waiting
 //TestRuns.testTLD();

@@ -1,5 +1,6 @@
 import {AlreadyExistsError, UnsupportedProtocolError} from './utils';
-import {WriteStream} from "fs";
+import {IncomingMessage} from "http";
+
 
 export class Downloader {
 
@@ -38,24 +39,27 @@ export class Downloader {
             return;
         }
 
-        let outputFile = Downloader.fs.createWriteStream(filepath);
 
-        Downloader.downloadToStream(fileURL, outputFile, (err) => {
+        Downloader.getResponse(fileURL, (err, resp) => {
             if (err) {
                 // download as stream failed
                 if (callback) callback(err);
-
-            } else {
-                // file was downloaded, outputFile stream successfully closed
-                if (callback) { callback(undefined, filepath); }
+                return;
             }
+
+            // receiving response and writing to file
+            let outputFile = Downloader.fs.createWriteStream(filepath);
+            resp.pipe(outputFile);
+            outputFile.on("close", () => {
+                if (callback) { callback(undefined, filepath); }
+            });
+
         });
     }
 
 
-    public static downloadToStream(fileURL : string,
-                                   outputStream : WriteStream,
-                                   callback? : (err? : Error) => void) : void {
+    public static getResponse(fileURL : string,
+                              callback? : (err? : Error, resp? : IncomingMessage) => void) : void {
 
         let parsedURL = Downloader.url.parse(fileURL);
 
@@ -68,16 +72,14 @@ export class Downloader {
 
         // download file and pipe to stream
         if (parsedURL.protocol === 'https:') {
-            Downloader.https.get(fileURL, response => { response.pipe(outputStream); });
+            Downloader.https.get(fileURL, response => {
+                callback(undefined, response);
+            });
         } else if (parsedURL.protocol === 'http:') {
-            Downloader.http.get(fileURL, response => { response.pipe(outputStream); });
+            Downloader.http.get(fileURL, response => {
+                callback(undefined, response);
+            });
         }
-
-
-        outputStream.on("close", function () {
-            if (callback) { callback(undefined); }
-        });
-
 
     }
 }
