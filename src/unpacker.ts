@@ -58,7 +58,12 @@ export class Unpacker {
     }
 
 
-
+    /**
+     * Unpack a gzipped stream into another stream.
+     * @param input     gzipped stream
+     * @param output    output stream
+     * @param callback  optional callback, called when output is closed
+     */
     public static unpackGZipStreamToStream(input : ReadStream,
                                            output : WriteStream,
                                            callback? : () => void ) : void {
