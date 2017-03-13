@@ -1,4 +1,6 @@
 import {AlreadyExistsError} from './utils';
+import {ReadStream} from "fs";
+import {WriteStream} from "fs";
 
 export class Unpacker {
 
@@ -39,22 +41,36 @@ export class Unpacker {
         }
 
         // unpack
-        const gunzip = Unpacker.zlib.createGunzip();
-
         if (Unpacker.fs.existsSync(outputFilePath)){
             let err = new AlreadyExistsError(outputFilePath + ' already exists');
             if (callback) { callback(err); }
         } else {
             let input = Unpacker.fs.createReadStream(gzipFilePath);
             let output = Unpacker.fs.createWriteStream(outputFilePath);
-            input.pipe(gunzip).pipe(output);
 
             // call callback if defined
             output.on("close", function () {
                 if (callback) { callback(undefined, outputFilePath); }
             });
+
+            Unpacker.unpackGZipStreamToStream(input, output);
         }
     }
+
+
+
+    public static unpackGZipStreamToStream(input : ReadStream,
+                                           output : WriteStream,
+                                           callback? : () => void ) : void {
+
+        const gunzip = Unpacker.zlib.createGunzip();
+        input.pipe(gunzip).pipe(output);
+
+        // call callback if defined
+        if (callback)   output.on("close", callback);
+
+    }
+
 
     /**
      * @deprecated not tested well yet
