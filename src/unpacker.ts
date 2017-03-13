@@ -1,4 +1,5 @@
 import {AlreadyExistsError} from './utils';
+import ReadableStream = NodeJS.ReadableStream;
 
 export class Unpacker {
 
@@ -39,22 +40,35 @@ export class Unpacker {
         }
 
         // unpack
-        const gunzip = Unpacker.zlib.createGunzip();
-
         if (Unpacker.fs.existsSync(outputFilePath)){
             let err = new AlreadyExistsError(outputFilePath + ' already exists');
             if (callback) { callback(err); }
         } else {
             let input = Unpacker.fs.createReadStream(gzipFilePath);
             let output = Unpacker.fs.createWriteStream(outputFilePath);
-            input.pipe(gunzip).pipe(output);
+
+            let decompressed = Unpacker.decompressGZipStream(input);
+            decompressed.pipe(output);
 
             // call callback if defined
             output.on("close", function () {
                 if (callback) { callback(undefined, outputFilePath); }
             });
+
         }
     }
+
+    /**
+     *
+     * Unpack a gzipped stream into another stream.
+     * @param input                 gzipped stream
+     * @returns {ReadableStream}    decompressed stream
+     */
+    public static decompressGZipStream(input : ReadableStream) : ReadableStream {
+        const gunzip = Unpacker.zlib.createGunzip();
+        return input.pipe(gunzip);
+    }
+
 
     /**
      * @deprecated not tested well yet

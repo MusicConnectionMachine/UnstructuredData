@@ -1,4 +1,6 @@
 import {AlreadyExistsError, UnsupportedProtocolError} from './utils';
+import {IncomingMessage} from "http";
+
 
 export class Downloader {
 
@@ -15,19 +17,13 @@ export class Downloader {
      * @param outDir                path to folder which the file will be downloaded to
      * @param callback              (optional) function that will be called once the file is downloaded
      */
-    public static downloadFile(fileURL : string,
-                               outDir : string,
-                               callback? : (err? : Error, filepath? : string) => void) : void {
+    public static downloadToFile(fileURL : string,
+                                 outDir : string,
+                                 callback? : (err? : Error, filepath? : string) => void) : void {
 
         let err : Error;
         let parsedURL = Downloader.url.parse(fileURL);
 
-        // check if protocol is supported
-        if (parsedURL.protocol !== 'https:' && parsedURL.protocol !== 'http:') {
-            err = new UnsupportedProtocolError(parsedURL.protocol + ' unsupported');
-            if (callback) { callback(err); }
-            return;
-        }
 
         // extract filename from url
         const filename = Downloader.path.basename(parsedURL.path);
@@ -40,19 +36,50 @@ export class Downloader {
         if (Downloader.fs.existsSync(filepath)){
             err = new AlreadyExistsError(filepath + ' already exists');
             if (callback) { callback(err); }
-        } else {
-            let outputFile = Downloader.fs.createWriteStream(filepath);
+            return;
+        }
 
-            // download file
-            if (parsedURL.protocol === 'https:') {
-                Downloader.https.get(fileURL, response => { response.pipe(outputFile); });
-            } else if (parsedURL.protocol === 'http:') {
-                Downloader.http.get(fileURL, response => { response.pipe(outputFile); });
+
+        Downloader.getResponse(fileURL, (err, resp) => {
+            if (err) {
+                // download as stream failed
+                if (callback) callback(err);
+                return;
             }
 
-            outputFile.on("close", function () {
+            // receiving response and writing to file
+            let outputFile = Downloader.fs.createWriteStream(filepath);
+            resp.pipe(outputFile);
+            outputFile.on("close", () => {
                 if (callback) { callback(undefined, filepath); }
             });
+
+        });
+    }
+
+
+    public static getResponse(fileURL : string,
+                              callback? : (err? : Error, resp? : IncomingMessage) => void) : void {
+
+        let parsedURL = Downloader.url.parse(fileURL);
+
+        // check if protocol is supported
+        if (parsedURL.protocol !== 'https:' && parsedURL.protocol !== 'http:') {
+            let err : Error = new UnsupportedProtocolError(parsedURL.protocol + ' unsupported');
+            if (callback) { callback(err); }
+            return;
         }
+
+        // download file and pipe to stream
+        if (parsedURL.protocol === 'https:') {
+            Downloader.https.get(fileURL, response => {
+                callback(undefined, response);
+            });
+        } else if (parsedURL.protocol === 'http:') {
+            Downloader.http.get(fileURL, response => {
+                callback(undefined, response);
+            });
+        }
+
     }
 }

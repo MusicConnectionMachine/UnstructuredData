@@ -60,8 +60,8 @@ export class LanguageExtractor {
             let page : WebPage = new WebPage(data);
             // write only if the web page object is in english AND really represents a web page (and not the first entry of a WET file)
 
-            let tld = page.getTLD();
-            this.isWebPageInLanguage(page, searchLanguage, tld, function(result : boolean) {
+            //let tld = page.getTLD();
+            this.isWebPageInLanguage(page, searchLanguage, function(result : boolean) {
                 if(result) {
                     console.log('writing entry #' + entryID + '!');
 
@@ -101,9 +101,10 @@ export class LanguageExtractor {
      *
      * @param page                  web page object (constructed from WARC parser data)
      * @param searchLanguage        language string
+     * @param callback
      * @returns {boolean}
      */
-    public static isWebPageInLanguage(page : WebPage, searchLanguage : string, tld : string,
+    public static isWebPageInLanguage(page : WebPage, searchLanguage : string,
                                       callback: (result : boolean) => void) {
         const content: string = page.content;
 
@@ -112,9 +113,9 @@ export class LanguageExtractor {
         const testStringEnd: number = (content.length / 2) + 250 < content.length ? (content.length / 2) + 250 : content.length;
         const testString = content.substring(testStringStart, testStringEnd);
 
-        LanguageExtractor.cld.detect(testString, { tldHint: tld}, function(err, result) {
+        LanguageExtractor.cld.detect(testString, { tldHint: page.getTLD()}, function(err, result) {
             if(err) {
-                console.log(err);
+                console.log(err + "page tld: " + page.getTLD());
                 callback(false);
             } else {
                 callback(result.reliable && result.languages[0].code == searchLanguage);
