@@ -347,6 +347,10 @@ export class TestRuns {
     }
 
 
+    /**
+     * Download and process file completely without caching on disk.
+     * The processing starts as soon as we get the first bytes from the server.
+     */
     public static testStreamedDownloadUnpackingAndProcessing() {
         console.log("Sending request... ");
 
@@ -366,15 +370,12 @@ export class TestRuns {
             decompressed.pipe(WARCParser).on('data', data => {
 
                 // getting WET entries here
-
                 let p = new WebPage(data);
                 let tld = p.getTLD();
 
-
-                // run LanguageExtractor, WordPreprocessor here
-                // run LanguageExtractor, WordPreprocessor here
-                // run LanguageExtractor, WordPreprocessor here
-
+                // run filtering here
+                // run LanguageExtractor here
+                // run WordPreprocessor here
 
                 // print only a few entries
                 if (entryID % 100 == 0) {
