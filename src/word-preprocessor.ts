@@ -86,11 +86,11 @@ export class WordPreprocessor {
 
             let hash = WordPreprocessor.stemHashes[tokenlist[i]];
 
-            if(!stems[hash]) {
+            if(!(hash in stems)) {
                 let a = new Array();
                 a.push(page);
                 stems[hash] = a;
-            } else {
+            } else if (stems.hasOwnProperty(hash)) {
                 stems[hash].push(page)
             }
         }
