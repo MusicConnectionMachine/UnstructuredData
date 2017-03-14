@@ -1,3 +1,5 @@
+import {WebPage} from "./web-page";
+import {TermSearchLoader} from "./search-term-loader";
 /**
  * Container to store the term (substring) and the positions where it can be found in the search string.
  */
@@ -84,6 +86,27 @@ export class TermSearch {
 
         if (foundPositions.length == 0) return null; // nothing found -> return null
         return new Occurrence(term, foundPositions);
+    }
+
+    public static searchTermsInStemMap(stems : { [stem : string] : Array<WebPage> }) : Array<WebPage> {
+        let positives = new Set();
+        let terms = TermSearchLoader.load('terms/dbpedia_Classical_musicians_by_instruments_and_nationality.json');
+        let stemCount = Object.keys(stems).length;
+
+        //Get each webpage that is matching a search term.
+        //O(n^3) but shouldn't matter much since this is only done once per file
+        for(let i = 0; i < terms.length; i++) {
+            for(let key in stems) {
+                if(terms[i] == key) {
+                    for(let n = 0; n < stems[key].length; n++) {
+                        stems[key][n].match = key;
+                        positives.add(stems[key][n]);
+                    }
+                }
+            }
+        }
+
+        return Array.from(positives);
     }
 
 }

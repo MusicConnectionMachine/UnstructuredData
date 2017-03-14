@@ -115,7 +115,7 @@ export class LanguageExtractor {
 
         LanguageExtractor.cld.detect(testString, { tldHint: page.getTLD()}, function(err, result) {
             if(err) {
-                console.log(err + "page tld: " + page.getTLD());
+                //console.log(err + "page tld: " + page.getTLD());
                 callback(false);
             } else {
                 callback(result.reliable && result.languages[0].code == searchLanguage);

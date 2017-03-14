@@ -17,10 +17,16 @@ export class TestRuns {
     static WARCStream = require('warc');
     //static rwStream = require("read-write-stream");
 
-    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
     static dataFolder = './data/';
-    static fileName_packed = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
-    static fileName_unpacked = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet';
+
+    //Feb 17 Crawl data which contains https://www.britannica.com/topic/Chaconne-by-Bach
+    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/'
+    static fileName_packed = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
+    static fileName_unpacked = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet';
+    //Jan 17 Crawl data
+    //static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
+    //static fileName_packed = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet.gz';
+    //static fileName_unpacked = 'CC-MAIN-20170116095119-00016-ip-10-171-10-70.ec2.internal.warc.wet';
     //endregion
 
     //region prepare environment
@@ -361,8 +367,16 @@ export class TestRuns {
             }
             console.log("start receiving and decompressing data... (starting timer)");
 
+            let totalLength = response.headers['content-length'];
+            console.log(totalLength);
+            let totalParsed = 0;
             let timeStart = new Date().getTime();
             let entryID = 0;
+            let stems = {};
+
+            response.on('data', data => {
+                totalParsed += data.length;
+            });
 
             // unpack & feed into WARC parser
             let decompressed = Unpacker.decompressGZipStream(response);
@@ -373,23 +387,40 @@ export class TestRuns {
                 let p = new WebPage(data);
                 let tld = p.getTLD();
 
-                // run filtering here
-                // run LanguageExtractor here
-                // run WordPreprocessor here
+                //Check if page is in english
+                LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
+                    if(!result) {
+                        return;
+                    }
+                    //Add stems to total stem-list
+                    WordPreprocessor.processToTotal(p.content, stems, p);
 
-                // print only a few entries
-                if (entryID % 100 == 0) {
-                    let duration = new Date().getTime() -  timeStart;
-                    console.log("entry #" + entryID
-                        + "\tTLD: " + tld
-                        + " \t\ttime passed: " + duration + " ms"
-                        + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms");
+                    // print only a few entries
+                    if (entryID % 20 == 0) {
+                        let duration = new Date().getTime() -  timeStart;
+                        console.log("entry #" + entryID
+                            + "\tProgress: " + ((100 * totalParsed) / totalLength).toFixed(2) + "%"
+                            + "\tTLD: " + tld
+                            + "\tURI: " + p.getURI()
+                            + "\t\ttime passed: " + duration + " ms"
+                            + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms");
+                    }
+                    entryID++;
+                });
+            }).on('end', () => {
+                let durationUntilTermSearch = new Date().getTime() - timeStart;
+                //All documents for this file have been parsed, now match terms to stems
+                console.log('Now looking for matches with the search terms..');
+                let pageList = TermSearch.searchTermsInStemMap(stems);
+                console.log('Results:');
+                for(let i = 0; i < pageList.length; i++) {
+                    console.log('\'' + pageList[i].match + '\': ' + pageList[i].getURI());
                 }
-                entryID++;
+                let durationUntilEnd = new Date().getTime() - timeStart;
 
-
+                console.log('Finished. Took ' + durationUntilTermSearch + 'ms for parsing and downloading pages' +
+                    ' and ' + durationUntilEnd + 'ms in total');
             });
-
         });
     }
 
