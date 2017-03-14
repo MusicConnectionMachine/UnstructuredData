@@ -12,6 +12,10 @@ export class LanguageExtractor {
     static cld = require('cld');
     static WARCStream = require('warc');
 
+    //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
+    static franc = require('franc');
+    static langs = require('langs');
+
 
     /**
      * This function reads all web page entries from the WET file on "wetDataFilePath".
@@ -109,14 +113,17 @@ export class LanguageExtractor {
         const content: string = page.content;
 
         // Search from the middle of the website
-        const testStringStart: number = (content.length / 2) - 250 > 0 ? (content.length / 2) - 250 : 0;
-        const testStringEnd: number = (content.length / 2) + 250 < content.length ? (content.length / 2) + 250 : content.length;
-        const testString = content.substring(testStringStart, testStringEnd);
+        const chunkSize = 300;
+        const testStringBeginning: number = chunkSize > content.length ? content.length : chunkSize;
+        const testStringEnding: number = content.length - chunkSize > 0 ? content.length - chunkSize : 0;
+        const testStringMiddleStart: number = (content.length / 2) - chunkSize > 0 ? (content.length / 2) - chunkSize : 0;
+        const testStringMiddleEnd: number = (content.length / 2) + chunkSize < content.length ? (content.length / 2) + chunkSize : content.length;
+        const testString = content.substring(0,testStringBeginning) + content.substring(testStringMiddleStart, testStringMiddleEnd) + content.substring(testStringEnding, content.length);
 
-        LanguageExtractor.cld.detect(testString, { tldHint: page.getTLD()}, function(err, result) {
+        LanguageExtractor.cld.detect(testString, { isHTML: false,tldHint: page.getTLD()}, function(err, result) {
             if(err) {
-                console.log(err + "page tld: " + page.getTLD());
-                callback(false);
+                //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
+                callback(LanguageExtractor.franc(testString) == LanguageExtractor.langs.where('1',searchLanguage)['2']);
             } else {
                 callback(result.reliable && result.languages[0].code == searchLanguage);
             }
