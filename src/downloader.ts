@@ -46,7 +46,13 @@ export class Downloader {
                 if (callback) callback(err);
                 return;
             }
-
+            // printing out download progress
+            let totalLength = resp.headers['content-length'];
+            let totalDownloaded = 0;
+            resp.on('data', (chunk) => {
+                totalDownloaded += chunk.length;
+                console.log('Downloaded at ' + ((100 * totalDownloaded) / totalLength).toFixed(2) + ' percent.');
+            });
             // receiving response and writing to file
             let outputFile = Downloader.fs.createWriteStream(filepath);
             resp.pipe(outputFile);

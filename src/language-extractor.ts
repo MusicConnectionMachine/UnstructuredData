@@ -122,6 +122,7 @@ export class LanguageExtractor {
 
         LanguageExtractor.cld.detect(testString, { isHTML: false,tldHint: page.getTLD()}, function(err, result) {
             if(err) {
+                //console.log(err + "page tld: " + page.getTLD());
                 //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
                 callback(LanguageExtractor.franc(testString) == LanguageExtractor.langs.where('1',searchLanguage)['2']);
             } else {

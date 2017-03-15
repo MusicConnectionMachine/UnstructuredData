@@ -1,3 +1,4 @@
+import {WebPage} from "./web-page";
 export class WordPreprocessor {
 
     static snowball = require('node-snowball');
@@ -7,17 +8,21 @@ export class WordPreprocessor {
 
 
     public static process(content : string) : Object {
-        let tokens = WordPreprocessor.tokenize(content);
+        let tokens = WordPreprocessor.tokenizeCount(content);
         return WordPreprocessor.stem(tokens);
     }
 
+    public static processToTotal(content : string, stems : { [stem : string] : Array<WebPage> }, page : WebPage) {
+        let tokens = WordPreprocessor.tokenizeDistinct(content);
+        WordPreprocessor.stemToTotal(tokens, stems, page);
+    }
 
     /**
      * Tokenizes the given string.
      * @param content
      * @returns {{}} keys: found tokens, values: occurences of the token.
      */
-    private static tokenize(content : string) : Object {
+    private static tokenizeCount(content : string) : Object {
         let tokens = WordPreprocessor.tokenizer.tokenize(content);
         let occurrences = {};
 
@@ -29,7 +34,15 @@ export class WordPreprocessor {
         return occurrences;
     }
 
-
+    private static tokenizeDistinct(content : string) : Array<any> {
+        let tokens = WordPreprocessor.tokenizer.tokenize(content);
+        /*
+        Efficient way to remove duplicates, requires ES6
+        Source: http://stackoverflow.com/questions/9229645/remove-duplicates-from-javascript-array
+         */
+        let unique = Array.from(new Set(tokens));
+        return unique;
+    }
     /**
      * Stems tokens in given tokenlist and creates new Object with stems as keys and summed up occurences
      * as values. If two tokens have the same stem, the stems entry will contain the sum of both their
@@ -38,7 +51,7 @@ export class WordPreprocessor {
      * @param tokenlist Object containing tokens as keys and the number of occurences as values: {'terminator': 2}
      * @returns {{}} Object containing stemmed tokens as keys and occurences as values.
      */
-    private static stem(tokenlist : Object) : Object{
+    public static stem(tokenlist : Object) : Object{
         let stems = {};
 
         for(let token in tokenlist) {
@@ -61,5 +74,25 @@ export class WordPreprocessor {
         }
 
         return stems;
+    }
+
+    private static stemToTotal(tokenlist : Array<any>, stems : { [stem : string] : Array<WebPage> }, page : WebPage) {
+
+        for(let i = 0; i < tokenlist.length; i++) {
+
+            if(!(tokenlist[i] in WordPreprocessor.stemHashes)) {
+                WordPreprocessor.stemHashes[tokenlist[i]] = WordPreprocessor.snowball.stemword(tokenlist[i], 'english');
+            }
+
+            let hash = WordPreprocessor.stemHashes[tokenlist[i]];
+
+            if(!(hash in stems)) {
+                let a = new Array();
+                a.push(page);
+                stems[hash] = a;
+            } else if (stems.hasOwnProperty(hash)) {
+                stems[hash].push(page)
+            }
+        }
     }
 }
