@@ -3,7 +3,7 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch } from "./term-search";
+import {TermSearch, Occurrence} from "./term-search";
 
 /**
  * Playground for testing.
@@ -161,7 +161,7 @@ export class TestRuns {
 
             let tld = p.getTLD();
 
-            LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function(result : boolean) {
                 console.log("Entry #" + entryID
                     + "\tTLD: "+ tld + " "
                     + "\tIsEnglish: " + result + " "
@@ -393,7 +393,63 @@ export class TestRuns {
     }
 
     public static createFilteredSampleDataForGroups3_4() {
+        console.log("Creating sample data for groups 3 & 4");
+        console.log("Sending request... ");
 
+        // some hardcoded composers here
+        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
+            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
+            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
+            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
+            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
+            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
+            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
+            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
+            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
+
+        Downloader.getResponse(
+            TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & feed into WARC parser
+            let decompressed = Unpacker.decompressGZipStream(response);
+            const WARCParser = new TestRuns.WARCStream();
+            decompressed.pipe(WARCParser).on('data', data => {
+
+                // getting WET entries here
+                let p = new WebPage(data);
+
+                //Check if page is in english
+                LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function (result: boolean) {
+                    if (!result)  return;
+
+                    // search for terms
+                    let pagePriority = 0;
+                    let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
+                    for (let occ of occs) {
+                        pagePriority += occ.positions.length;
+                    }
+
+                    // print to console
+                    if (pagePriority > 0) {
+                        let str = "found ";
+                        for (let occ of occs) {
+                            str += occ.term + " x" + occ.positions.length + ", ";
+                        }
+                        console.log(str.substring(0, str.length - 2) + " on " + p.getURI());
+                    }
+
+
+                });
+            });
+
+
+
+
+        });
     }
 
 }

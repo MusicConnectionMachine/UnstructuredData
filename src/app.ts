@@ -13,7 +13,8 @@ import {TestRuns} from "./test-runs";
 //TestRuns.testTLD();
 //TestRuns.testLanguageExtractor_super_slow();
 //TestRuns.testPreProcessingChain();
-TestRuns.testExtractAllEnglishPages();
+//TestRuns.testExtractAllEnglishPages();
+TestRuns.createFilteredSampleDataForGroups3_4();
 
 // other tests
 //TestRuns.testTermSearch();
