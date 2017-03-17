@@ -3,7 +3,7 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch } from "./term-search";
+import {TermSearch, Occurrence} from "./term-search";
 
 /**
  * Playground for testing.
@@ -20,8 +20,8 @@ export class TestRuns {
     static dataFolder = './data/';
 
     //Feb 17 Crawl data which contains https://www.britannica.com/topic/Chaconne-by-Bach
-    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/'
-    static fileName_packed = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
+    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/';
+    static fileName_packed = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
     static fileName_unpacked = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet';
     //Jan 17 Crawl data
     //static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
@@ -134,65 +134,11 @@ export class TestRuns {
     };
     //endregion
 
-    /**
-     * Load already downloaded and unpacked file, feed it to LanguageExtractor
-     * that will create another file with pages in english. This is super slow!
-     *
-     * After ages, the new file is written to the disk and SHOULD be read again,
-     * fed to the WARC parser and processed with WordPreprocessor.
-     * HOWEVER, THIS IS NOT HAPPENING. Probably problems with callbacks...
-     *
-     * Anyway, a better scenario is presented below this test run.
-     */
-    //region LanguageExtractor - super slow
-    static testLanguageExtractor_super_slow() {
-
-        TestRuns.prepareEnvironment();
-        let entryID = 0;
-
-        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
-
-        const WARCParser = new TestRuns.WARCStream();
-        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
-
-        // Extract english pages
-        LanguageExtractor.extractWETPages(filepath, 'eng', (err,filepath) => {
-
-            // this callback is behaving strangely!
-            // but it's too late in the night to debug :P
-
-            if (err) {
-                console.log(err);
-                return;
-            } else {
-                console.log("English pages extraction complete!");
-            }
-
-            // pages were extracted and written to ANOTHER WET file
-            // open file as stream and pipe it to the warc parser
-            TestRuns.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
-
-                // log content of each entry in console
-                let p = new WebPage(data);
-                let stems = WordPreprocessor.process(p.content);
-
-                console.log("\n\n---------------------\nTLD: "+ p.getTLD() + "\n---------------------");
-                console.log(stems);
-
-                entryID++;
-                if (entryID > 100) process.exit();
-            }).on('error', function(err) {
-                console.log(err);
-            });
-        });
-    }
-    //endregion
-
 
     /**
      * Load already downloaded and unpacked WET file, feed it to WARC parser, create a WebPage
      * object from each entry and filter the results with LanguageExtractor directly. No temporary
-     * buffering on the disk -> runs slightly faster than the sad example above.
+     * buffering on the disk.
      */
     //region LanguageExtractor - slightly better
     static testLanguageExtractor_slightly_better() {
@@ -215,7 +161,7 @@ export class TestRuns {
 
             let tld = p.getTLD();
 
-            LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function(result : boolean) {
                 console.log("Entry #" + entryID
                     + "\tTLD: "+ tld + " "
                     + "\tIsEnglish: " + result + " "
@@ -338,7 +284,9 @@ export class TestRuns {
      * Only the unpacked result is written on disk. No processing.
      */
     public static testStreamedDownloadAndUnpacking() {
-        Downloader.getResponse(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+        let filename = TestRuns.crawlBaseUrl + TestRuns.fileName_packed;
+        console.log("downloading and unpacking " + filename);
+        Downloader.getResponse(filename, (err, response) => {
             if (err) {
                 console.log(err);
                 return;
@@ -421,6 +369,106 @@ export class TestRuns {
                 console.log('Finished. Took ' + durationUntilTermSearch + 'ms for parsing and downloading pages' +
                     ' and ' + durationUntilEnd + 'ms in total');
             });
+        });
+    }
+
+
+    /**
+     * Extract all english pages from a file and write them into another.
+     */
+    public static testExtractAllEnglishPages() {
+        TestRuns.prepareEnvironment();
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
+
+        console.log("extracting english only pages from " + filepath);
+        // Extract english pages
+        LanguageExtractor.extractWETPages(filepath, LanguageExtractor.ENGLISH_LANG_CODE, (err,filepath) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("done!");
+            }
+        });
+    }
+
+    public static createFilteredSampleDataForGroups3_4() {
+        console.log("Creating sample data for groups 3 & 4");
+        console.log("Sending request... ");
+
+        // some hardcoded composers here
+        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
+            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
+            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
+            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
+            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
+            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
+            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
+            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
+            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
+
+        let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        let pagesFound = 0;
+
+        Downloader.getResponse(
+            TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & feed into WARC parser
+            let decompressed = Unpacker.decompressGZipStream(response);
+            const WARCParser = new TestRuns.WARCStream();
+            decompressed.pipe(WARCParser).on('data', data => {
+
+                // getting WET entries here
+                let p = new WebPage(data);
+
+                //Check if page is in english
+                LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function (result: boolean) {
+                    if (!result)  return;
+
+                    // search for terms
+                    let totalOccs = 0;
+                    let distinctOccs = 0;
+                    let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
+                    for (let occ of occs) {
+                        distinctOccs++;
+                        totalOccs += occ.positions.length;
+                    }
+
+
+                    // print to console
+                    if (totalOccs > 0) {
+                        let str = "found ";
+                        for (let occ of occs) {
+                            str += occ.term + " x" + occ.positions.length + ", ";
+                        }
+                        console.log(str.substring(0, str.length - 2) + "\t\t\t on " + p.getURI());
+                    }
+
+                    // if page is good, print to file
+                    if (distinctOccs > 4 && totalOccs > 9) {
+                        // this page is considered as good
+                        writeStream.write(p.toString());
+
+                        pagesFound++;
+                        if (pagesFound > 100) {
+                            writeStream.close();
+                            console.log("found enough good pages!");
+                            process.exit(0);
+                        }
+                    }
+
+
+                });
+            });
+
+
+
+
         });
     }
 

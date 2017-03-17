@@ -16,6 +16,9 @@ export class LanguageExtractor {
     static franc = require('franc');
     static langs = require('langs');
 
+    // CLD and FRANC use different codes for english, when calling isWebPageInLanguage() use this one:
+    public static ENGLISH_LANG_CODE = 'en';
+
 
     /**
      * This function reads all web page entries from the WET file on "wetDataFilePath".
@@ -23,7 +26,7 @@ export class LanguageExtractor {
      * All WebPage objects that have the specified language are written into another WET file
      * Output file name is generated from the input file name.
      *
-     * This is super slow! :P
+     * This function is slow and should be used only to generate sample data.
      *
      * @param wetDataFilePath   path to the input WET file
      * @param searchLanguage    language string
@@ -67,17 +70,11 @@ export class LanguageExtractor {
             //let tld = page.getTLD();
             this.isWebPageInLanguage(page, searchLanguage, function(result : boolean) {
                 if(result) {
-                    console.log('writing entry #' + entryID + '!');
-
-                    writeStream.write(data.protocol.toString('utf8') + '\n');
-                    for (let property in data.headers) {
-                        writeStream.write(property + ': ' + data.headers[property] + '\n');
-                    }
-                    writeStream.write('\n' + page.content + '\n');
+                    //console.log('writing entry #' + entryID + '!');
+                    writeStream.write(page.toString());
                 } else {
-                    console.log('skipping entry #' + entryID + '!');
+                    //console.log('skipping entry #' + entryID + '!');
                 }
-                entryID++;
             });
 
             entryID++;
@@ -104,9 +101,8 @@ export class LanguageExtractor {
      * Filter function. Returns true if the specified web page is in the specified language.
      *
      * @param page                  web page object (constructed from WARC parser data)
-     * @param searchLanguage        language string
-     * @param callback
-     * @returns {boolean}
+     * @param searchLanguage        language string, use "LanguageExtractor.ENGLISH_LANG_CODE" for english
+     * @param callback              will called with TRUE if the web page is in the specified language
      */
     public static isWebPageInLanguage(page : WebPage, searchLanguage : string,
                                       callback: (result : boolean) => void) {
