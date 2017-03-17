@@ -1,7 +1,7 @@
 export class WebPage {
 
     public protocol : string;
-    public headers : Object;
+    public headers : {[property : string] : string};
     public content : string;
     public match : string; //temporary, remove once we have a better algorithm
     // more coming
