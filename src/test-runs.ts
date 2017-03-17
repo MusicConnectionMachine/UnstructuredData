@@ -407,6 +407,10 @@ export class TestRuns {
             'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
             'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
 
+        let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        let pagesFound = 0;
+
         Downloader.getResponse(
             TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
             if (err) {
@@ -427,19 +431,35 @@ export class TestRuns {
                     if (!result)  return;
 
                     // search for terms
-                    let pagePriority = 0;
+                    let totalOccs = 0;
+                    let distinctOccs = 0;
                     let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
                     for (let occ of occs) {
-                        pagePriority += occ.positions.length;
+                        distinctOccs++;
+                        totalOccs += occ.positions.length;
                     }
 
+
                     // print to console
-                    if (pagePriority > 0) {
+                    if (totalOccs > 0) {
                         let str = "found ";
                         for (let occ of occs) {
                             str += occ.term + " x" + occ.positions.length + ", ";
                         }
-                        console.log(str.substring(0, str.length - 2) + " on " + p.getURI());
+                        console.log(str.substring(0, str.length - 2) + "\t\t\t on " + p.getURI());
+                    }
+
+                    // if page is good, print to file
+                    if (distinctOccs > 4 && totalOccs > 9) {
+                        // this page is considered as good
+                        writeStream.write(p.toString());
+
+                        pagesFound++;
+                        if (pagesFound > 100) {
+                            writeStream.close();
+                            console.log("found enough good pages!");
+                            process.exit(0);
+                        }
                     }
 
 
