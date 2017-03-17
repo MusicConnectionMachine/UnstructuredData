@@ -134,65 +134,11 @@ export class TestRuns {
     };
     //endregion
 
-    /**
-     * Load already downloaded and unpacked file, feed it to LanguageExtractor
-     * that will create another file with pages in english. This is super slow!
-     *
-     * After ages, the new file is written to the disk and SHOULD be read again,
-     * fed to the WARC parser and processed with WordPreprocessor.
-     * HOWEVER, THIS IS NOT HAPPENING. Probably problems with callbacks...
-     *
-     * Anyway, a better scenario is presented below this test run.
-     */
-    //region LanguageExtractor - super slow
-    static testLanguageExtractor_super_slow() {
-
-        TestRuns.prepareEnvironment();
-        let entryID = 0;
-
-        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
-
-        const WARCParser = new TestRuns.WARCStream();
-        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
-
-        // Extract english pages
-        LanguageExtractor.extractWETPages(filepath, 'eng', (err,filepath) => {
-
-            // this callback is behaving strangely!
-            // but it's too late in the night to debug :P
-
-            if (err) {
-                console.log(err);
-                return;
-            } else {
-                console.log("English pages extraction complete!");
-            }
-
-            // pages were extracted and written to ANOTHER WET file
-            // open file as stream and pipe it to the warc parser
-            TestRuns.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
-
-                // log content of each entry in console
-                let p = new WebPage(data);
-                let stems = WordPreprocessor.process(p.content);
-
-                console.log("\n\n---------------------\nTLD: "+ p.getTLD() + "\n---------------------");
-                console.log(stems);
-
-                entryID++;
-                if (entryID > 100) process.exit();
-            }).on('error', function(err) {
-                console.log(err);
-            });
-        });
-    }
-    //endregion
-
 
     /**
      * Load already downloaded and unpacked WET file, feed it to WARC parser, create a WebPage
      * object from each entry and filter the results with LanguageExtractor directly. No temporary
-     * buffering on the disk -> runs slightly faster than the sad example above.
+     * buffering on the disk.
      */
     //region LanguageExtractor - slightly better
     static testLanguageExtractor_slightly_better() {
@@ -427,7 +373,10 @@ export class TestRuns {
     }
 
 
-    public static testLanguageExtractor_ExtractWETPages() {
+    /**
+     * Extract all english pages from a file and write them into another.
+     */
+    public static testExtractAllEnglishPages() {
         TestRuns.prepareEnvironment();
         // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
         const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;

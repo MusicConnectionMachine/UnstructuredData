@@ -26,7 +26,7 @@ export class LanguageExtractor {
      * All WebPage objects that have the specified language are written into another WET file
      * Output file name is generated from the input file name.
      *
-     * This is super slow! :P
+     * This function is slow and should be used only to generate sample data.
      *
      * @param wetDataFilePath   path to the input WET file
      * @param searchLanguage    language string
@@ -101,9 +101,8 @@ export class LanguageExtractor {
      * Filter function. Returns true if the specified web page is in the specified language.
      *
      * @param page                  web page object (constructed from WARC parser data)
-     * @param searchLanguage        language string
-     * @param callback
-     * @returns {boolean}
+     * @param searchLanguage        language string, use "LanguageExtractor.ENGLISH_LANG_CODE" for english
+     * @param callback              will called with TRUE if the web page is in the specified language
      */
     public static isWebPageInLanguage(page : WebPage, searchLanguage : string,
                                       callback: (result : boolean) => void) {
