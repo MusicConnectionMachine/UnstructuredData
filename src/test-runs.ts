@@ -20,8 +20,8 @@ export class TestRuns {
     static dataFolder = './data/';
 
     //Feb 17 Crawl data which contains https://www.britannica.com/topic/Chaconne-by-Bach
-    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/'
-    static fileName_packed = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
+    static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/';
+    static fileName_packed = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
     static fileName_unpacked = 'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet';
     //Jan 17 Crawl data
     //static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560279169.4/wet/';
@@ -338,7 +338,9 @@ export class TestRuns {
      * Only the unpacked result is written on disk. No processing.
      */
     public static testStreamedDownloadAndUnpacking() {
-        Downloader.getResponse(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+        let filename = TestRuns.crawlBaseUrl + TestRuns.fileName_packed;
+        console.log("downloading and unpacking " + filename);
+        Downloader.getResponse(filename, (err, response) => {
             if (err) {
                 console.log(err);
                 return;
@@ -422,6 +424,27 @@ export class TestRuns {
                     ' and ' + durationUntilEnd + 'ms in total');
             });
         });
+    }
+
+
+    public static testLanguageExtractor_ExtractWETPages() {
+        TestRuns.prepareEnvironment();
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
+
+        console.log("extracting english only pages from " + filepath);
+        // Extract english pages
+        LanguageExtractor.extractWETPages(filepath, LanguageExtractor.ENGLISH_LANG_CODE, (err,filepath) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("done!");
+            }
+        });
+    }
+
+    public static createFilteredSampleDataForGroups3_4() {
+
     }
 
 }

@@ -1,7 +1,7 @@
 export class WebPage {
 
     public protocol : string;
-    public headers : object;
+    public headers : any;
     public content : string;
     public match : string; //temporary, remove once we have a better algorithm
     // more coming
@@ -55,6 +55,22 @@ export class WebPage {
         // split host & return the last part = TLD
         let hostParts = trgURI.split(".");
         return hostParts[hostParts.length - 1];
+    }
+
+    /**
+     * Converts this web page back to its WARC representation.
+     * @returns {string}    protocol \n properties \n\n content
+     */
+    public toString() : string {
+        // protocol
+        let str : string = this.protocol + '\n';
+        // properties
+        for (let property in this.headers) {
+            str += property + ': ' + this.headers[property] + '\n';
+        }
+        // content
+        str += '\n' + this.content + '\n\n';
+        return str;
     }
 
 

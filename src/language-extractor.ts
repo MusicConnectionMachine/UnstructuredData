@@ -16,6 +16,9 @@ export class LanguageExtractor {
     static franc = require('franc');
     static langs = require('langs');
 
+    // CLD and FRANC use different codes for english, when calling isWebPageInLanguage() use this one:
+    public static ENGLISH_LANG_CODE = 'en';
+
 
     /**
      * This function reads all web page entries from the WET file on "wetDataFilePath".
@@ -67,17 +70,11 @@ export class LanguageExtractor {
             //let tld = page.getTLD();
             this.isWebPageInLanguage(page, searchLanguage, function(result : boolean) {
                 if(result) {
-                    console.log('writing entry #' + entryID + '!');
-
-                    writeStream.write(data.protocol.toString('utf8') + '\n');
-                    for (let property in data.headers) {
-                        writeStream.write(property + ': ' + data.headers[property] + '\n');
-                    }
-                    writeStream.write('\n' + page.content + '\n');
+                    //console.log('writing entry #' + entryID + '!');
+                    writeStream.write(page.toString());
                 } else {
-                    console.log('skipping entry #' + entryID + '!');
+                    //console.log('skipping entry #' + entryID + '!');
                 }
-                entryID++;
             });
 
             entryID++;
