@@ -1,25 +1,31 @@
+// TEST RUNS
+// Don't run multiple runs simultaneously!
 import {TestRuns} from "./test-runs";
+
+// Run one of these to download and unpack file:
+// TestRuns.downloadUnpack_sequential();
+// TestRuns.downloadUnpack_streamed();
+
+
+// Run one of these to create a new file with filtered data:
+// TestRuns.testExtractAllEnglishPages();   // WET file must already be downloaded!
+// TestRuns.createFilteredSampleDataForGroups3_4();
+
+
+// These runs require the WET file to be already downloaded and unpacked:
+// TestRuns.testTLD();
+// TestRuns.testLanguageExtractor();
+// TestRuns.testPreProcessingChain();
+
+
+// Most advanced test run so far:
+TestRuns.testStreamedDownloadUnpackingAndProcessing();
+
+
+
+// UNIT TESTS
 import {PrefixTreeTest} from "./tests/test-prefix-tree";
 import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
-// don't run multiple runAllTests runs simultaneously!
-
-// run one of these to download and save file
-//TestRuns.testDownloadUnpackingAndStemming();
-//TestRuns.testStreamedDownloadAndUnpacking();
-
-// run this to download and process directly (no saving)
-//TestRuns.testStreamedDownloadUnpackingAndProcessing();
-
-// there runs assume that the file is already downloaded -> no waiting
-//TestRuns.testTLD();
-//TestRuns.testLanguageExtractor_super_slow();
-//TestRuns.testPreProcessingChain();
-//TestRuns.testExtractAllEnglishPages();
-//TestRuns.createFilteredSampleDataForGroups3_4();
-
-// other tests
-//TestRuns.runAllTests();
-
-PrefixTreeTest.runAllTests();
-NaiveTermSearchTest.runAllTests();
+//PrefixTreeTest.runAllTests();
+//NaiveTermSearchTest.runAllTests();
