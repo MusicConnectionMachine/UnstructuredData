@@ -12,7 +12,7 @@ export class LanguageExtractor {
     static cld = require('cld');
     static WARCStream = require('warc');
 
-    //On the runAllTests data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
+    //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
     static franc = require('franc');
     static langs = require('langs');
 
@@ -119,7 +119,7 @@ export class LanguageExtractor {
         LanguageExtractor.cld.detect(testString, { isHTML: false,tldHint: page.getTLD()}, function(err, result) {
             if(err) {
                 //console.log(err + "page tld: " + page.getTLD());
-                //On the runAllTests data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
+                //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )
                 callback(LanguageExtractor.franc(testString) == LanguageExtractor.langs.where('1',searchLanguage)['2']);
             } else {
                 callback(result.reliable && result.languages[0].code == searchLanguage);
