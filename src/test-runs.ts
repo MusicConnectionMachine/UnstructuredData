@@ -3,7 +3,8 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./web-page";
 import { LanguageExtractor } from "./language-extractor";
-import {TermSearch, Occurrence} from "./term-search";
+import { TermSearch, Occurrence } from "./term-search";
+import { BloomFilter } from "./bloom-filter";
 
 /**
  * Playground for testing.
@@ -470,6 +471,17 @@ export class TestRuns {
 
 
         });
+    }
+
+    public static testBloomFilter() {
+        let filter = new BloomFilter();
+        let text = "Some not so random text I didn't came up with...";
+        let terms = ["so", "totally", "not", "random", "at", "all"];
+        filter.fromText(text);
+        let contains = filter.containsTerms(terms);
+        console.log(text);
+        console.log(terms);
+        console.log(contains);
     }
 
 }
