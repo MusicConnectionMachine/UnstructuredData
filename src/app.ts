@@ -1,7 +1,7 @@
 import {TestRuns} from "./test-runs";
 import {PrefixTreeTest} from "./prefix-tree-tests";
 
-// don't run multiple test runs simultaneously!
+// don't run multiple runAllTests runs simultaneously!
 
 // run one of these to download and save file
 //TestRuns.testDownloadUnpackingAndStemming();
@@ -20,4 +20,4 @@ import {PrefixTreeTest} from "./prefix-tree-tests";
 // other tests
 //TestRuns.testTermSearch();
 
-PrefixTreeTest.test();
+PrefixTreeTest.runAllTests();
