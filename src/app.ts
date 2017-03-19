@@ -14,7 +14,7 @@ import {TestRuns} from "./test-runs";
 //TestRuns.testLanguageExtractor_super_slow();
 //TestRuns.testPreProcessingChain();
 //TestRuns.testExtractAllEnglishPages();
-TestRuns.createFilteredSampleDataForGroups3_4();
+TestRuns.testBloomFilter();
 
 // other tests
 //TestRuns.testTermSearch();
