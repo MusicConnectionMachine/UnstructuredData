@@ -1,5 +1,6 @@
 import {TestRuns} from "./test-runs";
-import {PrefixTreeTest} from "./prefix-tree-tests";
+import {PrefixTreeTest} from "./tests/test-prefix-tree";
+import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
 // don't run multiple runAllTests runs simultaneously!
 
@@ -18,6 +19,7 @@ import {PrefixTreeTest} from "./prefix-tree-tests";
 //TestRuns.createFilteredSampleDataForGroups3_4();
 
 // other tests
-//TestRuns.testTermSearch();
+//TestRuns.runAllTests();
 
 PrefixTreeTest.runAllTests();
+NaiveTermSearchTest.runAllTests();

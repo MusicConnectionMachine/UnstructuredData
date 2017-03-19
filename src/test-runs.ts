@@ -219,64 +219,6 @@ export class TestRuns {
     //endregion
 
 
-    /**
-     * Some hardcoded tests for the TermSearch.searchTermsInString(...)
-     */
-    //region testTermSearch
-    public static testTermSearch() : void {
-
-        let searchString : string = "aabbccddAABBCCDD";
-        let terms = ["aa", "bb", "bCcD", "A"];
-        let caseSensitive = false;
-
-        console.log("Testing case sensitive = " + caseSensitive);
-        let occs = TermSearch.searchTermsInString(searchString, terms, caseSensitive);
-        for (let occ of occs) {
-            let expected : string;
-            let result = JSON.stringify(occ.positions);
-
-            if ( occ.term == "aa") expected = JSON.stringify( [0, 8] );
-            if ( occ.term == "bb" ) expected = JSON.stringify( [2, 10] );
-            if ( occ.term == "bCcD" ) expected = JSON.stringify( [3, 11] );
-            if ( occ.term == "A" ) expected = JSON.stringify( [0, 1, 8, 9] );
-
-            if (result !== expected) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            } else {
-                console.log("testTermSearch works for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            }
-        }
-
-        caseSensitive = true;
-        console.log("\nTesting case sensitive = " + caseSensitive);
-        occs = TermSearch.searchTermsInString(searchString, terms, caseSensitive);
-        for (let occ of occs) {
-            let expected : string;
-            let result = JSON.stringify(occ.positions);
-
-            if ( occ.term == "aa") expected = JSON.stringify( [0] );
-            if ( occ.term == "bb" ) expected = JSON.stringify( [2] );
-            if ( occ.term == "A" ) expected = JSON.stringify( [8, 9] );
-
-            if (result !== expected) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            } else {
-                console.log("testTermSearch works for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            }
-
-            if ( occ.term == "bCcD" ) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> No occurrence object should be created for this term!");
-
-            }
-        }
-    }
-
-    //endregion
 
 
     /**

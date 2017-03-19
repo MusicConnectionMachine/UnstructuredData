@@ -3,30 +3,24 @@
  * terms in large strings. The search is not case sensitive.
  * Expected runtime: O(N * M) where N is the length of the string and M is the length of the longest term.
  *
- * >>>>>>>>>> WARNING, special case: term A is a prefix of term B. <<<<<<<<<<
- * Example:     A = "mozart"
- *              B = "mozartOverlord2000"
- *              string = "xx_mozart_xx"
- *
- * Case 1:      tree.add(A);    tree.add(B);    (B overrides A)
- *              tree.matchAtLeastOneTerm(string) == false!  B is not inside the string!
- *
- * Case 2:      tree.add(B);    tree.add(A);    (A overrides B)
- *              tree.matchAtLeastOneTerm(string) == true!  A is inside the string
- *
- * Best practice: do not use terms that are a prefix of another term.
+ * Special case: term A is a prefix of term B.
+ * In this case B will not be added to the tree.
+ * Reason: A would be replaced by B
  *
  *
- * Yes, I'm aware that there are npm packages for similar things like https://www.npmjs.com/package/trie-prefix-tree.
+ * I'm aware that there are npm packages for similar things like https://www.npmjs.com/package/trie-prefix-tree.
  * However, we have to maximize performance and remove any overhead that third-party packages might have (to provide
  * more functionality that is not needed here).
  */
 export class PrefixTree {
     private root : PTElement;
 
+    /**
+     * Create a PrefixTree and add initialize it with a set of terms (optional).
+     * @param terms
+     */
     constructor(terms? : string[]) {
-
-        this.root = new PTNode(); // not a leaf! we do not match any string at the beginning!
+        this.root = new PTNode(); // not a leaf! we do not want to match any string!
 
         if (terms) { // add provided terms if any
             for (let term of terms) {
@@ -35,12 +29,20 @@ export class PrefixTree {
         }
     }
 
-
+    /**
+     * Add a new term to this tree.
+     * @param term
+     */
     public addTermToTree(term : string) {
         this.root = this.root.addTerm(term.toLowerCase());
     }
 
 
+    /**
+     * Checks it the string contains at least one term.
+     * @param searchString
+     * @returns {boolean}
+     */
     public matchAtLeastOneTerm(searchString : string) : boolean {
 
         for (let position = 0; position < searchString.length; position++) {
@@ -56,29 +58,42 @@ export class PrefixTree {
         return "PrefixTree: { " + this.root.toString() + " }";
     }
 
-
 }
 
+/**
+ * Interface for all internal prefix tree elements: nodes and leafs
+ */
 export interface PTElement {
 
+    /**
+     * Adds a term into the tree structure. Does nothing on leafs.
+     * @param term
+     */
     addTerm(term : string) : PTElement;
 
+    /**
+     * Try to find any terms contained in the (sub-)tree structure in the search string at specified position.
+     * @param searchStr  string to search
+     * @param searchPos  position (index), position of the first character = 0
+     */
     match(searchStr : string, searchPos : number) : boolean;
 
 }
 
 /**
- * Leafs are created at positions in the PT where the added terms end and match everything.
- * When adding new terms to a leaf, it is replaced by a node that matches that terms.
+ * Leafs mark the end of a term in the tree structure. Leafs match everything.
+ *
+ * Adding new terms to a leaf is not possible. Otherwise a short term would be replaced by a longer one.
+ * Example:     tree.add("mozart");
+ *              tree.add("mozartOverlord2000"); // this will not be added!!
+ *                                              // otherwise tree.matchAtLeastOneTerm("xx_mozart_xx") == false!
+ *                                              // "mozartOverlord2000" is not inside the string!
  */
 class PTLeaf implements PTElement {
 
     addTerm(term: string): PTElement {
-        if (term.length == 0) return this; // already a leaf
-
-        let node = new PTNode();
-        node.addTerm(term);
-        return node;
+        // leafs do no allow adding terms
+        return this;
     }
 
     match(searchStr : string, searchPos : number): boolean {
@@ -88,10 +103,14 @@ class PTLeaf implements PTElement {
     public toString() : string {
         return ".";
     }
-
-
 }
 
+
+/**
+ * Nodes use single characters as keys that point to next prefix tree elements.
+ * If an empty string is added to a node, that node is replaced with a leaf.
+ * Empty strings mark the ending of a term.
+ */
 class PTNode implements PTElement {
 
     addTerm(term: string): PTElement {
@@ -135,7 +154,6 @@ class PTNode implements PTElement {
         for (let key in this) {
             result += key + "(" + this[key].toString() + "); ";
         }
-
 
         return result.substring(0, result.length - 2);
     }

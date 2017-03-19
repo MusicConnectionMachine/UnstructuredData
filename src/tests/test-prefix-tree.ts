@@ -1,11 +1,11 @@
-import {PrefixTree} from "./prefix-tree";
+import {PrefixTree} from "../prefix-tree";
 
 export class PrefixTreeTest {
 
     public static runAllTests() {
         PrefixTreeTest.basicTests();
         PrefixTreeTest.termSetsOnOneString();
-
+        PrefixTreeTest.insertionTests();
     }
 
     private static basicTests() {
@@ -15,8 +15,6 @@ export class PrefixTreeTest {
 
         let pTree = new PrefixTree(terms);
 
-        console.log("Using tree: " + pTree + "\n");
-
         let matchingStrings = [
             "Axxx", "xxxBCDxxx", "xAAAAxx",  "xxxBCD", "sljövma43ru538thjöo8gahvöoasrh", "bbbbcccddddbcd"
         ];
@@ -24,7 +22,7 @@ export class PrefixTreeTest {
         for (let i = 0; i < matchingStrings.length; i++) {
             let matched = pTree.matchAtLeastOneTerm(matchingStrings[i]);
             let status = matched ? "[PASSED] " : "[FAILED]";
-            console.log(status + " matching string '" + matchingStrings[i] + "'");
+            console.log(status + " matching string '" + matchingStrings[i] + "' with " + pTree);
         }
 
         let notMatchingString = [
@@ -73,10 +71,34 @@ export class PrefixTreeTest {
             let pTree = new PrefixTree(notMatchingSet);
             let matched = pTree.matchAtLeastOneTerm(string);
             let status = !matched ? "[PASSED] " : "[FAILED]";
-            console.log(status + " NOT matching string with this tree: " + pTree);
+            console.log(status + " NOT matching string with this tree: " + pTree.toString().replace('\n', ''));
         }
 
 
+
+    }
+
+    private static insertionTests() {
+
+        let string = "xxxmozartxxx";
+
+        let pTree = new PrefixTree(); // empty tree
+        pTree.addTermToTree("mozartWasHere");
+        let matched = pTree.matchAtLeastOneTerm(string);
+        let status = !matched ? "[PASSED] " : "[FAILED]";
+        console.log(status + " NOT matching '" + string +  "' with this tree: " + pTree);
+
+        // insert a shorter string -> replace tho old long one
+        pTree.addTermToTree("mozart");
+        matched = pTree.matchAtLeastOneTerm(string);
+        status = matched ? "[PASSED] " : "[FAILED]";
+        console.log(status + " matching '" + string +  "' with this tree: " + pTree );
+
+        // adding a longer term, should be ignored
+        let treeString = pTree.toString();
+        pTree.addTermToTree("mozartWasHere");
+        status = (pTree.toString() == treeString ) ? "[PASSED] " : "[FAILED]";
+        console.log(status + " longer terms do not replace short ones" );
 
     }
 
