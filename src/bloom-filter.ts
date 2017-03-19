@@ -14,7 +14,7 @@ export class BloomFilter {
      */
     public fromTokens(tokens : string[]) : void {
         for(let token of tokens) {
-            this.filter.add(new Buffer(token));
+            this.filter.add(new Buffer(token.toLowerCase()));
         }
     }
 
@@ -33,7 +33,7 @@ export class BloomFilter {
      * @returns boolean             high likelihood of containing that term
      */
     public containsTerm(term : string) : boolean {
-        return this.filter.has(new Buffer(term));
+        return this.filter.has(new Buffer(term.toLowerCase()));
     }
 
     /**
