@@ -1,4 +1,5 @@
 import {TestRuns} from "./test-runs";
+import {PrefixTreeTest} from "./prefix-tree-tests";
 
 // don't run multiple test runs simultaneously!
 
@@ -14,7 +15,9 @@ import {TestRuns} from "./test-runs";
 //TestRuns.testLanguageExtractor_super_slow();
 //TestRuns.testPreProcessingChain();
 //TestRuns.testExtractAllEnglishPages();
-TestRuns.createFilteredSampleDataForGroups3_4();
+//TestRuns.createFilteredSampleDataForGroups3_4();
 
 // other tests
 //TestRuns.testTermSearch();
+
+PrefixTreeTest.test();
