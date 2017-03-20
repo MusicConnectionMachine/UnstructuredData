@@ -41,66 +41,164 @@ export class TestRuns {
     }
     //endregion
 
+    //region download & unpack
     /**
-     * Download file, unpack it, feed to the WARC parser and finally get stems & TLD
+     * Downloads and unpacks the WET file. Every step is written to disk.
+     * Finally, the result is passed to the WARC parser to print all URIs.
      */
-    //region download-unpack-stem-TLD
-    static testDownloadUnpackingAndStemming() {
+    static downloadUnpack_sequential() {
         TestRuns.prepareEnvironment();
 
         console.log("starting download ...");
 
         Downloader.downloadToFile(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, TestRuns.dataFolder, (err, filepath) => {
-
-            // downloader is ready
-            if (err) {
-                console.log(err);
-                return;
-            } else {
-                console.log("downloading complete!");
-            }
+            if (err) { console.log(err);  return;  }
 
             // download ok -> unpack
+            console.log("downloading complete!");
             Unpacker.unpackGZipFileToFile(filepath, TestRuns.dataFolder, undefined, (err, filepath) => {
-                if (err) {
-                    console.log(err);
-                    return;
-                } else {
-                    console.log("unpacking complete!");
-                }
-
-                // TODO: Language filter
-                // TODO: Term filter
-
-                let entryID = 0;
+                if (err) { console.log(err);  return; }
 
                 // we can start digesting here
+                console.log("unpacking complete!");
+
                 // open file as stream and pipe it to the warc parser
                 const WARCParser = new TestRuns.WARCStream();
                 TestRuns.fs.createReadStream(filepath).pipe(WARCParser).on('data', data => {
-
+                    // Do anything here
                     let page = new WebPage(data);
-
-                    // log content of each entry in console
-                    let stems = WordPreprocessor.process(page.content);
-
-                    // print only the first few results
-                    if (entryID < 100) {
-                        //console.log(page.content);
-                        console.log("\n\n---------------------\nTLD: "+ page.getTLD() + "\n---------------------");
-                        console.log(stems);
-
-                    } else {
-                        // stop
-                        process.exit();
-
-                    }
-                    entryID++;
+                    console.log(page.getURI());
                 });
             });
         });
     };
+
+
+
+    /**
+     * Downloads and unpacks the WET file without temporary caching on disk.
+     * Only the unpacked result is written on disk. No processing.
+     */
+    public static downloadUnpack_streamed() {
+        let filename = TestRuns.crawlBaseUrl + TestRuns.fileName_packed;
+        console.log("downloading and unpacking " + filename);
+        Downloader.getResponse(filename, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & write to file
+            let decompressed = Unpacker.decompressGZipStream(response);
+            let output = Unpacker.fs.createWriteStream(TestRuns.path.join(TestRuns.dataFolder, TestRuns.fileName_unpacked));
+            decompressed.pipe(output);
+
+        });
+    }
+
     //endregion
+
+    //region create files with filtered data
+    /**
+     * Extract all english pages from a file and write them into another.
+     */
+    public static testExtractAllEnglishPages() {
+        TestRuns.prepareEnvironment();
+        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
+        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
+
+        console.log("extracting english only pages from " + filepath);
+        // Extract english pages
+        LanguageExtractor.extractWETPages(filepath, LanguageExtractor.ENGLISH_LANG_CODE, (err,filepath) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("done!");
+            }
+        });
+    }
+
+    public static createFilteredSampleDataForGroups3_4() {
+        console.log("Creating sample data for groups 3 & 4");
+        console.log("Sending request... ");
+
+        // some hardcoded composers here
+        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
+            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
+            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
+            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
+            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
+            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
+            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
+            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
+            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
+
+        let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        let pagesFound = 0;
+
+        Downloader.getResponse(
+            TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+
+                // unpack & feed into WARC parser
+                let decompressed = Unpacker.decompressGZipStream(response);
+                const WARCParser = new TestRuns.WARCStream();
+                decompressed.pipe(WARCParser).on('data', data => {
+
+                    // getting WET entries here
+                    let p = new WebPage(data);
+
+                    //Check if page is in english
+                    LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function (result: boolean) {
+                        if (!result)  return;
+
+                        // search for terms
+                        let totalOccs = 0;
+                        let distinctOccs = 0;
+                        let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
+                        for (let occ of occs) {
+                            distinctOccs++;
+                            totalOccs += occ.positions.length;
+                        }
+
+
+                        // print to console
+                        if (totalOccs > 0) {
+                            let str = "found ";
+                            for (let occ of occs) {
+                                str += occ.term + " x" + occ.positions.length + ", ";
+                            }
+                            console.log(str.substring(0, str.length - 2) + "\t\t\t on " + p.getURI());
+                        }
+
+                        // if page is good, print to file
+                        if (distinctOccs > 4 && totalOccs > 9) {
+                            // this page is considered as good
+                            writeStream.write(p.toString());
+
+                            pagesFound++;
+                            if (pagesFound > 100) {
+                                writeStream.close();
+                                console.log("found enough good pages!");
+                                process.exit(0);
+                            }
+                        }
+
+
+                    });
+                });
+
+
+
+
+            });
+    }
+    //endregion
+
 
     /**
      * Load already downloaded and unpacked file and get TLDs.
@@ -141,8 +239,8 @@ export class TestRuns {
      * object from each entry and filter the results with LanguageExtractor directly. No temporary
      * buffering on the disk.
      */
-    //region LanguageExtractor - slightly better
-    static testLanguageExtractor_slightly_better() {
+    //region LanguageExtractor
+    static testLanguageExtractor() {
         TestRuns.prepareEnvironment();
         let entryID = 0;
         let timeStart = new Date().getTime();
@@ -185,7 +283,7 @@ export class TestRuns {
     /**
      * Load already downloaded and unpacked WET file, feed it to WARC parser, create a WebPage
      * object from each entry and filter the results with LanguageExtractor directly and feed them
-     * into the WordPreprocessor No temporary buffering on the disk.
+     * into the WordPreprocessor. No temporary buffering on the disk.
      */
     //region Pre-Processing
     static testPreProcessingChain() {
@@ -220,86 +318,6 @@ export class TestRuns {
     //endregion
 
 
-    /**
-     * Some hardcoded tests for the TermSearch.searchTermsInString(...)
-     */
-    //region testTermSearch
-    public static testTermSearch() : void {
-
-        let searchString : string = "aabbccddAABBCCDD";
-        let terms = ["aa", "bb", "bCcD", "A"];
-        let caseSensitive = false;
-
-        console.log("Testing case sensitive = " + caseSensitive);
-        let occs = TermSearch.searchTermsInString(searchString, terms, caseSensitive);
-        for (let occ of occs) {
-            let expected : string;
-            let result = JSON.stringify(occ.positions);
-
-            if ( occ.term == "aa") expected = JSON.stringify( [0, 8] );
-            if ( occ.term == "bb" ) expected = JSON.stringify( [2, 10] );
-            if ( occ.term == "bCcD" ) expected = JSON.stringify( [3, 11] );
-            if ( occ.term == "A" ) expected = JSON.stringify( [0, 1, 8, 9] );
-
-            if (result !== expected) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            } else {
-                console.log("testTermSearch works for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            }
-        }
-
-        caseSensitive = true;
-        console.log("\nTesting case sensitive = " + caseSensitive);
-        occs = TermSearch.searchTermsInString(searchString, terms, caseSensitive);
-        for (let occ of occs) {
-            let expected : string;
-            let result = JSON.stringify(occ.positions);
-
-            if ( occ.term == "aa") expected = JSON.stringify( [0] );
-            if ( occ.term == "bb" ) expected = JSON.stringify( [2] );
-            if ( occ.term == "A" ) expected = JSON.stringify( [8, 9] );
-
-            if (result !== expected) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            } else {
-                console.log("testTermSearch works for " + occ.term + "\n" +
-                    "\t> exptected: " + expected + "; got: " + result);
-            }
-
-            if ( occ.term == "bCcD" ) {
-                console.error("testTermSearch fails for " + occ.term + "\n" +
-                    "\t> No occurrence object should be created for this term!");
-
-            }
-        }
-    }
-
-    //endregion
-
-
-    /**
-     * Downloads and unpacks the WET file without temporary caching on disk.
-     * Only the unpacked result is written on disk. No processing.
-     */
-    public static testStreamedDownloadAndUnpacking() {
-        let filename = TestRuns.crawlBaseUrl + TestRuns.fileName_packed;
-        console.log("downloading and unpacking " + filename);
-        Downloader.getResponse(filename, (err, response) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-
-            // unpack & write to file
-            let decompressed = Unpacker.decompressGZipStream(response);
-            let output = Unpacker.fs.createWriteStream(TestRuns.path.join(TestRuns.dataFolder, TestRuns.fileName_unpacked));
-            decompressed.pipe(output);
-
-        });
-    }
 
 
     /**
@@ -348,11 +366,12 @@ export class TestRuns {
                     if (entryID % 20 == 0) {
                         let duration = new Date().getTime() -  timeStart;
                         console.log("entry #" + entryID
-                            + "\tProgress: " + ((100 * totalParsed) / totalLength).toFixed(2) + "%"
-                            + "\tTLD: " + tld
-                            + "\tURI: " + p.getURI()
-                            + "\t\ttime passed: " + duration + " ms"
-                            + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms");
+                            + "  \tProgress: " + ((100 * totalParsed) / totalLength).toFixed(2) + "%"
+                            + "   \tTLD: " + tld
+                            + " \t\ttime passed: " + duration + " ms"
+                            + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms"
+                            + " \t\tURI: " + p.getURI()
+                        );
                     }
                     entryID++;
                 });
@@ -374,104 +393,7 @@ export class TestRuns {
     }
 
 
-    /**
-     * Extract all english pages from a file and write them into another.
-     */
-    public static testExtractAllEnglishPages() {
-        TestRuns.prepareEnvironment();
-        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
-        const filepath = TestRuns.dataFolder + TestRuns.fileName_unpacked;
 
-        console.log("extracting english only pages from " + filepath);
-        // Extract english pages
-        LanguageExtractor.extractWETPages(filepath, LanguageExtractor.ENGLISH_LANG_CODE, (err,filepath) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("done!");
-            }
-        });
-    }
-
-    public static createFilteredSampleDataForGroups3_4() {
-        console.log("Creating sample data for groups 3 & 4");
-        console.log("Sending request... ");
-
-        // some hardcoded composers here
-        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
-            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
-            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
-            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
-            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
-            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
-            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
-            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
-            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
-
-        let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
-        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
-        let pagesFound = 0;
-
-        Downloader.getResponse(
-            TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-
-            // unpack & feed into WARC parser
-            let decompressed = Unpacker.decompressGZipStream(response);
-            const WARCParser = new TestRuns.WARCStream();
-            decompressed.pipe(WARCParser).on('data', data => {
-
-                // getting WET entries here
-                let p = new WebPage(data);
-
-                //Check if page is in english
-                LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function (result: boolean) {
-                    if (!result)  return;
-
-                    // search for terms
-                    let totalOccs = 0;
-                    let distinctOccs = 0;
-                    let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
-                    for (let occ of occs) {
-                        distinctOccs++;
-                        totalOccs += occ.positions.length;
-                    }
-
-
-                    // print to console
-                    if (totalOccs > 0) {
-                        let str = "found ";
-                        for (let occ of occs) {
-                            str += occ.term + " x" + occ.positions.length + ", ";
-                        }
-                        console.log(str.substring(0, str.length - 2) + "\t\t\t on " + p.getURI());
-                    }
-
-                    // if page is good, print to file
-                    if (distinctOccs > 4 && totalOccs > 9) {
-                        // this page is considered as good
-                        writeStream.write(p.toString());
-
-                        pagesFound++;
-                        if (pagesFound > 100) {
-                            writeStream.close();
-                            console.log("found enough good pages!");
-                            process.exit(0);
-                        }
-                    }
-
-
-                });
-            });
-
-
-
-
-        });
-    }
 
     public static testBloomFilter() {
         let filter = new BloomFilter();
