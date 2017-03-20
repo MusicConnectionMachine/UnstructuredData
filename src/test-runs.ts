@@ -476,7 +476,7 @@ export class TestRuns {
     public static testBloomFilter() {
         let filter = new BloomFilter();
         let text = "Some not so random text I didn't came up with...";
-        let terms = ["so", "totally", "not", "random", "at", "all"];
+        let terms = ["so", "totally", "NOT", "random", "at", "all"];
         filter.fromText(text);
         let contains = filter.containsTerms(terms);
         console.log(text);
