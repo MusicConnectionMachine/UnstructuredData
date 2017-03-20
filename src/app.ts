@@ -27,5 +27,6 @@ TestRuns.testStreamedDownloadUnpackingAndProcessing();
 import {PrefixTreeTest} from "./tests/test-prefix-tree";
 import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
-//PrefixTreeTest.runAllTests();
-//NaiveTermSearchTest.runAllTests();
+// PrefixTreeTest.runAllTests();
+// NaiveTermSearchTest.runAllTests();
+// TestRuns.testBloomFilter();
