@@ -197,6 +197,53 @@ export class TestRuns {
 
             });
     }
+
+
+    // writes the wiki mozart page to a file
+    public static getMozartFromWiki() {
+        // used http://index.commoncrawl.org/CC-MAIN-2017-04/ to search for the URI
+        // !!!! replace .../warc/... with .../wet/... in the path !!!!
+        // !!!! add .wet to file type !!!!
+        let wetContainingMozartWiki = "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560284270.95/wet/CC-MAIN-20170116095124-00198-ip-10-171-10-70.ec2.internal.warc.wet.gz";
+        let searchURI = "en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart";
+
+        let outputFile = TestRuns.dataFolder + "mozartFromWiki.wet";
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+
+        let entryID = 0;
+
+        Downloader.getResponse(wetContainingMozartWiki, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & feed into WARC parser
+            let decompressed = Unpacker.decompressGZipStream(response);
+            const WARCParser = new TestRuns.WARCStream();
+            decompressed.pipe(WARCParser).on('data', data => {
+                let p = new WebPage(data);
+
+                if (p.getURI().includes(searchURI)) {
+                    console.log("found " + searchURI);
+                    writeStream.write(p.toString());
+
+                } else {
+                    if (entryID % 20 == 0)   console.log("ignoring entryID: " + entryID + "; URI: " + p.getURI());
+
+                }
+                entryID++;
+
+
+            }).on('end', () => {
+                console.log("finished");
+                writeStream.close();
+            });
+
+        });
+    }
+
+
     //endregion
 
 
