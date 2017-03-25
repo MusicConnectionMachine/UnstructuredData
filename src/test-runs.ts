@@ -6,6 +6,7 @@ import { LanguageExtractor } from "./language-extractor";
 import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./bloom-filter";
 import {WetManager} from "./wet-manager";
+import {TermLoader} from "./term-loader";
 
 /**
  * Playground for testing.
@@ -124,16 +125,7 @@ export class TestRuns {
         console.log("Sending request... ");
 
         // some hardcoded composers here
-        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
-            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
-            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
-            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
-            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
-            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
-            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
-            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
-            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
-
+        let terms = TermLoader.loadDummyTerms();
         let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
         const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;
@@ -198,6 +190,53 @@ export class TestRuns {
 
             });
     }
+
+
+    // writes the wiki mozart page to a file
+    public static getMozartFromWiki() {
+        // used http://index.commoncrawl.org/CC-MAIN-2017-04/ to search for the URI
+        // !!!! replace .../warc/... with .../wet/... in the path !!!!
+        // !!!! add .wet to file type !!!!
+        let wetContainingMozartWiki = "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560284270.95/wet/CC-MAIN-20170116095124-00198-ip-10-171-10-70.ec2.internal.warc.wet.gz";
+        let searchURI = "en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart";
+
+        let outputFile = TestRuns.dataFolder + "mozartFromWiki.wet";
+        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+
+        let entryID = 0;
+
+        Downloader.getResponse(wetContainingMozartWiki, (err, response) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            // unpack & feed into WARC parser
+            let decompressed = Unpacker.decompressGZipStream(response);
+            const WARCParser = new TestRuns.WARCStream();
+            decompressed.pipe(WARCParser).on('data', data => {
+                let p = new WebPage(data);
+
+                if (p.getURI().includes(searchURI)) {
+                    console.log("found " + searchURI);
+                    writeStream.write(p.toString());
+
+                } else {
+                    if (entryID % 20 == 0)   console.log("ignoring entryID: " + entryID + "; URI: " + p.getURI());
+
+                }
+                entryID++;
+
+
+            }).on('end', () => {
+                console.log("finished");
+                writeStream.close();
+            });
+
+        });
+    }
+
+
     //endregion
 
 
