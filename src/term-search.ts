@@ -1,5 +1,5 @@
 import {WebPage} from "./web-page";
-import {TermSearchLoader} from "./search-term-loader";
+import {TermLoader} from "./term-loader";
 /**
  * Container to store the term (substring) and the positions where it can be found in the search string.
  */
@@ -90,8 +90,8 @@ export class TermSearch {
 
     public static searchTermsInStemMap(stems : { [stem : string] : Array<WebPage> }) : Array<WebPage> {
         let positives = new Set();
-        let terms = TermSearchLoader.load('terms/dbpedia_Classical_musicians_by_instruments_and_nationality.json');
-        let stemCount = Object.keys(stems).length;
+        let terms = TermLoader.loadFromDBPediaJSON('terms/dbpedia_Classical_musicians_by_instruments_and_nationality.json');
+        //let stemCount = Object.keys(stems).length;
 
         //Get each webpage that is matching a search term.
         //O(n^3) but shouldn't matter much since this is only done once per file
