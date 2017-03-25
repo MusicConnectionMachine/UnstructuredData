@@ -2,12 +2,14 @@
   "name": "application-name",
   "version": "0.0.1",
   "dependencies": {
+    "bloem": "^0.2.4",
     "cld": "^2.4.7",
+    "franc": "^3.0.0",
+    "langs": "^2.0.0",
     "natural": "^0.5.0",
-    "unzip": "^0.1.11",
-    "warc": "^1.0.0",
     "node-snowball": "^0.2.0",
-    "bloem": "^0.2.4"
+    "unzip": "^0.1.11",
+    "warc": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",

@@ -44,3 +44,7 @@ jspm_packages
 
 #Ignore transpiled files
 out
+
+#wet files
+*.wet.gz
+*.wet

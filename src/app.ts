@@ -18,6 +18,9 @@ TestRuns.getMozartFromWiki();
 // TestRuns.testLanguageExtractor();
 // TestRuns.testPreProcessingChain();
 
+//Testing of WetManager
+//TestRuns.testWetManager();
+
 
 // Most advanced test run so far:
 //TestRuns.testStreamedDownloadUnpackingAndProcessing();
