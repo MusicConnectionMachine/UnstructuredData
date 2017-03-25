@@ -473,7 +473,16 @@ export class TestRuns {
 
     public static testCCIndex() {
         let lookupURL = "http://www.popmech.ru/";
+        CCIndex.getWETPathsForURL(lookupURL, (err, wetPaths) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            console.log(wetPaths);
 
+        });
+
+        /*
         CCIndex.lookUpURL(lookupURL, (err, body) => {
             if (err) {
                 console.error(err);
@@ -490,6 +499,8 @@ export class TestRuns {
             console.log(wetPaths);
 
         });
+        */
+
     }
 
 }

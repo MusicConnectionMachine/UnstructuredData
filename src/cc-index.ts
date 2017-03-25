@@ -27,6 +27,33 @@ export class CCIndex {
 
 
     /**
+     * Main function to interact with the CommonCrawl index.
+     * Takes a URL to look up, queries the CC index, parses the CC response and returns
+     * a set of relative paths to all WET files tha should include the URL.
+     *
+     * @param lookupURL             URL to look up in the CC index
+     * @param callback              will be called with the set of paths to WET files (set of strings)
+     * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
+     */
+    public static getWETPathsForURL(lookupURL : string,
+                                    callback : (err? : Error, wetPaths? : Set<string>) => void,
+                                    ccIndexPageURL? : string ) {
+        CCIndex.lookUpURL(lookupURL, (err, rawResponse) => {
+            if (err) {  callback(err);       return; }
+
+            // got a raw response -> parse it
+            let resObjs = CCIndex.parseStringToCCIndexResponse(rawResponse);
+            // and create WET paths
+            let wetPaths = CCIndex.constructWETPaths(lookupURL, resObjs);
+
+            callback(undefined, wetPaths);
+
+        }, ccIndexPageURL);
+
+    }
+
+
+    /**
      * [HELPER FUNCTION]
      * Query the CC index with a URL and call the callback with the RAW response string.
      *
@@ -114,16 +141,17 @@ export class CCIndex {
     /**
      * [HELPER FUNCTION]
      *
-     * Check whether the lookup URL is included in the CC index response.
-     * For each match, the WARC path is converted to a WET path.
-     * All valid paths are returned as a string array.
-     * Each path should start with "crawl-data/...".
+     * For each 200-response, the WARC path is converted to a WET path.
+     * All paths are returned as a string set (no duplicates). Each returned path should start with "crawl-data/...".
+     *
+     * This function also checks if the lookup URL is included in the CC index response.
+     * If this is not the case, a warning will be shown.
      *
      * @param lookupURL             URL to look up
      * @param resObjs               parsed response objects from the CC index
-     * @returns {Array<string>}     (relative) paths to WET files that contain websites with given url
+     * @returns {Set<string>}     (relative) paths to WET files that contain websites with given url
      */
-    public static constructWETPaths(lookupURL : string, resObjs : Array<CCIndexResponse>) : Array<string> {
+    public static constructWETPaths(lookupURL : string, resObjs : Array<CCIndexResponse>) : Set<string> {
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
 
         let paths = new Set();
@@ -141,7 +169,7 @@ export class CCIndex {
             paths.add(wetPath);
         }
 
-        return Array.from(paths);
+        return paths;
 
 
     }
