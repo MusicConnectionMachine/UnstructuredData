@@ -1,3 +1,5 @@
+import { Filter } from "./filter";
+
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
  * terms in large strings. The search is not case sensitive.
@@ -12,42 +14,37 @@
  * However, we have to maximize performance and remove any overhead that third-party packages might have (to provide
  * more functionality that is not needed here).
  */
-export class PrefixTree {
+export class PrefixTree extends Filter{
     private root : PTElement;
 
     /**
      * Create a PrefixTree and add initialize it with a set of terms (optional).
-     * @param terms
+     * @param tokens
      */
-    constructor(terms? : string[]) {
+    constructor(tokens? : string[]) {
+        super();
         this.root = new PTNode(); // not a leaf! we do not want to match any string!
-
-        if (terms) { // add provided terms if any
-            for (let term of terms) {
-                this.addTermToTree(term);
-            }
-        }
+        if (tokens) { super.addTokens(tokens); }
     }
 
     /**
-     * Add a new term to this tree.
-     * @param term
+     * Add a new token to this tree.
+     * @param token
      */
-    public addTermToTree(term : string) {
-        this.root = this.root.addTerm(term.toLowerCase());
+    public addToken(token : string) : void {
+        this.root = this.root.addTerm(token.toLowerCase());
     }
-
 
     /**
      * Checks it the string contains at least one term.
-     * @param searchString
+     * @param term
      * @returns {boolean}
      */
-    public matchAtLeastOneTerm(searchString : string) : boolean {
+    public containsToken(term : string) : boolean {
 
-        for (let position = 0; position < searchString.length; position++) {
+        for (let position = 0; position < term.length; position++) {
             // try to match each position until one term is found
-            let result = this.root.match(searchString, position);
+            let result = this.root.match(term, position);
             if (result) return true;
         }
 
@@ -63,7 +60,7 @@ export class PrefixTree {
 /**
  * Interface for all internal prefix tree elements: nodes and leafs
  */
-export interface PTElement {
+interface PTElement {
 
     /**
      * Adds a term into the tree structure. Does nothing on leafs.

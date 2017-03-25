@@ -1,5 +1,5 @@
-import {WebPage} from "./web-page";
-import {TermLoader} from "./term-loader";
+import {WebPage} from "./utils/web-page";
+import {TermLoader} from "./utils/term-loader";
 /**
  * Container to store the term (substring) and the positions where it can be found in the search string.
  */

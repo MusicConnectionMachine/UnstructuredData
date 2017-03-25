@@ -1,12 +1,13 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
-import { WebPage } from "./web-page";
+import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
 import { TermSearch, Occurrence } from "./term-search";
-import { BloomFilter } from "./bloom-filter";
+import { BloomFilter } from "./filters/bloom-filter";
 import {WetManager} from "./wet-manager";
-import {TermLoader} from "./term-loader";
+import {TermLoader} from "./utils/term-loader";
+import {PrefixTree} from "./filters/prefix-tree";
 
 /**
  * Playground for testing.
@@ -439,8 +440,19 @@ export class TestRuns {
         let filter = new BloomFilter();
         let text = "Some not so random text I didn't came up with...";
         let terms = ["so", "totally", "NOT", "random", "at", "all"];
-        filter.fromText(text);
-        let contains = filter.containsTerms(terms);
+        filter.addText(text);
+        let contains = filter.containsTokens(terms);
+        console.log(text);
+        console.log(terms);
+        console.log(contains);
+    }
+
+    public static testPrefixTree() {
+        let filter = new PrefixTree();
+        let text = "Some not so random text I didn't came up with...";
+        let terms = ["so", "totally", "NOT", "random", "at", "all"];
+        filter.addText(text);
+        let contains = filter.containsTokens(terms);
         console.log(text);
         console.log(terms);
         console.log(contains);

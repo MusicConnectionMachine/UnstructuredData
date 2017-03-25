@@ -1,4 +1,4 @@
-import {AlreadyExistsError} from './utils';
+import {AlreadyExistsError} from './utils/utils';
 import ReadableStream = NodeJS.ReadableStream;
 
 export class Unpacker {

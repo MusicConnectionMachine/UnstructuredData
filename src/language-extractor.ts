@@ -2,8 +2,8 @@
  * Created by Anshul on 3/7/2017.
  */
 
-import {AlreadyExistsError,UnsupportedFileFormat} from './utils';
-import {WebPage} from "./web-page";
+import {AlreadyExistsError,UnsupportedFileFormat} from './utils/utils';
+import {WebPage} from "./utils/web-page";
 
 export class LanguageExtractor {
 
