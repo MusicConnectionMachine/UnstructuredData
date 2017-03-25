@@ -68,7 +68,7 @@ export class CCIndex {
      * @param callback              (optional) will be called with the response body string; if not provided -> output to console
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
-    public static lookUpURL(lookupURL : string,
+    private static lookUpURL(lookupURL : string,
                             callback? : (err? : Error, body? : string) => void,
                             ccIndexPageURL? : string) {
 
@@ -102,7 +102,7 @@ export class CCIndex {
      * @param resp      CC index response string
      * @returns {Array} array of response objects
      */
-    public static parseStringToCCIndexResponse(resp : string) : Array<CCIndexResponse> {
+    private static parseStringToCCIndexResponse(resp : string) : Array<CCIndexResponse> {
         let result : Array<CCIndexResponse> = [];
 
         let lines = resp.split(/\n/);
@@ -158,7 +158,7 @@ export class CCIndex {
      * @param resObjs               parsed response objects from the CC index
      * @returns {Array<string>}     (relative) paths to WET files that contain websites with given url
      */
-    public static constructWETPaths(lookupURL : string, resObjs : Array<CCIndexResponse>) : Array<string> {
+    private static constructWETPaths(lookupURL : string, resObjs : Array<CCIndexResponse>) : Array<string> {
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
 
         let paths = new Set();
