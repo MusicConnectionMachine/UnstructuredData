@@ -5,6 +5,7 @@ import { WebPage } from "./web-page";
 import { LanguageExtractor } from "./language-extractor";
 import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./bloom-filter";
+import {WetManager} from "./wet-manager";
 
 /**
  * Playground for testing.
@@ -404,6 +405,30 @@ export class TestRuns {
         console.log(text);
         console.log(terms);
         console.log(contains);
+    }
+
+
+    public static testWetManager() {
+        let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
+        let timeStart = new Date().getTime();
+        WetManager.loadWetAsStream(url, function(err, result) {
+            if(err) {
+                console.log(err);
+                return;
+            }
+
+            let warcParser = new TestRuns.WARCStream();
+
+            result.pipe(warcParser).on('data', data => {
+
+                // getting WET entries here
+                let p = new WebPage(data);
+                console.log(p.getURI());
+            }).on('end', () => {
+                let timeFinish = new Date().getTime();
+                console.log('Finished. Took ' + (timeFinish - timeStart) + 'ms');
+            });
+        });
     }
 
 }
