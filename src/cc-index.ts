@@ -40,5 +40,26 @@ export class CCIndex {
     }
 
 
+    public static parseCCIndexResponse(resp : string) : Array<Object> {
+        // convert each line to a JSON object and return and array of those objects
+        let result = [];
+
+        let lines = resp.split(/\n/);
+        for (let line of lines) {
+            if (line.length < 2) continue; // ignore empty/short lines
+            let json;
+            try {
+                json = JSON.parse(line);
+            } catch (e) {
+                continue; // ignore invalid JSONS
+            }
+            // line is ok
+            result.push(json);
+        }
+
+        return result;
+
+    }
+
 
 }

@@ -478,7 +478,11 @@ export class TestRuns {
                 return;
             }
 
-            console.log("CC Index response body:\n" + body);
+            console.log("CC Index response body, parsed:\n");
+            let objects = CCIndex.parseCCIndexResponse(body);
+            for (let obj of objects) {
+                console.log(obj);
+            }
 
         });
     }
