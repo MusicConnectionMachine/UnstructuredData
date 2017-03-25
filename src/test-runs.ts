@@ -185,24 +185,22 @@ export class TestRuns {
 
                     });
                 });
-
-
-
-
             });
     }
 
 
-    // writes the wiki mozart page to a file
-    public static getMozartFromWiki() {
-        let searchURI = "en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart";
+    /**
+     * Query the CC index with an URL, find a WET file that contains the page and extract it.
+     */
+    public static getWebsiteByURL() {
+        let outputFileName = "hereIsWhatIFound.wet";
+        let searchURI = "https://en.wikipedia.org/wiki/HTTP_301";
         let ccBasePath = "https://commoncrawl.s3.amazonaws.com/";
 
         console.log("looking up " + searchURI);
 
-        CCIndex.getWETPathsForURL(searchURI, (err, wetPaths) => {
-            if (err) { console.log(err); return; }
-            if (wetPaths.length < 1) { console.log("no WET file found!"); return;}
+        CCIndex.getWETPathsForURL(searchURI, function (err, wetPaths) {
+            if (err) { console.log(err);  return; }
 
             let relativePathToFirstWET = wetPaths[0];
             console.log("found " + wetPaths.length + " results");
@@ -213,8 +211,8 @@ export class TestRuns {
                 if(err) { console.log(err); return; }
 
                 let entryID = 0;
-                let outputFile = TestRuns.dataFolder + "mozartFromWiki.wet";
-                const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+                let outputFilePath = TestRuns.path.join(TestRuns.dataFolder, outputFileName);
+                const writeStream = LanguageExtractor.fs.createWriteStream(outputFilePath, {flags: 'w'});
 
                 let warcParser = new TestRuns.WARCStream();
                 result.pipe(warcParser).on('data', data => {

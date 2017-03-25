@@ -31,6 +31,8 @@ export class CCIndex {
      * Takes a URL to look up, queries the CC index, parses the CC response and returns
      * an array of relative paths to all WET files tha should include the URL.
      *
+     * Either an error or at least one path are passed to the callback. If no WET files were found, an error is passed.
+     *
      * @param lookupURL             URL to look up in the CC index
      * @param callback              will be called with an array of paths to WET files (set of strings)
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
@@ -46,7 +48,12 @@ export class CCIndex {
             // and create WET paths
             let wetPaths = CCIndex.constructWETPaths(lookupURL, resObjs);
 
-            callback(undefined, wetPaths);
+            if (wetPaths.length < 1) {
+                callback(new Error("No WET files found for " + lookupURL));
+            } else {
+                callback(undefined, wetPaths);
+            }
+
 
         }, ccIndexPageURL);
 
