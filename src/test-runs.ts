@@ -5,6 +5,7 @@ import { WebPage } from "./web-page";
 import { LanguageExtractor } from "./language-extractor";
 import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./bloom-filter";
+import {TermLoader} from "./term-loader";
 
 /**
  * Playground for testing.
@@ -123,16 +124,7 @@ export class TestRuns {
         console.log("Sending request... ");
 
         // some hardcoded composers here
-        let terms = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
-            'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
-            'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
-            'Gabrieli', 'Gershwin', 'Glass', 'Gounod', 'Grieg', 'Handel', 'Harrison',
-            'Haydn', 'Holst', 'Ives', 'Joplin', 'Liszt', 'Mahler', 'Mendelssohn',
-            'Monteverdi', 'Mozart', 'Offenbach', 'Palestrina', 'Prokofiev', 'Puccini',
-            'Purcell', 'Rachmaninov', 'Rameau', 'Ravel', 'Rossini', 'Satie', 'Schubert',
-            'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
-            'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
-
+        let terms = TermLoader.loadDummyTerms();
         let outputFile = TestRuns.dataFolder + TestRuns.fileName_unpacked + "_filtered";
         const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;
