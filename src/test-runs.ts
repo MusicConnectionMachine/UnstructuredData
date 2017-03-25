@@ -195,46 +195,48 @@ export class TestRuns {
 
     // writes the wiki mozart page to a file
     public static getMozartFromWiki() {
-        // used http://index.commoncrawl.org/CC-MAIN-2017-04/ to search for the URI
-        // !!!! replace .../warc/... with .../wet/... in the path !!!!
-        // !!!! add .wet to file type !!!!
-        let wetContainingMozartWiki = "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/segments/1484560284270.95/wet/CC-MAIN-20170116095124-00198-ip-10-171-10-70.ec2.internal.warc.wet.gz";
         let searchURI = "en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart";
+        let ccBasePath = "https://commoncrawl.s3.amazonaws.com/";
 
-        let outputFile = TestRuns.dataFolder + "mozartFromWiki.wet";
-        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        console.log("looking up " + searchURI);
 
-        let entryID = 0;
+        CCIndex.getWETPathsForURL(searchURI, (err, wetPaths) => {
+            if (err) { console.log(err); return; }
+            if (wetPaths.length < 1) { console.log("no WET file found!"); return;}
 
-        Downloader.getResponse(wetContainingMozartWiki, (err, response) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
+            let relativePathToFirstWET = wetPaths[0];
+            console.log("found " + wetPaths.length + " results");
+            console.log("first result will be used: " + ccBasePath + relativePathToFirstWET);
 
-            // unpack & feed into WARC parser
-            let decompressed = Unpacker.decompressGZipStream(response);
-            const WARCParser = new TestRuns.WARCStream();
-            decompressed.pipe(WARCParser).on('data', data => {
-                let p = new WebPage(data);
+            console.log("getting file with WetManager");
+            WetManager.loadWetAsStream(relativePathToFirstWET, function(err, result) {
+                if(err) { console.log(err); return; }
 
-                if (p.getURI().includes(searchURI)) {
-                    console.log("found " + searchURI);
-                    writeStream.write(p.toString());
+                let entryID = 0;
+                let outputFile = TestRuns.dataFolder + "mozartFromWiki.wet";
+                const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
 
-                } else {
-                    if (entryID % 20 == 0)   console.log("ignoring entryID: " + entryID + "; URI: " + p.getURI());
+                let warcParser = new TestRuns.WARCStream();
+                result.pipe(warcParser).on('data', data => {
+                    let p = new WebPage(data);
 
-                }
-                entryID++;
+                    if (p.getURI().includes(searchURI)) {
+                        console.log("!\n!\n!\nfound " + searchURI + "\n!\n!\n!");
+                        writeStream.write(p.toString());
 
+                    } else {
+                        if (entryID % 20 == 0)   console.log("processing...    entryID: " + entryID + "; URI: " + p.getURI());
 
-            }).on('end', () => {
-                console.log("finished");
-                writeStream.close();
+                    }
+                    entryID++;
+                }).on('end', () => {
+                    console.log("Finished extracting pages for: " + relativePathToFirstWET);
+                    writeStream.close();
+                });
             });
 
         });
+
     }
 
 
@@ -471,35 +473,21 @@ export class TestRuns {
         });
     }
 
+    /**
+     * Search for occurrences of a specific URLs in the CC index.
+     */
     public static testCCIndex() {
-        let lookupURL = "http://www.popmech.ru/";
+        let lookupURL = "https://github.com/";
+        console.log("looking up: " + lookupURL);
         CCIndex.getWETPathsForURL(lookupURL, (err, wetPaths) => {
             if (err) {
                 console.error(err);
                 return;
             }
+            console.log("found " + lookupURL + " in following files:");
             console.log(wetPaths);
 
         });
-
-        /*
-        CCIndex.lookUpURL(lookupURL, (err, body) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-
-            console.log("CC Index response body, parsed:\n");
-            let objects = CCIndex.parseStringToCCIndexResponse(body);
-            for (let obj of objects) {
-                console.log(obj);
-            }
-
-            let wetPaths = CCIndex.constructWETPaths(lookupURL, objects);
-            console.log(wetPaths);
-
-        });
-        */
 
     }
 
