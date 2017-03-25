@@ -7,6 +7,7 @@ import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./bloom-filter";
 import {WetManager} from "./wet-manager";
 import {TermLoader} from "./term-loader";
+import {CCIndex} from "./cc-index";
 
 /**
  * Playground for testing.
@@ -448,7 +449,7 @@ export class TestRuns {
 
 
     public static testWetManager() {
-        let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
+        let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
         let timeStart = new Date().getTime();
         WetManager.loadWetAsStream(url, function(err, result) {
             if(err) {
@@ -467,6 +468,18 @@ export class TestRuns {
                 let timeFinish = new Date().getTime();
                 console.log('Finished. Took ' + (timeFinish - timeStart) + 'ms');
             });
+        });
+    }
+
+    public static testCCIndex() {
+        CCIndex.lookUpURL("https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart", (err, body) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            console.log("CC Index response body:\n" + body);
+
         });
     }
 
