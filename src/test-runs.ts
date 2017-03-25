@@ -472,17 +472,22 @@ export class TestRuns {
     }
 
     public static testCCIndex() {
-        CCIndex.lookUpURL("https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart", (err, body) => {
+        let lookupURL = "http://www.popmech.ru/";
+
+        CCIndex.lookUpURL(lookupURL, (err, body) => {
             if (err) {
                 console.error(err);
                 return;
             }
 
             console.log("CC Index response body, parsed:\n");
-            let objects = CCIndex.parseCCIndexResponse(body);
+            let objects = CCIndex.parseStringToCCIndexResponse(body);
             for (let obj of objects) {
                 console.log(obj);
             }
+
+            let wetPaths = CCIndex.constructWETPaths(lookupURL, objects);
+            console.log(wetPaths);
 
         });
     }

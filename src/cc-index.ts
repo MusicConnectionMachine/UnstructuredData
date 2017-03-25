@@ -1,13 +1,34 @@
 import {Downloader} from "./downloader";
 
+/**
+ * Objects of this class represent responses from the CommonCrawl index.
+ */
+export class CCIndexResponse {
 
+    public urlkey : string;
+    public timestamp : string;
+    public status : number;
+    public url : string;
+    public filename : string;
+    public length : number;
+    public mime : string;
+    public offset : number;
+    public digest : string;
+
+
+}
+
+/**
+ * This class allows interaction with the CommonCrawl index to search for specific URLs.
+ */
 export class CCIndex {
 
     public static defaultCCIndex = "http://index.commoncrawl.org/CC-MAIN-2017-04-index";
 
 
     /**
-     * Queries the CC index with a URL and calls the callback with the RAW response string.
+     * [HELPER FUNCTION]
+     * Query the CC index with a URL and call the callback with the RAW response string.
      *
      * @param lookupURL             URL to look up in the CC index
      * @param callback              (optional) will be called with the response body string; if not provided -> output to console
@@ -17,6 +38,7 @@ export class CCIndex {
                             callback? : (err? : Error, body? : string) => void,
                             ccIndexPageURL? : string) {
 
+        lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
         let indexPage = ccIndexPageURL || CCIndex.defaultCCIndex;
 
         let query = indexPage + "?url=" + encodeURI(lookupURL) + "&output=json";
@@ -39,10 +61,15 @@ export class CCIndex {
         });
     }
 
-
-    public static parseCCIndexResponse(resp : string) : Array<Object> {
-        // convert each line to a JSON object and return and array of those objects
-        let result = [];
+    /**
+     * [HELPER FUNCTION]
+     * Convert each line of the response to a CCIndexResponse object and return and array of those objects.
+     *
+     * @param resp      CC index response string
+     * @returns {Array} array of response objects
+     */
+    public static parseStringToCCIndexResponse(resp : string) : Array<CCIndexResponse> {
+        let result : Array<CCIndexResponse> = [];
 
         let lines = resp.split(/\n/);
         for (let line of lines) {
@@ -51,13 +78,71 @@ export class CCIndex {
             try {
                 json = JSON.parse(line);
             } catch (e) {
-                continue; // ignore invalid JSONS
+                continue; // ignore invalid JSONs
             }
-            // line is ok
-            result.push(json);
+
+            // line is ok, test for properties (strict! may not be supported for older crawls!)
+            if (!json.hasOwnProperty("urlkey")) continue;
+            if (!json.hasOwnProperty("timestamp")) continue;
+            if (!json.hasOwnProperty("status")) continue;
+            if (!json.hasOwnProperty("url")) continue;
+            if (!json.hasOwnProperty("filename")) continue;
+            if (!json.hasOwnProperty("length")) continue;
+            if (!json.hasOwnProperty("mime")) continue;
+            if (!json.hasOwnProperty("offset")) continue;
+            if (!json.hasOwnProperty("digest")) continue;
+
+            // create cc index response object
+            let resObj = new CCIndexResponse();
+            resObj.urlkey = json.urlkey;
+            resObj.timestamp = json.timestamp;
+            resObj.status = parseInt(json.status);
+            resObj.url = json.url;
+            resObj.filename = json.filename;
+            resObj.length = parseInt(json.length);
+            resObj.mime = json.mime;
+            resObj.offset = parseInt(json.offset);
+            resObj.digest = json.digest;
+
+            result.push(resObj);
         }
 
         return result;
+
+    }
+
+    /**
+     * [HELPER FUNCTION]
+     *
+     * Check whether the lookup URL is included in the CC index response.
+     * For each match, the WARC path is converted to a WET path.
+     * All valid paths are returned as a string array.
+     * Each path should start with "crawl-data/...".
+     *
+     * @param lookupURL             URL to look up
+     * @param resObjs               parsed response objects from the CC index
+     * @returns {Array<string>}     (relative) paths to WET files that contain websites with given url
+     */
+    public static constructWETPaths(lookupURL : string, resObjs : Array<CCIndexResponse>) : Array<string> {
+        lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
+
+        let paths = new Set();
+
+        for (let resObj of resObjs ) {
+            if (resObj.status != 200) continue; // we only want 200 responses
+
+            if (!resObj.url.toLowerCase().includes(lookupURL.toLowerCase())) {
+                console.warn("CC index response (" + resObj.url +  ") doesn't contain the lookup URL (" + lookupURL + ")!");
+                //continue;
+            }
+
+            // response seems to be valid, convert WARC path to WET path
+            let wetPath = resObj.filename.replace("/warc/", "/wet/").replace("warc.gz", "warc.wet.gz");
+            paths.add(wetPath);
+        }
+
+        return Array.from(paths);
+
 
     }
 
