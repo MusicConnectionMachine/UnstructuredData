@@ -27,14 +27,13 @@ export class CCIndex {
 
 
     /**
-     * Main function to interact with the CommonCrawl index.
      * Takes a URL to look up, queries the CC index, parses the CC response and returns
-     * an array of relative paths to all WET files tha should include the URL.
+     * an array of relative paths to all WET files that should include the URL.
      *
      * Either an error or at least one path are passed to the callback. If no WET files were found, an error is passed.
      *
      * @param lookupURL             URL to look up in the CC index
-     * @param callback              will be called with an array of paths to WET files (set of strings)
+     * @param callback              will be called with an array of paths to WET files (array of strings)
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
     public static getWETPathsForURL(lookupURL : string,
@@ -56,6 +55,81 @@ export class CCIndex {
 
 
         }, ccIndexPageURL);
+
+    }
+
+
+    /**
+     * Takes an array of URL to look up, queries the CC index, parses the CC responses and returns
+     * an array of relative paths to WET files that should include the URLs. This function handles all errors.
+     *
+     * @param lookupURLs                    URLs to look up in the CC index
+     * @param takeOnlyTheFirstWetPath       If set to TRUE, only one WET path will be returned for each URL (there might be multiple WETs for one URL)
+     * @param callback                      Will be called with an array of relative wet paths (might be empty)
+     * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
+     */
+    public static getWETPathsForEachURL(lookupURLs : Array<string>,
+                                        takeOnlyTheFirstWetPath : boolean,
+                                        callback : (wetPaths : Array<string>) => void,
+                                        ccIndexPageURL? : string) {
+
+        let wets : Set<string> = new Set<string>();
+        console.log("start looking up " + lookupURLs.length + " urls");
+
+        function scaryRecursiveCallbackStuff(lookupIndex : number,
+                                             afterAllDoneCallback : (wetPaths : Array<string>) => void ) {
+
+            // terminate when index reaches endUrlIndex
+            if (lookupIndex >= lookupURLs.length) {
+                console.log("finished looking up URLs!\n\n");
+
+                let wetPaths = Array.from(wets);
+                afterAllDoneCallback(wetPaths);
+                return;
+            }
+
+            let urlToLookUp = lookupURLs[lookupIndex];
+            let progress = "[" + (lookupIndex+1) + "/" + (lookupURLs.length) + "]";
+
+            // skip urls that contain "category:"
+            // CC index returns nothing for all of them
+            if (urlToLookUp.toLowerCase().includes("category:") &&
+                urlToLookUp.toLowerCase().includes("wikipedia")) {
+                console.log(progress + " skip " + urlToLookUp + " (includes strings 'category:' & 'wikipedia')");
+                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+                return;
+            }
+
+
+            console.log(progress + " looking up " + urlToLookUp);
+
+            // look up single url
+            CCIndex.getWETPathsForURL(lookupURLs[lookupIndex], function (err, wetPaths) {
+                // log error but continue anyway
+                if (err) {
+                    console.log("      :(  error: " + err.message);
+                } else {
+                    console.log("      :)  resolved " + wetPaths.length + " wet paths for " + urlToLookUp);
+
+                    if (takeOnlyTheFirstWetPath) {
+                        wets.add(wetPaths[0]);
+                        console.log("      :)  added first wet to the set, it now has " + wets.size + " paths");
+                    } else {
+                        for(let wet of wetPaths) wets.add(wet);
+                        console.log("      :)  added all wets to the set, it now has " + wets.size + " paths");
+                    }
+
+                }
+
+                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+
+            }, ccIndexPageURL);
+
+        }
+
+        scaryRecursiveCallbackStuff(0, callback);
+
+
 
     }
 

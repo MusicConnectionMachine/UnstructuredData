@@ -242,62 +242,21 @@ export class TestRuns {
 
         let startUrlIndex = 0; // starting with   // 0 to start from the beginning
         let endUrlIndex = 3; // excluding this  // urls.length to lookup all
-        let ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index";
 
-        let wets : Set<string> = new Set<string>();
         endUrlIndex = Math.max(endUrlIndex, startUrlIndex + 1);
-        console.log("start looking up " + (endUrlIndex - startUrlIndex) + " urls");
+        let ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
+        let selectedUrls = urls.slice(startUrlIndex, endUrlIndex);
+        let takeOnlyTheFirstWetPath = false;
 
-        function scaryRecursiveCallbackStuff(lookupIndex : number,
-                                             afterAllDoneCallback : (wetPaths : Array<string>) => void ) {
-
-            // terminate when index reaches endUrlIndex
-            if (lookupIndex >= endUrlIndex) {
-                console.log("finished looking up URLs!\n\n");
-
-                let wetPaths = Array.from(wets);
-                afterAllDoneCallback(wetPaths);
-                return;
-            }
-
-            let urlToLookUp = urls[lookupIndex];
-            let progress = "[" + (lookupIndex+1 - startUrlIndex) + "/" + (endUrlIndex - startUrlIndex) + "]";
-
-            // skip urls that contain "category:"
-            // CC index returns nothing for all of them
-            if (urlToLookUp.toLowerCase().includes("category:") &&
-                urlToLookUp.toLowerCase().includes("wikipedia")) {
-                console.log(progress + " skip " + urlToLookUp + " (includes strings 'category:' & 'wikipedia')");
-                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
-                return;
-            }
-
-
-            console.log(progress + " looking up " + urlToLookUp);
-
-            // look up single url
-            CCIndex.getWETPathsForURL(urls[lookupIndex], function (err, wetPaths) {
-                // log error but continue anyway
-                if (err) {
-                    console.log("      :(  error: " + err.message);
-                } else {
-                    console.log("      :)  resolved " + wetPaths.length + " wet paths for " + urlToLookUp);
-
-                    wets.add(wetPaths[0]);
-                    console.log("      :)  added first wet to the set, it now has " + wets.size + " paths");
-                }
-
-                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
-
-            }, ccIndex);
-
-        }
-
-        scaryRecursiveCallbackStuff(startUrlIndex, function allLookedUp(wetPaths) {
+        CCIndex.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
             console.log("phew, we are done with lookup!");
             console.log("following wet paths are relevant: ", wetPaths);
-        });
 
+            let ws = TestRuns.fs.createWriteStream("./urls/wets-" + startUrlIndex + "-" + endUrlIndex + ".json");
+            ws.write(JSON.stringify(wetPaths));
+            ws.end();
+
+        }, ccIndex);
 
 
 
