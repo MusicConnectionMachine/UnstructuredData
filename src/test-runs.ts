@@ -239,35 +239,52 @@ export class TestRuns {
 
     public static getWebsitesByURLs() {
         let urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
-        let maxNumberOfURLsForThisRun = 50; // urls.length to lookup all
+
+        let startUrlIndex = 0; // starting with   // 0 to start from the beginning
+        let endUrlIndex = 3; // excluding this  // urls.length to lookup all
         let ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index";
 
         let wets : Set<string> = new Set<string>();
-        console.log("start with looking up " + maxNumberOfURLsForThisRun + " urls");
+        endUrlIndex = Math.max(endUrlIndex, startUrlIndex + 1);
+        console.log("start looking up " + (endUrlIndex - startUrlIndex) + " urls");
 
         function scaryRecursiveCallbackStuff(lookupIndex : number,
-                                             afterAllDoneCallback : () => void ) {
+                                             afterAllDoneCallback : (wetPaths : Array<string>) => void ) {
 
-            // terminate when index reaches maxNumberOfURLsForThisRun
-            if (lookupIndex == maxNumberOfURLsForThisRun) {
-                console.log("finished looking up URLs!");
-                afterAllDoneCallback();
+            // terminate when index reaches endUrlIndex
+            if (lookupIndex >= endUrlIndex) {
+                console.log("finished looking up URLs!\n\n");
+
+                let wetPaths = Array.from(wets);
+                afterAllDoneCallback(wetPaths);
                 return;
             }
 
             let urlToLookUp = urls[lookupIndex];
-            console.log("looking up " + urlToLookUp);
+            let progress = "[" + (lookupIndex+1 - startUrlIndex) + "/" + (endUrlIndex - startUrlIndex) + "]";
+
+            // skip urls that contain "category:"
+            // CC index returns nothing for all of them
+            if (urlToLookUp.toLowerCase().includes("category:") &&
+                urlToLookUp.toLowerCase().includes("wikipedia")) {
+                console.log(progress + " skip " + urlToLookUp + " (includes strings 'category:' & 'wikipedia')");
+                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+                return;
+            }
+
+
+            console.log(progress + " looking up " + urlToLookUp);
 
             // look up single url
             CCIndex.getWETPathsForURL(urls[lookupIndex], function (err, wetPaths) {
                 // log error but continue anyway
                 if (err) {
-                    console.log("  error on " + urlToLookUp + ": " + err.message);
+                    console.log("      :(  error: " + err.message);
                 } else {
-                    console.log("  resolved " + wetPaths.length + " wet paths for " + urlToLookUp);
+                    console.log("      :)  resolved " + wetPaths.length + " wet paths for " + urlToLookUp);
 
                     wets.add(wetPaths[0]);
-                    console.log("  added first wet to the set, it now has " + wets.size + " paths");
+                    console.log("      :)  added first wet to the set, it now has " + wets.size + " paths");
                 }
 
                 scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
@@ -276,9 +293,9 @@ export class TestRuns {
 
         }
 
-        scaryRecursiveCallbackStuff(0, function allLookedUp() {
+        scaryRecursiveCallbackStuff(startUrlIndex, function allLookedUp(wetPaths) {
             console.log("phew, we are done with lookup!");
-            console.log("following wet paths are relevant: ", wets);
+            console.log("following wet paths are relevant: ", wetPaths);
         });
 
 

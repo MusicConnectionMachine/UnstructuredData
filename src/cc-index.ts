@@ -115,6 +115,11 @@ export class CCIndex {
                 continue; // ignore invalid JSONs
             }
 
+            if (json.hasOwnProperty("error")) {
+                //console.log("[warning] CC index returned an error: " + json.error);
+                continue;
+            }
+
             // line is ok, test for properties (strict! may not be supported for older crawls!)
             if (!json.hasOwnProperty("urlkey")) continue;
             if (!json.hasOwnProperty("timestamp")) continue;
@@ -166,8 +171,12 @@ export class CCIndex {
         for (let resObj of resObjs ) {
             if (resObj.status != 200) continue; // we only want 200 responses
 
-            if (!resObj.url.toLowerCase().includes(lookupURL.toLowerCase())) {
-                console.warn("CC index response (" + resObj.url +  ") doesn't contain the lookup URL (" + lookupURL + ")!");
+            // our input data might have partially encoded uris -> decode & encode again before comparison
+            let formattedResponseURL = encodeURIComponent(decodeURIComponent(resObj.url.toLowerCase())).toLowerCase();
+            let formattedLookupURL = encodeURIComponent(decodeURIComponent(lookupURL.toLowerCase())).toLowerCase();
+
+            if (!formattedResponseURL.includes(formattedLookupURL)) {
+                console.log("[warning] CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
                 //continue;
             }
 
