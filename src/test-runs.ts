@@ -237,6 +237,55 @@ export class TestRuns {
 
     }
 
+    public static getWebsitesByURLs() {
+        let urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
+        let maxNumberOfURLsForThisRun = 50; // urls.length to lookup all
+        let ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index";
+
+        let wets : Set<string> = new Set<string>();
+        console.log("start with looking up " + maxNumberOfURLsForThisRun + " urls");
+
+        function scaryRecursiveCallbackStuff(lookupIndex : number,
+                                             afterAllDoneCallback : () => void ) {
+
+            // terminate when index reaches maxNumberOfURLsForThisRun
+            if (lookupIndex == maxNumberOfURLsForThisRun) {
+                console.log("finished looking up URLs!");
+                afterAllDoneCallback();
+                return;
+            }
+
+            let urlToLookUp = urls[lookupIndex];
+            console.log("looking up " + urlToLookUp);
+
+            // look up single url
+            CCIndex.getWETPathsForURL(urls[lookupIndex], function (err, wetPaths) {
+                // log error but continue anyway
+                if (err) {
+                    console.log("  error on " + urlToLookUp + ": " + err.message);
+                } else {
+                    console.log("  resolved " + wetPaths.length + " wet paths for " + urlToLookUp);
+
+                    wets.add(wetPaths[0]);
+                    console.log("  added first wet to the set, it now has " + wets.size + " paths");
+                }
+
+                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+
+            }, ccIndex);
+
+        }
+
+        scaryRecursiveCallbackStuff(0, function allLookedUp() {
+            console.log("phew, we are done with lookup!");
+            console.log("following wet paths are relevant: ", wets);
+        });
+
+
+
+
+    }
+
 
     //endregion
 
