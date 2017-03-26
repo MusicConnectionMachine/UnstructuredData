@@ -258,17 +258,17 @@ export class TestRuns {
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 0;           // resolve the last and immediately start loading WET files
+        const startResolvingFrom = 0;           // set it to 0 for the first run!
+                                                // set it to 9999999 to resolve the last and immediately start loading WET files
                                                 // assumes that cacheFile was already populated in previous runs
-                                                // set it to 0 for the first run!
         const maxTimeout = 10000;
         const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
         // options for WET processing
-        const startWETProcessingFrom = 0;       // ignores the first n WET files in the list
-                                                // assumes that you have already processed some WET files
-                                                // and you don't want to do that again
-                                                // set it to 0 for the first run!
+        const startWETProcessingFrom = 0;       // set it to 0 for the first run!
+                                                // set it to n > 0 to ignore the first n WET files in the list
+                                                // assumes that you have already processed some WET files and you don't want to do that again
+
 
 
         CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
