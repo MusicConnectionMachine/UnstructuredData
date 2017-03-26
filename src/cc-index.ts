@@ -35,10 +35,12 @@ export class CCIndex {
      *
      * @param lookupURL             URL to look up in the CC index
      * @param callback              will be called with an array of paths to WET files (array of strings)
+     * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
     public static getWETPathsForURL(lookupURL : string,
                                     callback : (err? : Error, wetPaths? : Array<string>) => void,
+                                    timeout? : number,
                                     ccIndexPageURL? : string ) {
         CCIndex.lookUpURL(lookupURL, (err, rawResponse) => {
             if (err) {  callback(err);       return; }
@@ -55,7 +57,7 @@ export class CCIndex {
             }
 
 
-        }, ccIndexPageURL);
+        }, timeout, ccIndexPageURL);
 
     }
 
@@ -67,11 +69,13 @@ export class CCIndex {
      * @param lookupURLs                    URLs to look up in the CC index
      * @param takeOnlyTheFirstWetPath       If set to TRUE, only one WET path will be returned for each URL (there might be multiple WETs for one URL)
      * @param callback                      Will be called with an array of relative wet paths (might be empty)
+     * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
     public static getWETPathsForEachURL(lookupURLs : Array<string>,
                                         takeOnlyTheFirstWetPath : boolean,
                                         callback : (wetPaths : Array<string>) => void,
+                                        timeout? : number,
                                         ccIndexPageURL? : string) {
 
         let wets : Set<string> = new Set<string>();
@@ -81,13 +85,12 @@ export class CCIndex {
         //  - query cc index with one url,
         //  - wait for the response,
         //  - then call itself recursively to resolve the next URL
-        function scaryRecursiveCallbackStuff(lookupIndex : number,
-                                             afterAllDoneCallback : (wetPaths : Array<string>) => void ) {
+        function scaryRecursiveCallbackStuff(lookupIndex : number) {
 
             // terminate when index reaches endUrlIndex
             if (lookupIndex >= lookupURLs.length) {
                 let wetPaths = Array.from(wets);
-                afterAllDoneCallback(wetPaths);
+                callback(wetPaths);
                 return;
             }
 
@@ -99,7 +102,7 @@ export class CCIndex {
             if (urlToLookUp.toLowerCase().includes("category:") &&
                 urlToLookUp.toLowerCase().includes("wikipedia")) {
                 console.log(progress + " skip " + urlToLookUp + " (includes strings 'category:' & 'wikipedia')");
-                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+                scaryRecursiveCallbackStuff(lookupIndex+1);
                 return;
             }
 
@@ -124,13 +127,13 @@ export class CCIndex {
 
                 }
 
-                scaryRecursiveCallbackStuff(lookupIndex+1, afterAllDoneCallback);
+                scaryRecursiveCallbackStuff(lookupIndex+1);
 
-            }, ccIndexPageURL);
+            }, timeout, ccIndexPageURL);
 
         }
 
-        scaryRecursiveCallbackStuff(0, callback);
+        scaryRecursiveCallbackStuff(0);
 
 
 
@@ -150,6 +153,8 @@ export class CCIndex {
      * @param outputFile                    file for temporary storage and backup
      * @param stepSize                      how many files should be resolved in one step (between backup)
      * @param callback                      Will be called with an array of relative wet paths (might be empty)
+     * @param startResolvingFrom            (optional) if there was an error before, you can resolving from this entry
+     * @param timeout                       (optional) max waiting time for the response
      * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
     public static getWETPathsForEachURLStepByStep(lookupURLs : Array<string>,
@@ -157,6 +162,8 @@ export class CCIndex {
                                                   outputFile : string,
                                                   stepSize : number,
                                                   callback : (allWets : Array<string>) => void,
+                                                  startResolvingFrom? : number,
+                                                  timeout? : number,
                                                   ccIndexPageURL? : string) {
 
         function doStep(start : number) {
@@ -201,11 +208,11 @@ export class CCIndex {
                     }
                 }); // ws on close
 
-            }, ccIndexPageURL);// CCIndex.getWETPathsForEachURL
+            }, timeout, ccIndexPageURL);// CCIndex.getWETPathsForEachURL
 
         } // doStep(...)
 
-        doStep(0);
+        doStep(startResolvingFrom | 0);
 
     }
 
@@ -218,16 +225,20 @@ export class CCIndex {
      *
      * @param lookupURL             URL to look up in the CC index
      * @param callback              (optional) will be called with the response body string; if not provided -> output to console
+     * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
     private static lookUpURL(lookupURL : string,
-                            callback? : (err? : Error, body? : string) => void,
-                            ccIndexPageURL? : string) {
+                             callback? : (err? : Error, body? : string) => void,
+                             timeout? : number,
+                             ccIndexPageURL? : string) {
 
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
         let indexPage = ccIndexPageURL || CCIndex.defaultCCIndex;
 
         let query = indexPage + "?url=" + encodeURI(lookupURL) + "&output=json";
+
+        let status = 'waiting';
 
         Downloader.getResponse(query, (err, res) => {
             if (err) {
@@ -235,16 +246,35 @@ export class CCIndex {
                 return;
             }
 
+
             // get full response
             let body = '';
             res.on('data', (chunk) => {
                body += chunk;
             });
             res.on('end', () => {
-                if (callback) callback(undefined, body); else console.log("response body for " + lookupURL + ":\n" + body);
+                if (status == 'waiting') {
+                    status = 'done';
+                    if (callback) callback(undefined, body); else console.log("response body for " + lookupURL + ":\n" + body);
+                }
+            });
+            res.on('aborted', () => {
+                if (status == 'waiting') {
+                    status = 'aborted';
+                    if (callback) callback(new Error("request aborted!"));
+                }
             });
 
         });
+
+        // test timeout
+        setTimeout(function() {
+            if (status == 'waiting') { // we are still waiting
+                console.log("Timeout! Request for " + lookupURL + "probably failed");
+                status = 'aborted';
+                if (callback) callback(new Error("request aborted after timeout!"));
+            }
+        }, 5000);
     }
 
     /**
