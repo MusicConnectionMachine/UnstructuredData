@@ -258,9 +258,9 @@ export class TestRuns {
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 999999;    // resolve the last and immediately start loading WET files
-                                              // assumes that cacheFile was already populated in previous runs
-                                              // set it to 0 for the first run!
+        const startResolvingFrom = 0;           // resolve the last and immediately start loading WET files
+                                                // assumes that cacheFile was already populated in previous runs
+                                                // set it to 0 for the first run!
         const maxTimeout = 10000;
         const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
