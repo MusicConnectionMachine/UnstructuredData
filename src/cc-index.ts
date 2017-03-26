@@ -270,11 +270,11 @@ export class CCIndex {
         // test timeout
         setTimeout(function() {
             if (status == 'waiting') { // we are still waiting
-                console.log("Timeout! Request for " + lookupURL + "probably failed");
+                //console.log("Timeout! Request for " + lookupURL + " probably failed");
                 status = 'aborted';
                 if (callback) callback(new Error("request aborted after timeout!"));
             }
-        }, 5000);
+        }, timeout ? timeout : 5000);
     }
 
     /**

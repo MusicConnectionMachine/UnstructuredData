@@ -242,7 +242,7 @@ export class TestRuns {
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 180;
+        const startResolvingFrom = 250;
         const maxTimeout = 10000;
         const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
