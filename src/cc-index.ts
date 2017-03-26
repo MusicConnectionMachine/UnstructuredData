@@ -23,6 +23,7 @@ export class CCIndexResponse {
  */
 export class CCIndex {
 
+    static fs = require('fs');
     public static defaultCCIndex = "http://index.commoncrawl.org/CC-MAIN-2017-04-index";
 
 
@@ -76,13 +77,15 @@ export class CCIndex {
         let wets : Set<string> = new Set<string>();
         console.log("start looking up " + lookupURLs.length + " urls");
 
+        // We can't send 100500 requests at the same time, instead we:
+        //  - query cc index with one url,
+        //  - wait for the response,
+        //  - then call itself recursively to resolve the next URL
         function scaryRecursiveCallbackStuff(lookupIndex : number,
                                              afterAllDoneCallback : (wetPaths : Array<string>) => void ) {
 
             // terminate when index reaches endUrlIndex
             if (lookupIndex >= lookupURLs.length) {
-                console.log("finished looking up URLs!\n\n");
-
                 let wetPaths = Array.from(wets);
                 afterAllDoneCallback(wetPaths);
                 return;
@@ -132,6 +135,81 @@ export class CCIndex {
 
 
     }
+
+
+    /**
+     * Takes an array of URL to look up, queries the CC index, parses the CC responses and returns
+     * an array of relative paths to WET files that should include the URLs. This function handles all errors.
+     *
+     * The main difference to getWETPathsForEachURL() is step by step resolving.
+     * After stepSize urls were resolved, we save the result on disk. This prevents data loss in case something goes
+     * wrong during the resolving.
+     *
+     * @param lookupURLs                    URLs to look up in the CC index
+     * @param takeOnlyTheFirstWetPath       If set to TRUE, only one WET path will be returned for each URL (there might be multiple WETs for one URL)
+     * @param outputFile                    file for temporary storage and backup
+     * @param stepSize                      how many files should be resolved in one step (between backup)
+     * @param callback                      Will be called with an array of relative wet paths (might be empty)
+     * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
+     */
+    public static getWETPathsForEachURLStepByStep(lookupURLs : Array<string>,
+                                                  takeOnlyTheFirstWetPath : boolean,
+                                                  outputFile : string,
+                                                  stepSize : number,
+                                                  callback : (allWets : Array<string>) => void,
+                                                  ccIndexPageURL? : string) {
+
+        function doStep(start : number) {
+
+            let end = start + stepSize;
+            end = Math.min(end, lookupURLs.length);
+
+            console.log("starting new step, resolving entries from " + (start+1) + " to " + end);
+
+            let selectedUrls = lookupURLs.slice(start, end);
+            CCIndex.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
+                // save resolved paths along with the old ones
+                let allWets = new Set<string>();
+                for (let newWet of wetPaths) allWets.add(newWet);
+
+                console.log(">> resolved " + wetPaths.length + " new path(s)");
+
+                // read old if exists
+                if (CCIndex.fs.existsSync(outputFile)) {
+                    let oldWets = JSON.parse(CCIndex.fs.readFileSync(outputFile));
+                    for (let oldWet of oldWets) allWets.add(oldWet);
+
+                    console.log(">> found " + oldWets.length + " old path(s), merging with new ones");
+                }
+
+                // save result
+                let allWetsArray = Array.from(allWets);
+                console.log(">> writing " + allWetsArray.length + " path(s) to " + outputFile);
+                let ws = CCIndex.fs.createWriteStream(outputFile);
+                ws.write(JSON.stringify(allWetsArray));
+                ws.end();
+                ws.on('close', () => {
+                    if (end < lookupURLs.length) {
+
+                        // repeat
+                        console.log(">> step done, repeating for next entries\n");
+                        // start from where we stopped right now
+                        doStep(end);
+                    } else {
+                        console.log(">> last step finished!\n");
+                        if (callback) callback(allWetsArray);
+                    }
+                }); // ws on close
+
+            }, ccIndexPageURL);// CCIndex.getWETPathsForEachURL
+
+        } // doStep(...)
+
+        doStep(0);
+
+    }
+
+
 
 
     /**

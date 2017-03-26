@@ -238,27 +238,15 @@ export class TestRuns {
     }
 
     public static getWebsitesByURLs() {
-        let urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
+        const urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
+        const takeOnlyTheFirstWetPath = true;
+        const cacheFile = "./urls/previouslyResolvedWETs.json";
+        const saveAfter = 5;
+        const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
-        let startUrlIndex = 0; // starting with   // 0 to start from the beginning
-        let endUrlIndex = 3; // excluding this  // urls.length to lookup all
-
-        endUrlIndex = Math.max(endUrlIndex, startUrlIndex + 1);
-        let ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
-        let selectedUrls = urls.slice(startUrlIndex, endUrlIndex);
-        let takeOnlyTheFirstWetPath = false;
-
-        CCIndex.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
-            console.log("phew, we are done with lookup!");
-            console.log("following wet paths are relevant: ", wetPaths);
-
-            let ws = TestRuns.fs.createWriteStream("./urls/wets-" + startUrlIndex + "-" + endUrlIndex + ".json");
-            ws.write(JSON.stringify(wetPaths));
-            ws.end();
-
+        CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
+            console.log("Finished! Following WETs are relevant:", wetPaths);
         }, ccIndex);
-
-
 
     }
 
