@@ -237,7 +237,7 @@ export class TestRuns {
 
     }
 
-    public static getWebsitesByURLs() {
+    public static resolveMultipleURLs() {
         const urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
@@ -246,6 +246,9 @@ export class TestRuns {
 
         CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
             console.log("Finished! Following WETs are relevant:", wetPaths);
+
+            //  TODO: now download all required WET files and extract pages
+
         }, ccIndex);
 
     }
