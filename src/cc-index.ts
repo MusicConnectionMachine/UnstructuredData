@@ -167,6 +167,7 @@ export class CCIndex {
                                                   ccIndexPageURL? : string) {
 
         function doStep(start : number) {
+            start = Math.min(start, lookupURLs.length-1);
 
             let end = start + stepSize;
             end = Math.min(end, lookupURLs.length);
@@ -256,6 +257,8 @@ export class CCIndex {
                 if (status == 'waiting') {
                     status = 'done';
                     if (callback) callback(undefined, body); else console.log("response body for " + lookupURL + ":\n" + body);
+                } else {
+                    //console.log("too late for " + lookupURL);
                 }
             });
             res.on('aborted', () => {

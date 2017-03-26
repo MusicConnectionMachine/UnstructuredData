@@ -237,19 +237,131 @@ export class TestRuns {
 
     }
 
-    public static resolveMultipleURLs() {
+
+    /**
+     * Resolves relevant Wiki URLs to WET file paths.
+     * Afterwards opens each WET file and scans for relevant pages.
+     * All relevant pages are saved into a file (one file for each WET file).
+     *
+     * Warning: CC index API is slow! You can do following:
+     *  - On the first run resolve the first 100-200 URLs and terminate the process
+     *  - WET paths have a backup on disk, so don't worry.
+     *  - Set "startResolvingFrom" to 99999 for the second run
+     *  - This will resolve the last URL and start processing with WET files
+     *  - One a WET file is processed, you can safely terminate the process (results are already on the disk)
+     *  - Set "startWETProcessingFrom" to a value n > 0 to ignore the first n WET files
+     */
+    public static extractPagesByURL() {
+
+        // options for URL resolving
         const urls = JSON.parse(TestRuns.fs.readFileSync("./urls/wikiURLs.json", "utf8"));
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 250;
+        const startResolvingFrom = 999999;    // resolve the last and immediately start loading WET files
+                                              // assumes that cacheFile was already populated in previous runs
+                                              // set it to 0 for the first run!
         const maxTimeout = 10000;
         const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
-        CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
-            console.log("Finished! Following WETs are relevant:", wetPaths);
+        // options for WET processing
+        const startWETProcessingFrom = 0;       // ignores the first n WET files in the list
+                                                // assumes that you have already processed some WET files
+                                                // and you don't want to do that again
+                                                // set it to 0 for the first run!
 
-            //  TODO: now download all required WET files and extract pages
+
+        CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
+            //console.log("Finished! Following WETs are relevant:\n", wetPaths);
+
+            console.log("------------------------");
+            console.log("Finished resolving URLs!");
+            console.log("WET files required: " + wetPaths.length);
+            console.log("------------------------\n");
+
+            function processWET(index) {
+                if (index >= wetPaths.length) {
+                    console.log("FINISHED!");
+                    return;
+                }
+
+                let wetPath = wetPaths[index];
+                console.log("[" + (index + 1) + "/" + wetPaths.length + "]   start processing new WET");
+                console.log("getting " + wetPath);
+
+                WetManager.loadWetAsStream(wetPath, (err, stream) => {
+                    if (err) {
+                        console.log("   error: " + err.message);
+                        return;
+                    }
+
+                    let outputFileName = TestRuns.path.basename(wetPath);
+                    outputFileName = outputFileName.replace(".warc.wet.gz", ".filtered.warc.wet");
+
+                    let outputFilePath = TestRuns.path.join(TestRuns.dataFolder, outputFileName);
+                    const writeStream = LanguageExtractor.fs.createWriteStream(outputFilePath, {flags: 'w'});
+
+
+                    let entryID = 0;
+                    let foundPages = 0;
+
+                    let warcParser = new TestRuns.WARCStream();
+                    stream.pipe(warcParser).on('data', data => {
+
+                        // getting WET entries here
+                        let p = new WebPage(data);
+
+                        if (entryID == 1 || entryID == 10 || entryID == 100 || (entryID > 0 && entryID % 1000 == 0)) {
+                            console.log("       processing entry " + entryID + "\t\tURL: " + p.getURI());
+                        }
+                        entryID++;
+
+
+                        // our input data might have partially encoded uris -> decode & encode again before comparison
+                        function formatURI(uri) {
+                            try {
+                                let result = encodeURIComponent(decodeURIComponent(uri.toLowerCase())).toLowerCase().replace("https://", "").replace("http://", "");
+                                return result;
+                            } catch (e) {
+                                // some URIs fail, return as is
+                                //console.log("   strange uri: " + uri);
+                                return uri;
+                            }
+                        }
+
+
+                        let formattedPageURI = formatURI(p.getURI());
+
+                        // compare with ALL relevant URLs
+                        // this is quite slow, especially with URL formatting!
+                        // If you are sure that the input URLs are formatted the sam way as CC is, remove the format() call
+                        for (let url of urls) {
+                            if (formattedPageURI.includes(formatURI(url))) {
+                                // write page to file
+                                foundPages++;
+                                console.log("   :)  found relevant page: " + p.getURI());
+                                writeStream.write(p.toString());
+                                return;
+                            }
+                        }
+
+                    }).on('end', () => {
+                        console.log("   finished with " + wetPath );
+                        console.log("   checked " + entryID + " pages");
+                        console.log("   found " + foundPages + " relevant pages");
+                        console.log("   filtered results were saved to " + outputFilePath + "\n");
+                        writeStream.end();
+
+                        // go for the next WET file
+                        processWET(index+1);
+                    });
+
+                });
+
+            }
+
+            processWET(startWETProcessingFrom);
+
 
         }, startResolvingFrom, maxTimeout, ccIndex);
 

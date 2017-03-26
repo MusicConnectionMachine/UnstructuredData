@@ -11,7 +11,7 @@ import {TestRuns} from "./test-runs";
 // TestRuns.testExtractAllEnglishPages();   // WET file must already be downloaded!
 // TestRuns.createFilteredSampleDataForGroups3_4();
 // TestRuns.getWebsiteByURL();
-TestRuns.resolveMultipleURLs();
+TestRuns.extractPagesByURL();
 
 
 // These runs require the WET file to be already downloaded and unpacked:
