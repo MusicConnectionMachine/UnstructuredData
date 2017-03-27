@@ -24,27 +24,27 @@ export class PrefixTree extends Filter{
     constructor(tokens? : string[]) {
         super();
         this.root = new PTNode(); // not a leaf! we do not want to match any string!
-        if (tokens) { super.addTokens(tokens); }
+        if (tokens) { super.addSearchTerms(tokens); }
     }
 
     /**
      * Add a new token to this tree.
      * @param token
      */
-    public addToken(token : string) : void {
+    public addSearchTerm(token : string) : void {
         this.root = this.root.addTerm(token.toLowerCase());
     }
 
     /**
      * Checks it the string contains at least one term.
-     * @param term
+     * @param text
      * @returns {boolean}
      */
-    public containsToken(term : string) : boolean {
+    public filterText(text : string) : boolean {
 
-        for (let position = 0; position < term.length; position++) {
+        for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
-            let result = this.root.match(term, position);
+            let result = this.root.match(text, position);
             if (result) return true;
         }
 

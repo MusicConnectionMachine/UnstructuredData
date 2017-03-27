@@ -26,10 +26,15 @@ import {TestRuns} from "./test-runs";
 //TestRuns.testStreamedDownloadUnpackingAndProcessing();
 
 // UNIT TESTS
-import {PrefixTreeTest} from "./tests/test-prefix-tree";
-import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
+//import {PrefixTreeTest} from "./tests/test-prefix-tree";
+//import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
-// PrefixTreeTest.runAllTests();
+//PrefixTreeTest.runAllTests();
 // NaiveTermSearchTest.runAllTests();
-TestRuns.testBloomFilter();
-TestRuns.testPrefixTree();
+
+// FILTER TESTS
+import { BloomFilter } from "./filters/bloom-filter";
+import { PrefixTree } from "./filters/prefix-tree";
+
+TestRuns.testFilter(new BloomFilter());
+TestRuns.testFilter(new PrefixTree());

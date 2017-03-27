@@ -5,6 +5,7 @@ import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
 import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./filters/bloom-filter";
+import { Filter } from "./filters/filter";
 import {WetManager} from "./wet-manager";
 import {TermLoader} from "./utils/term-loader";
 import {PrefixTree} from "./filters/prefix-tree";
@@ -434,31 +435,6 @@ export class TestRuns {
     }
 
 
-
-
-    public static testBloomFilter() {
-        let filter = new BloomFilter();
-        let text = "Some not so random text I didn't came up with...";
-        let terms = ["so", "totally", "NOT", "random", "at", "all"];
-        filter.addText(text);
-        let contains = filter.containsTokens(terms);
-        console.log(text);
-        console.log(terms);
-        console.log(contains);
-    }
-
-    public static testPrefixTree() {
-        let filter = new PrefixTree();
-        let text = "Some not so random text I didn't came up with...";
-        let terms = ["so", "totally", "NOT", "random", "at", "all"];
-        filter.addText(text);
-        let contains = filter.containsTokens(terms);
-        console.log(text);
-        console.log(terms);
-        console.log(contains);
-    }
-
-
     public static testWetManager() {
         let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz'
         let timeStart = new Date().getTime();
@@ -480,6 +456,21 @@ export class TestRuns {
                 console.log('Finished. Took ' + (timeFinish - timeStart) + 'ms');
             });
         });
+    }
+
+    public static testFilter(filter : Filter) {
+        console.log('Filter:', filter.constructor.name);
+
+        let searchTerms = ['not', 'so', 'random'];
+        filter.addSearchTerms(searchTerms);
+
+        let text = 'This text is not supposed to be long.';
+        let result = filter.filterText(text);
+        console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
+
+        text = 'A different text which should fail the filter!';
+        result = !filter.filterText(text);
+        console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
     }
 
 }
