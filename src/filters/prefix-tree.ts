@@ -64,7 +64,6 @@ export class PrefixTree extends IndexFilter{
         let matches : Set<string> = new Set();
 
         for (let position = 0; position < text.length; position++) {
-            // try to match each position until one term is found
             let result = this.root.match(text, position); // tuple [boolean, string, number]
             if (result[0]) {
                 matches.add(result[1]);
@@ -82,7 +81,6 @@ export class PrefixTree extends IndexFilter{
         let matches : Map<string, Array<number>> = new Map();
 
         for (let position = 0; position < text.length; position++) {
-            // try to match each position until one term is found
             let result = this.root.match(text, position); // tuple [boolean, string, number]
             if (result[0]) {
                 let match : string = result[1];

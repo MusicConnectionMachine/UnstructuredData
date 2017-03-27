@@ -3,7 +3,7 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch, Occurrence } from "./filters/term-search";
+import { TermSearch, Occurrence } from "./term-search";
 import { BloomFilter } from "./filters/bloom-filter";
 import { Filter } from "./filters/filter";
 import {WetManager} from "./wet-manager";

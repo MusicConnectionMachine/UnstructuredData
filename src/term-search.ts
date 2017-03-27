@@ -1,6 +1,6 @@
-import {WebPage} from "../utils/web-page";
-import {TermLoader} from "../utils/term-loader";
-import {Occurrence} from "../utils/occurrence";
+import {WebPage} from "./utils/web-page";
+import {TermLoader} from "./utils/term-loader";
+import {Occurrence} from "./utils/occurrence";
 
 
 /**
