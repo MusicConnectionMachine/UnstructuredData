@@ -258,7 +258,7 @@ export class TestRuns {
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 0;           // set it to 0 for the first run!
+        const startResolvingFrom = 999999;      // set it to 0 for the first run!
                                                 // set it to 9999999 to resolve the last and immediately start loading WET files
                                                 // assumes that cacheFile was already populated in previous runs
         const maxTimeout = 10000;
@@ -287,6 +287,7 @@ export class TestRuns {
 
                 let wetPath = wetPaths[index];
                 console.log("[" + (index + 1) + "/" + wetPaths.length + "]   start processing new WET");
+                console.log("now is " + (new Date).toString());
                 console.log("getting " + wetPath);
 
                 WetManager.loadWetAsStream(wetPath, (err, stream) => {
@@ -305,6 +306,25 @@ export class TestRuns {
                     let entryID = 0;
                     let foundPages = 0;
 
+
+                    // our input data might have partially encoded uris -> decode & encode again before comparison
+                    function formatURI(uri) {
+                        try {
+                            let result = encodeURIComponent(decodeURIComponent(uri.toLowerCase())).toLowerCase().replace("https://", "").replace("http://", "");
+                            return result;
+                        } catch (e) {
+                            // some URIs fail, return as is
+                            //console.log("   strange uri: " + uri);
+                            return uri;
+                        }
+                    }
+                    // format each url only once
+                    let urlsFormatted = [];
+                    for (let url of urls) {
+                        urlsFormatted.push(formatURI(url));
+                    }
+
+
                     let warcParser = new TestRuns.WARCStream();
                     stream.pipe(warcParser).on('data', data => {
 
@@ -317,17 +337,6 @@ export class TestRuns {
                         entryID++;
 
 
-                        // our input data might have partially encoded uris -> decode & encode again before comparison
-                        function formatURI(uri) {
-                            try {
-                                let result = encodeURIComponent(decodeURIComponent(uri.toLowerCase())).toLowerCase().replace("https://", "").replace("http://", "");
-                                return result;
-                            } catch (e) {
-                                // some URIs fail, return as is
-                                //console.log("   strange uri: " + uri);
-                                return uri;
-                            }
-                        }
 
 
                         let formattedPageURI = formatURI(p.getURI());
@@ -335,8 +344,8 @@ export class TestRuns {
                         // compare with ALL relevant URLs
                         // this is quite slow, especially with URL formatting!
                         // If you are sure that the input URLs are formatted the sam way as CC is, remove the format() call
-                        for (let url of urls) {
-                            if (formattedPageURI.includes(formatURI(url))) {
+                        for (let urlF of urlsFormatted) {
+                            if (formattedPageURI.includes(urlF)) {
                                 // write page to file
                                 foundPages++;
                                 console.log("   :)  found relevant page: " + p.getURI());
