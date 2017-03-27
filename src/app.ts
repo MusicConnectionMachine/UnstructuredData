@@ -11,7 +11,8 @@ import {TestRuns} from "./test-runs";
 // TestRuns.testExtractAllEnglishPages();   // WET file must already be downloaded!
 // TestRuns.createFilteredSampleDataForGroups3_4();
 // TestRuns.getWebsiteByURL();
-TestRuns.extractPagesByURL();
+// TestRuns.extractPagesByURL();
+
 
 
 // These runs require the WET file to be already downloaded and unpacked:
@@ -20,7 +21,7 @@ TestRuns.extractPagesByURL();
 // TestRuns.testPreProcessingChain();
 
 //Testing of WetManager
-//TestRuns.testWetManager();
+TestRuns.testWetManager();
 
 // test cc index
 //TestRuns.testCCIndex();

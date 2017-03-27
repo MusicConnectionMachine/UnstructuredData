@@ -607,7 +607,7 @@ export class TestRuns {
                 let timeFinish = new Date().getTime();
                 console.log('Finished. Took ' + (timeFinish - timeStart) + 'ms');
             });
-        });
+        }, false);
     }
 
     /**
