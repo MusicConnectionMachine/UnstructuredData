@@ -258,10 +258,10 @@ export class TestRuns {
         const takeOnlyTheFirstWetPath = true;
         const cacheFile = "./urls/previouslyResolvedWETs.json";
         const saveAfter = 5;
-        const startResolvingFrom = 999999;      // set it to 0 for the first run!
+        const startResolvingFrom = 0;           // set it to 0 for the first run!
                                                 // set it to 9999999 to resolve the last and immediately start loading WET files
                                                 // assumes that cacheFile was already populated in previous runs
-        const maxTimeout = 10000;
+        const maxTimeout = 7000;
         const ccIndex = "http://index.commoncrawl.org/CC-MAIN-2017-09-index"; // optional
 
         // options for WET processing
@@ -296,8 +296,8 @@ export class TestRuns {
                         return;
                     }
 
-                    let outputFileName = TestRuns.path.basename(wetPath);
-                    outputFileName = outputFileName.replace(".warc.wet.gz", ".filtered.warc.wet");
+                    let outputFileName = TestRuns.path.basename(wetPath).replace(".warc.wet.gz", ".filtered.warc.wet");
+                    outputFileName = "file_" + ("0000" + (index+1)).slice(-4) + "_of_" + wetPaths.length + "_" + outputFileName;
 
                     let outputFilePath = TestRuns.path.join(TestRuns.dataFolder, outputFileName);
                     const writeStream = LanguageExtractor.fs.createWriteStream(outputFilePath, {flags: 'w'});

@@ -172,7 +172,7 @@ export class CCIndex {
             let end = start + stepSize;
             end = Math.min(end, lookupURLs.length);
 
-            console.log("starting new step, resolving entries from " + (start+1) + " to " + end);
+            console.log("starting new step, resolving entries from " + (start+1) + " to " + end + "  (total number: " + lookupURLs.length + ")");
 
             let selectedUrls = lookupURLs.slice(start, end);
             CCIndex.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
