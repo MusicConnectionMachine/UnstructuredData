@@ -25,13 +25,32 @@ export class BloomFilter extends Filter{
      * @param text                  text to be filtered for search terms
      * @returns boolean             high likelihood of containing at least one term
      */
-    public filterText(text : string) : boolean {
+    public containsSearchTerm(text : string) : boolean {
         let tokens = BloomFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
-            if (this.filter.has(new Buffer(token.toLowerCase()))) {
+            token = token.toLowerCase();
+            if (this.filter.has(new Buffer(token))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns all searchTerm matches
+     * @param text
+     * @returns string[]            array of matches
+     */
+    public getMatches(text : string) : string[] {
+
+        let matches : string[] = [];
+
+        let tokens = BloomFilter.tokenizer.tokenize(text.toLowerCase());
+        for (let token of tokens) {
+            if (this.filter.has(new Buffer(token))) {
+                matches.push(token);
+            }
+        }
+        return matches;
     }
 }

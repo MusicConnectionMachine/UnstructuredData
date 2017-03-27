@@ -20,7 +20,7 @@ export class PrefixTreeTest {
         ];
 
         for (let i = 0; i < matchingStrings.length; i++) {
-            let matched = pTree.filterText(matchingStrings[i]);
+            let matched = pTree.containsSearchTerm(matchingStrings[i]);
             let status = matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " matching string '" + matchingStrings[i] + "' with " + pTree);
         }
@@ -31,7 +31,7 @@ export class PrefixTreeTest {
 
 
         for (let i = 0; i < notMatchingString.length; i++) {
-            let matched = pTree.filterText(notMatchingString[i]);
+            let matched = pTree.containsSearchTerm(notMatchingString[i]);
             let status = !matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " NOT matching string '" + notMatchingString[i] + "'");
         }
@@ -62,14 +62,14 @@ export class PrefixTreeTest {
 
         for (let matchingSet of matchingTermSets) {
             let pTree = new PrefixTree(matchingSet);
-            let matched = pTree.filterText(string);
+            let matched = pTree.containsSearchTerm(string);
             let status = matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " matching string with this tree: " + pTree);
         }
 
         for (let notMatchingSet of notMatchingTermSets) {
             let pTree = new PrefixTree(notMatchingSet);
-            let matched = pTree.filterText(string);
+            let matched = pTree.containsSearchTerm(string);
             let status = !matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " NOT matching string with this tree: " + pTree.toString().replace('\n', ''));
         }
@@ -84,13 +84,13 @@ export class PrefixTreeTest {
 
         let pTree = new PrefixTree(); // empty tree
         pTree.addSearchTerm("mozartWasHere");
-        let matched = pTree.filterText(string);
+        let matched = pTree.containsSearchTerm(string);
         let status = !matched ? "[PASSED] " : "[FAILED]";
         console.log(status + " NOT matching '" + string +  "' with this tree: " + pTree);
 
         // insert a shorter string -> replace tho old long one
         pTree.addSearchTerm("mozart");
-        matched = pTree.filterText(string);
+        matched = pTree.containsSearchTerm(string);
         status = matched ? "[PASSED] " : "[FAILED]";
         console.log(status + " matching '" + string +  "' with this tree: " + pTree );
 

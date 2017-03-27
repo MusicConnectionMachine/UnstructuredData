@@ -461,16 +461,20 @@ export class TestRuns {
     public static testFilter(filter : Filter) {
         console.log('Filter:', filter.constructor.name);
 
-        let searchTerms = ['not', 'so', 'random'];
+        let searchTerms = ['not', 'very', 'random'];
         filter.addSearchTerms(searchTerms);
 
-        let text = 'This text is not supposed to be long.';
-        let result = filter.filterText(text);
+        let text = 'This text is not supposed to be very very long.';
+        let result = filter.containsSearchTerm(text);
         console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
+        let matches = filter.getMatches(text);
+        console.log('Matches:', matches);
 
         text = 'A different text which should fail the filter!';
-        result = !filter.filterText(text);
+        result = !filter.containsSearchTerm(text);
         console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
+        matches = filter.getMatches(text);
+        console.log('Matches:', matches);
     }
 
 }

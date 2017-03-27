@@ -18,5 +18,13 @@ export abstract class Filter {
      * @param text
      * @returns true if at least one search term is contained in the text
      */
-    abstract filterText(text : string) : boolean;
+    abstract containsSearchTerm(text : string) : boolean;
+
+
+    /**
+     * Returns all searchTerm matches
+     * @param text
+     * @returns string[]          array of matches
+     */
+    abstract getMatches(text : string) : string[];
 }

@@ -1,4 +1,4 @@
-import { Filter } from "./filter";
+import { IndexFilter } from "./index-filter";
 
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
@@ -14,7 +14,7 @@ import { Filter } from "./filter";
  * However, we have to maximize performance and remove any overhead that third-party packages might have (to provide
  * more functionality that is not needed here).
  */
-export class PrefixTree extends Filter{
+export class PrefixTree extends IndexFilter{
     private root : PTElement;
 
     /**
@@ -40,15 +40,55 @@ export class PrefixTree extends Filter{
      * @param text
      * @returns {boolean}
      */
-    public filterText(text : string) : boolean {
+    public containsSearchTerm(text : string) : boolean {
 
         for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
-            let result = this.root.match(text, position);
-            if (result) return true;
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                return true;
+            }
         }
 
         return false;
+    }
+
+    /**
+     * Returns all searchTerm matches
+     * @param text
+     * @returns string[]                    array of matches
+     */
+    public getMatches(text : string) : string[] {
+
+        let matches : string[] = [];
+
+        for (let position = 0; position < text.length; position++) {
+            // try to match each position until one term is found
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                matches.push(result[1]);
+            }
+        }
+        return matches;
+    }
+
+    /**
+     * Returns all searchTerm matches with index
+     * @param text
+     * @returns [string, number][]          array of tuple consisting of match and index
+     */
+    public getMatchesIndex(text : string) : [string, number][] {
+        let matches : [string, number][] = [];
+
+        for (let position = 0; position < text.length; position++) {
+            // try to match each position until one term is found
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                let matchTuple : [string, number] = [result[1], result[2]];
+                matches.push(matchTuple);
+            }
+        }
+        return matches;
     }
 
     public toString() : string {
@@ -72,8 +112,9 @@ interface PTElement {
      * Try to find any terms contained in the (sub-)tree structure in the search string at specified position.
      * @param searchStr  string to search
      * @param searchPos  position (index), position of the first character = 0
+     * @returns tuple of boolean (matches?), string (match) and number (match index)
      */
-    match(searchStr : string, searchPos : number) : boolean;
+    match(searchStr : string, searchPos : number) : [boolean, string, number];
 
 }
 
@@ -93,8 +134,8 @@ class PTLeaf implements PTElement {
         return this;
     }
 
-    match(searchStr : string, searchPos : number): boolean {
-        return true;
+    match(searchStr : string, searchPos : number): [boolean, string, number] {
+        return [true, '', searchPos];
     }
 
     public toString() : string {
@@ -135,14 +176,15 @@ class PTNode implements PTElement {
         return this;
     }
 
-    match(searchStr : string, searchPos : number): boolean {
+    match(searchStr : string, searchPos : number): [boolean, string, number] {
         let key = searchStr.charAt(searchPos).toLowerCase(); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
 
-        if (!this.hasOwnProperty(key))  return false; // no such key in this PT node -> no match
+        if (!this.hasOwnProperty(key))  return [false, '', searchPos]; // no such key in this PT node -> no match
 
         let childNode = this[key]; // continue search in child node
 
-        return childNode.match(searchStr, searchPos + 1);
+        let childResult = childNode.match(searchStr, searchPos + 1);
+        return [childResult[0], key + childResult[1], searchPos];
     }
 
 
