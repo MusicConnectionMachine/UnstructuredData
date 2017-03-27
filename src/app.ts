@@ -37,4 +37,4 @@ import { BloomFilter } from "./filters/bloom-filter";
 import { PrefixTree } from "./filters/prefix-tree";
 
 TestRuns.testFilter(new BloomFilter());
-TestRuns.testFilter(new PrefixTree());
+TestRuns.testIndexFilter(new PrefixTree());

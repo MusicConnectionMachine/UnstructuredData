@@ -2,7 +2,7 @@
  * Created by Anshul on 3/7/2017.
  */
 
-import {AlreadyExistsError,UnsupportedFileFormat} from './utils/utils';
+import {AlreadyExistsError,UnsupportedFileFormat} from './utils/errors';
 import {WebPage} from "./utils/web-page";
 
 export class LanguageExtractor {

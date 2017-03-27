@@ -39,16 +39,16 @@ export class BloomFilter extends Filter{
     /**
      * Returns all searchTerm matches
      * @param text
-     * @returns string[]            array of matches
+     * @returns                        hash set of matches
      */
-    public getMatches(text : string) : string[] {
+    public getMatches(text : string) : Set<string> {
 
-        let matches : string[] = [];
+        let matches : Set<string> = new Set();
 
         let tokens = BloomFilter.tokenizer.tokenize(text.toLowerCase());
         for (let token of tokens) {
             if (this.filter.has(new Buffer(token))) {
-                matches.push(token);
+                matches.add(token);
             }
         }
         return matches;

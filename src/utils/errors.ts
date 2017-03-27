@@ -18,3 +18,4 @@ export class UnsupportedFileFormat extends Error {
         this.name = 'UnsupportedFileFormat';
     }
 }
+

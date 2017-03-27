@@ -3,12 +3,13 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch, Occurrence } from "./term-search";
+import { TermSearch, Occurrence } from "./filters/term-search";
 import { BloomFilter } from "./filters/bloom-filter";
 import { Filter } from "./filters/filter";
 import {WetManager} from "./wet-manager";
 import {TermLoader} from "./utils/term-loader";
 import {PrefixTree} from "./filters/prefix-tree";
+import {IndexFilter} from "./filters/index-filter";
 
 /**
  * Playground for testing.
@@ -477,4 +478,23 @@ export class TestRuns {
         console.log('Matches:', matches);
     }
 
+
+    public static testIndexFilter(filter : IndexFilter) {
+        console.log('Filter:', filter.constructor.name);
+
+        let searchTerms = ['not', 'very', 'random'];
+        filter.addSearchTerms(searchTerms);
+
+        let text = 'This text is not supposed to be very very long.';
+        let result = filter.containsSearchTerm(text);
+        console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
+        let matches = filter.getMatchesIndex(text);
+        console.log('Matches:', matches);
+
+        text = 'A different text which should fail the filter!';
+        result = !filter.containsSearchTerm(text);
+        console.log('Passed:', result, '| Text:', text, '| Search Terms:', searchTerms);
+        matches = filter.getMatchesIndex(text);
+        console.log('Matches:', matches);
+    }
 }

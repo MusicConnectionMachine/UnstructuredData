@@ -1,4 +1,5 @@
 import { IndexFilter } from "./index-filter";
+import { Occurrence } from "../utils/occurrence";
 
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
@@ -56,17 +57,17 @@ export class PrefixTree extends IndexFilter{
     /**
      * Returns all searchTerm matches
      * @param text
-     * @returns string[]                    array of matches
+     * @returns                        hash set of matches
      */
-    public getMatches(text : string) : string[] {
+    public getMatches(text : string) : Set<string> {
 
-        let matches : string[] = [];
+        let matches : Set<string> = new Set();
 
         for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
             let result = this.root.match(text, position); // tuple [boolean, string, number]
             if (result[0]) {
-                matches.push(result[1]);
+                matches.add(result[1]);
             }
         }
         return matches;
@@ -77,18 +78,23 @@ export class PrefixTree extends IndexFilter{
      * @param text
      * @returns [string, number][]          array of tuple consisting of match and index
      */
-    public getMatchesIndex(text : string) : [string, number][] {
-        let matches : [string, number][] = [];
+    public getMatchesIndex(text : string) : Array<Occurrence> {
+        let matches : Map<string, Array<number>> = new Map();
 
         for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
             let result = this.root.match(text, position); // tuple [boolean, string, number]
             if (result[0]) {
-                let matchTuple : [string, number] = [result[1], result[2]];
-                matches.push(matchTuple);
+                let match : string = result[1];
+                let index : number = result[2];
+                if (matches.has(match)) {
+                    matches.get(match).push(index);
+                } else {
+                    matches.set(match, [index]);
+                }
             }
         }
-        return matches;
+        return Occurrence.mapToArray(matches);
     }
 
     public toString() : string {

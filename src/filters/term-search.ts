@@ -1,17 +1,6 @@
-import {WebPage} from "./utils/web-page";
-import {TermLoader} from "./utils/term-loader";
-/**
- * Container to store the term (substring) and the positions where it can be found in the search string.
- */
-export class Occurrence {
-    public term : string;
-    public positions : Array<number>;
-
-    constructor(t : string, p : Array<number>) {
-        this.term = t;
-        this.positions = p;
-    };
-}
+import {WebPage} from "../utils/web-page";
+import {TermLoader} from "../utils/term-loader";
+import {Occurrence} from "../utils/occurrence";
 
 
 /**

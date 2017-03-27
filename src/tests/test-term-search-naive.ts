@@ -1,4 +1,4 @@
-import { TermSearch } from "../term-search";
+import { TermSearch } from "../filters/term-search";
 
 
 export class NaiveTermSearchTest {

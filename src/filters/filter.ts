@@ -24,7 +24,7 @@ export abstract class Filter {
     /**
      * Returns all searchTerm matches
      * @param text
-     * @returns string[]          array of matches
+     * @returns                   hash set of matches
      */
-    abstract getMatches(text : string) : string[];
+    abstract getMatches(text : string) : Set<string>;
 }
