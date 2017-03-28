@@ -31,8 +31,6 @@ export class Storer {
             }
         }
         blobContent += webpage.content
-        console.log('blobName: ' + blobName);
-        console.log('blobContent: ' + blobContent);
         Storer.blobService.createBlockBlobFromText(Storer.container, blobName, blobContent, function(err, result) {
             if(err) {
                 if(callback) {
