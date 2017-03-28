@@ -8,15 +8,20 @@ export class Storer {
     static blobService = Storer.azure.createBlobService(Storer.config.storageAccountname,
         Storer.config.storageKey);
 
-    static container = 'websites';
+    static container = Storer.config.container;
 
     public static storeWebsite(webpage : WebPage) : void {
-        console.log(Storer.config);
         Storer.storeWebsiteBlob(webpage);
 
         //TODO: Create database entry for website
     }
 
+    /**
+     * Stores given website as a blob in the azure blob storage. The filename will be an md5 hash
+     * of website uri + content
+     * @param webpage       WebPage object to be stored
+     * @param callback      Optional callback param that will receive the filename as a parameter in case of success
+     */
     private static storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = '';
