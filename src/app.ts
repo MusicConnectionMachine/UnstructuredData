@@ -11,8 +11,9 @@ import {TestRuns} from "./test-runs";
 // TestRuns.testExtractAllEnglishPages();   // WET file must already be downloaded!
 // TestRuns.createFilteredSampleDataForGroups3_4();
 // TestRuns.getWebsiteByURL();
-import {SampleDataGenerator} from "./sample-data/sample-data-generator";
-SampleDataGenerator.extractPagesByURL();
+//import {SampleDataGenerator} from "./sample-data/sample-data-generator";
+//SampleDataGenerator.extractPagesByURL();
+// TestRuns.extractPagesByURL();
 
 
 // These runs require the WET file to be already downloaded and unpacked:
@@ -23,6 +24,9 @@ SampleDataGenerator.extractPagesByURL();
 //Testing of WetManager
 //TestRuns.testWetManager();
 
+//Test storer
+TestRuns.testStorer();
+
 // test cc index
 //TestRuns.testCCIndex();
 
@@ -30,12 +34,9 @@ SampleDataGenerator.extractPagesByURL();
 // Most advanced test run so far:
 //TestRuns.testStreamedDownloadUnpackingAndProcessing();
 
-
-
 // UNIT TESTS
 import {PrefixTreeTest} from "./tests/test-prefix-tree";
-import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
+//import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
-// PrefixTreeTest.runAllTests();
+PrefixTreeTest.runAllTests();
 // NaiveTermSearchTest.runAllTests();
-// TestRuns.testBloomFilter();

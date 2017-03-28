@@ -1,4 +1,4 @@
-import {PrefixTree} from "../prefix-tree";
+import {PrefixTree} from "../filters/prefix-tree";
 
 export class PrefixTreeTest {
 
@@ -16,11 +16,11 @@ export class PrefixTreeTest {
         let pTree = new PrefixTree(terms);
 
         let matchingStrings = [
-            "Axxx", "xxxBCDxxx", "xAAAAxx",  "xxxBCD", "sljövma43ru538thjöo8gahvöoasrh", "bbbbcccddddbcd"
+            "Axxx", "xxxBCDxxx", "xAAAAxx",  "xxxBCD", "sljövma43ru538thjöo8gahvöoasrh", "bbbbcccddddbcd", "xxa"
         ];
 
         for (let i = 0; i < matchingStrings.length; i++) {
-            let matched = pTree.matchAtLeastOneTerm(matchingStrings[i]);
+            let matched = pTree.hasMatch(matchingStrings[i]);
             let status = matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " matching string '" + matchingStrings[i] + "' with " + pTree);
         }
@@ -31,7 +31,7 @@ export class PrefixTreeTest {
 
 
         for (let i = 0; i < notMatchingString.length; i++) {
-            let matched = pTree.matchAtLeastOneTerm(notMatchingString[i]);
+            let matched = pTree.hasMatch(notMatchingString[i]);
             let status = !matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " NOT matching string '" + notMatchingString[i] + "'");
         }
@@ -62,14 +62,14 @@ export class PrefixTreeTest {
 
         for (let matchingSet of matchingTermSets) {
             let pTree = new PrefixTree(matchingSet);
-            let matched = pTree.matchAtLeastOneTerm(string);
+            let matched = pTree.hasMatch(string);
             let status = matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " matching string with this tree: " + pTree);
         }
 
         for (let notMatchingSet of notMatchingTermSets) {
             let pTree = new PrefixTree(notMatchingSet);
-            let matched = pTree.matchAtLeastOneTerm(string);
+            let matched = pTree.hasMatch(string);
             let status = !matched ? "[PASSED] " : "[FAILED]";
             console.log(status + " NOT matching string with this tree: " + pTree.toString().replace('\n', ''));
         }
@@ -83,20 +83,20 @@ export class PrefixTreeTest {
         let string = "xxxmozartxxx";
 
         let pTree = new PrefixTree(); // empty tree
-        pTree.addTermToTree("mozartWasHere");
-        let matched = pTree.matchAtLeastOneTerm(string);
+        pTree.addSearchTerm("mozartWasHere");
+        let matched = pTree.hasMatch(string);
         let status = !matched ? "[PASSED] " : "[FAILED]";
         console.log(status + " NOT matching '" + string +  "' with this tree: " + pTree);
 
         // insert a shorter string -> replace tho old long one
-        pTree.addTermToTree("mozart");
-        matched = pTree.matchAtLeastOneTerm(string);
+        pTree.addSearchTerm("mozart");
+        matched = pTree.hasMatch(string);
         status = matched ? "[PASSED] " : "[FAILED]";
         console.log(status + " matching '" + string +  "' with this tree: " + pTree );
 
         // adding a longer term, should be ignored
         let treeString = pTree.toString();
-        pTree.addTermToTree("mozartWasHere");
+        pTree.addSearchTerm("mozartWasHere");
         status = (pTree.toString() == treeString ) ? "[PASSED] " : "[FAILED]";
         console.log(status + " longer terms do not replace short ones" );
 

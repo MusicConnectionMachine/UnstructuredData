@@ -50,5 +50,7 @@ out
 *.wet
 
 #resolved url cache files
-
 /urls/previouslyResolvedWETs.json
+
+#custom config files
+config.json
