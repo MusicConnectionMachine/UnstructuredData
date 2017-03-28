@@ -2,7 +2,7 @@
   "name": "application-name",
   "version": "0.0.1",
   "dependencies": {
-    "azure": "^1.2.0-preview",
+    "azure": "0.10.6",
     "bloem": "^0.2.4",
     "cld": "^2.4.7",
     "crypto": "0.0.3",
