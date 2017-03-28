@@ -1,0 +1,9 @@
+/*
+  This is a sample configuration file. To use the storer create a config.json file in this directory
+  Which will then be used.
+*/
+{
+  "storageAccountname": "storageAccountName, e.g. wetstorage",
+  "storageKey": "yourstoragekeyhere",
+  "container": "default: websites"
+}

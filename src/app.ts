@@ -20,7 +20,10 @@ import {TestRuns} from "./test-runs";
 // TestRuns.testPreProcessingChain();
 
 //Testing of WetManager
-TestRuns.testWetManager();
+//TestRuns.testWetManager();
+
+//Test storer
+TestRuns.testStorer();
 
 // test cc index
 //TestRuns.testCCIndex();

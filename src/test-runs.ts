@@ -13,6 +13,7 @@ import { IndexFilter } from "./filters/index-filter";
 import { Occurrence } from "./utils/occurrence";
 import {WetManager} from "./wet-manager";
 import {CCIndex} from "./cc-index";
+import {Storer} from "./storer";
 
 /**
  * Playground for testing.
@@ -618,4 +619,33 @@ export class TestRuns {
         });
 
     }
+
+    public static testStorer() {
+        let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
+        WetManager.loadWetAsStream(url, function(err, result) {
+            if(err) {
+                console.log(err);
+                return;
+            }
+
+            let warcParser = new TestRuns.WARCStream();
+            let counter = 0;
+            result.pipe(warcParser).on('data', data => {
+
+                let tick = Math.random() * 10000;
+                // getting WET entries here
+                if(tick < 1) {
+                    counter++;
+                    if (counter <= 10) {
+                        console.log('Storing number ' + counter);
+                        let p = new WebPage(data);
+                        Storer.storeWebsite(p);
+                    }
+                }
+            }).on('end', () => {
+                console.log('Finished.');
+            });
+        }, true);
+    }
+
 }
