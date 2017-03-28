@@ -1,12 +1,17 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
-import { WebPage } from "./web-page";
+import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch, Occurrence } from "./term-search";
-import { BloomFilter } from "./bloom-filter";
+import { TermSearch } from "./term-search";
+import { BloomFilter } from "./filters/bloom-filter";
+import { Filter } from "./filters/filter";
+import { WetManager } from "./wet-manager";
+import { TermLoader } from "./utils/term-loader";
+import { PrefixTree } from "./filters/prefix-tree";
+import { IndexFilter } from "./filters/index-filter";
+import { Occurrence } from "./utils/occurrence";
 import {WetManager} from "./wet-manager";
-import {TermLoader} from "./term-loader";
 import {CCIndex} from "./cc-index";
 import {Storer} from "./storer";
 
@@ -571,20 +576,6 @@ export class TestRuns {
                     ' and ' + durationUntilEnd + 'ms in total');
             });
         });
-    }
-
-
-
-
-    public static testBloomFilter() {
-        let filter = new BloomFilter();
-        let text = "Some not so random text I didn't came up with...";
-        let terms = ["so", "totally", "NOT", "random", "at", "all"];
-        filter.fromText(text);
-        let contains = filter.containsTerms(terms);
-        console.log(text);
-        console.log(terms);
-        console.log(contains);
     }
 
 

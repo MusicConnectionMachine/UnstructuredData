@@ -1,3 +1,6 @@
+import { IndexFilter } from "./index-filter";
+import { Occurrence } from "../utils/occurrence";
+
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
  * terms in large strings. The search is not case sensitive.
@@ -12,46 +15,84 @@
  * However, we have to maximize performance and remove any overhead that third-party packages might have (to provide
  * more functionality that is not needed here).
  */
-export class PrefixTree {
+export class PrefixTree extends IndexFilter{
     private root : PTElement;
 
     /**
      * Create a PrefixTree and add initialize it with a set of terms (optional).
-     * @param terms
+     * @param tokens
      */
-    constructor(terms? : string[]) {
+    constructor(tokens? : string[]) {
+        super();
         this.root = new PTNode(); // not a leaf! we do not want to match any string!
-
-        if (terms) { // add provided terms if any
-            for (let term of terms) {
-                this.addTermToTree(term);
-            }
-        }
+        if (tokens) { super.addSearchTerms(tokens); }
     }
 
     /**
-     * Add a new term to this tree.
-     * @param term
+     * Add a new token to this tree.
+     * @param token
      */
-    public addTermToTree(term : string) {
-        this.root = this.root.addTerm(term.toLowerCase());
+    public addSearchTerm(token : string) : void {
+        this.root = this.root.addTerm(token.toLowerCase());
     }
 
-
     /**
-     * Checks it the string contains at least one term.
-     * @param searchString
+     * Checks it the string contains at least one term. (does MATCH pre and suffixes!!!!)
+     * @param text
      * @returns {boolean}
      */
-    public matchAtLeastOneTerm(searchString : string) : boolean {
+    public hasMatch(text : string) : boolean {
 
-        for (let position = 0; position < searchString.length; position++) {
+        for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
-            let result = this.root.match(searchString, position);
-            if (result) return true;
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                return true;
+            }
         }
 
         return false;
+    }
+
+    /**
+     * Returns all searchTerm matches (does MATCH pre and suffixes!!!!)
+     * @param text
+     * @returns                        hash set of matches
+     */
+    public getMatches(text : string) : Set<string> {
+
+        let matches : Set<string> = new Set();
+
+        for (let position = 0; position < text.length; position++) {
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                matches.add(result[1]);
+            }
+        }
+        return matches;
+    }
+
+    /**
+     * Returns all searchTerm matches with index (does MATCH pre and suffixes!!!!)
+     * @param text
+     * @returns                             array of occurrences (indexes don't include match prefixes)
+     */
+    public getMatchesIndex(text : string) : Array<Occurrence> {
+        let matches : Map<string, Array<number>> = new Map();
+
+        for (let position = 0; position < text.length; position++) {
+            let result = this.root.match(text, position); // tuple [boolean, string, number]
+            if (result[0]) {
+                let match : string = result[1];
+                let index : number = result[2];
+                if (matches.has(match)) {
+                    matches.get(match).push(index);
+                } else {
+                    matches.set(match, [index]);
+                }
+            }
+        }
+        return Occurrence.occurrenceMapToArray(matches);
     }
 
     public toString() : string {
@@ -63,7 +104,7 @@ export class PrefixTree {
 /**
  * Interface for all internal prefix tree elements: nodes and leafs
  */
-export interface PTElement {
+interface PTElement {
 
     /**
      * Adds a term into the tree structure. Does nothing on leafs.
@@ -75,8 +116,9 @@ export interface PTElement {
      * Try to find any terms contained in the (sub-)tree structure in the search string at specified position.
      * @param searchStr  string to search
      * @param searchPos  position (index), position of the first character = 0
+     * @returns tuple of boolean (matches?), string (match) and number (match index)
      */
-    match(searchStr : string, searchPos : number) : boolean;
+    match(searchStr : string, searchPos : number) : [boolean, string, number];
 
 }
 
@@ -96,8 +138,8 @@ class PTLeaf implements PTElement {
         return this;
     }
 
-    match(searchStr : string, searchPos : number): boolean {
-        return true;
+    match(searchStr : string, searchPos : number): [boolean, string, number] {
+        return [true, '', searchPos];
     }
 
     public toString() : string {
@@ -138,14 +180,15 @@ class PTNode implements PTElement {
         return this;
     }
 
-    match(searchStr : string, searchPos : number): boolean {
+    match(searchStr : string, searchPos : number): [boolean, string, number] {
         let key = searchStr.charAt(searchPos).toLowerCase(); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
 
-        if (!this.hasOwnProperty(key))  return false; // no such key in this PT node -> no match
+        if (!this.hasOwnProperty(key))  return [false, '', searchPos]; // no such key in this PT node -> no match
 
         let childNode = this[key]; // continue search in child node
 
-        return childNode.match(searchStr, searchPos + 1);
+        let childResult = childNode.match(searchStr, searchPos + 1);
+        return [childResult[0], key + childResult[1], searchPos];
     }
 
 
