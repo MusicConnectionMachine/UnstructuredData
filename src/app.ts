@@ -10,7 +10,8 @@ import {TestRuns} from "./test-runs";
 // Run one of these to create a new file with filtered data:
 // TestRuns.testExtractAllEnglishPages();   // WET file must already be downloaded!
 // TestRuns.createFilteredSampleDataForGroups3_4();
-// TestRuns.getMozartFromWiki();
+// TestRuns.getWebsiteByURL();
+// TestRuns.extractPagesByURL();
 
 
 // These runs require the WET file to be already downloaded and unpacked:
@@ -19,7 +20,10 @@ import {TestRuns} from "./test-runs";
 // TestRuns.testPreProcessingChain();
 
 //Testing of WetManager
-//TestRuns.testWetManager();
+TestRuns.testWetManager();
+
+// test cc index
+//TestRuns.testCCIndex();
 
 
 // Most advanced test run so far:

@@ -25,10 +25,34 @@ export class WetManager {
      * on http://index.commoncrawl.org/.
      * @param filename      path to the WET file, without domain
      * @param callback      function that takes a ReadableStream parameter. This is a stream of a unpacked WET file
+     * @param useCaching    optional parameter, specifies if caching should be used. Default value is true
      */
-    public static loadWetAsStream(filename : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
+    public static loadWetAsStream(filename : string, callback : (err? : Error, resp? : ReadableStream) => void,
+        useCaching : boolean = true) : void {
         //URL address of file on server
         let url = WetManager.basePath + filename;
+        if (useCaching) {
+            WetManager.openWithCaching(url, callback);
+        } else {
+            WetManager.openWithoutCaching(url, callback);
+        }
+    };
+
+    private static openWithoutCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
+        WetManager.getResponse(url, function (err, resp) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            let decompressed = Unpacker.decompressGZipStream(resp);
+            decompressed.on('error', err => {
+                console.log(err);
+            });
+            callback(null, decompressed);
+        });
+    }
+
+    private static openWithCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
         let parsedUrl = WetManager.url.parse(url);
 
         let dirArray = WetManager.path.dirname(parsedUrl.path).split('/');
@@ -51,8 +75,8 @@ export class WetManager {
 
         console.log("File path: " + filepath);
 
-        WetManager.fs.exists(filepath, function(exists) {
-            if(exists) {
+        WetManager.fs.exists(filepath, function (exists) {
+            if (exists) {
                 //Read existing file from file system as decompressed stream for callback
                 console.log('exists, opening from fs');
                 let fileReadStream = WetManager.fs.createReadStream(filepath);
@@ -65,15 +89,15 @@ export class WetManager {
                 );
 
                 //Create segment directory if not exists
-                if (!WetManager.fs.existsSync(dirPath)){
+                if (!WetManager.fs.existsSync(dirPath)) {
                     WetManager.fs.mkdirSync(dirPath);
                     console.log('Created directory ' + dirPath);
                 }
 
                 //Download file, store compressed on disk and execute callback with decompressed stream
                 console.log('doesnt exist, starting download');
-                WetManager.getResponse(url, function(err, resp) {
-                    if(err) {
+                WetManager.getResponse(url, function (err, resp) {
+                    if (err) {
                         callback(err);
                         return;
                     }
@@ -95,7 +119,7 @@ export class WetManager {
 
             }
         });
-    };
+    }
 
     /**
      * Download file via https or http
