@@ -17,7 +17,7 @@ export class Storer {
         //TODO: Create database entry for website
     }
 
-    private static storeWebsiteBlob(webpage : WebPage) : void {
+    private static storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = '';
         for (let property in webpage.headers) {
@@ -30,10 +30,14 @@ export class Storer {
         console.log('blobContent: ' + blobContent);
         Storer.blobService.createBlockBlobFromText(Storer.container, blobName, blobContent, function(err, result) {
             if(err) {
-                console.log(err);
+                if(callback) {
+                    callback(err);
+                }
                 return;
             }
-            console.log(result);
+            if(callback) {
+                callback(null, blobName);
+            }
         });
     }
 
