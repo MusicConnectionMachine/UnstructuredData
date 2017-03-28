@@ -1,24 +1,23 @@
 import {WebPage} from "./web-page";
-/**
- * Created by lukas on 3/27/17.
- */
 export class Storer {
 
     static azure = require('azure');
     static crypto = require('crypto');
+    static config = require('../config.json');
 
-    static blobService = Storer.azure.createBlobService('wetstorage',
-        'x7P3BHTnMpY+JB2dAHnzkaHVoz080IUSthfYDhTPFtYWNzIuwn70szGE+vIHn5S4BPad6gioTdlLafxkpszGHQ==');
+    static blobService = Storer.azure.createBlobService(Storer.config.storageAccountname,
+        Storer.config.storageKey);
 
     static container = 'websites';
 
     public static storeWebsite(webpage : WebPage) : void {
+        console.log(Storer.config);
         Storer.storeWebsiteBlob(webpage);
 
         //TODO: Create database entry for website
     }
 
-    private static storeWebsiteBlob(webpage : WebPage, ) : void {
+    private static storeWebsiteBlob(webpage : WebPage) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = '';
         for (let property in webpage.headers) {
