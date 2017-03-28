@@ -14,7 +14,6 @@ import {TestRuns} from "./test-runs";
 // TestRuns.extractPagesByURL();
 
 
-
 // These runs require the WET file to be already downloaded and unpacked:
 // TestRuns.testTLD();
 // TestRuns.testLanguageExtractor();
@@ -30,12 +29,9 @@ TestRuns.testWetManager();
 // Most advanced test run so far:
 //TestRuns.testStreamedDownloadUnpackingAndProcessing();
 
-
-
 // UNIT TESTS
 import {PrefixTreeTest} from "./tests/test-prefix-tree";
-import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
+//import {NaiveTermSearchTest} from "./tests/test-term-search-naive";
 
-// PrefixTreeTest.runAllTests();
+PrefixTreeTest.runAllTests();
 // NaiveTermSearchTest.runAllTests();
-// TestRuns.testBloomFilter();

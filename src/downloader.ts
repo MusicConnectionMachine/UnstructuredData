@@ -1,4 +1,4 @@
-import {AlreadyExistsError, UnsupportedProtocolError} from './utils';
+import {AlreadyExistsError, UnsupportedProtocolError} from './utils/errors';
 import {IncomingMessage} from "http";
 
 

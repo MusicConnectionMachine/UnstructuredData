@@ -1,12 +1,17 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
-import { WebPage } from "./web-page";
+import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch, Occurrence } from "./term-search";
-import { BloomFilter } from "./bloom-filter";
+import { TermSearch } from "./term-search";
+import { BloomFilter } from "./filters/bloom-filter";
+import { Filter } from "./filters/filter";
+import { WetManager } from "./wet-manager";
+import { TermLoader } from "./utils/term-loader";
+import { PrefixTree } from "./filters/prefix-tree";
+import { IndexFilter } from "./filters/index-filter";
+import { Occurrence } from "./utils/occurrence";
 import {WetManager} from "./wet-manager";
-import {TermLoader} from "./term-loader";
 import {CCIndex} from "./cc-index";
 
 /**
@@ -573,20 +578,6 @@ export class TestRuns {
     }
 
 
-
-
-    public static testBloomFilter() {
-        let filter = new BloomFilter();
-        let text = "Some not so random text I didn't came up with...";
-        let terms = ["so", "totally", "NOT", "random", "at", "all"];
-        filter.fromText(text);
-        let contains = filter.containsTerms(terms);
-        console.log(text);
-        console.log(terms);
-        console.log(contains);
-    }
-
-
     public static testWetManager() {
         let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
         let timeStart = new Date().getTime();
@@ -627,5 +618,4 @@ export class TestRuns {
         });
 
     }
-
 }

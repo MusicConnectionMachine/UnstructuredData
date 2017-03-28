@@ -1,5 +1,5 @@
 import {IncomingMessage} from "http";
-import {UnsupportedProtocolError} from "./utils";
+import {UnsupportedProtocolError} from "./utils/errors";
 import {Unpacker} from "./unpacker";
 import ReadableStream = NodeJS.ReadableStream;
 
