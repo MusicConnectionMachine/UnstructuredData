@@ -37,11 +37,11 @@ export class PrefixTree extends IndexFilter{
     }
 
     /**
-     * Checks it the string contains at least one term.
+     * Checks it the string contains at least one term. (does MATCH pre and suffixes!!!!)
      * @param text
      * @returns {boolean}
      */
-    public containsSearchTerm(text : string) : boolean {
+    public hasMatch(text : string) : boolean {
 
         for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
@@ -55,7 +55,7 @@ export class PrefixTree extends IndexFilter{
     }
 
     /**
-     * Returns all searchTerm matches
+     * Returns all searchTerm matches (does MATCH pre and suffixes!!!!)
      * @param text
      * @returns                        hash set of matches
      */
@@ -73,9 +73,9 @@ export class PrefixTree extends IndexFilter{
     }
 
     /**
-     * Returns all searchTerm matches with index
+     * Returns all searchTerm matches with index (does MATCH pre and suffixes!!!!)
      * @param text
-     * @returns [string, number][]          array of tuple consisting of match and index
+     * @returns                             array of occurrences (indexes don't include match prefixes)
      */
     public getMatchesIndex(text : string) : Array<Occurrence> {
         let matches : Map<string, Array<number>> = new Map();
@@ -92,7 +92,7 @@ export class PrefixTree extends IndexFilter{
                 }
             }
         }
-        return Occurrence.mapToArray(matches);
+        return Occurrence.occurrenceMapToArray(matches);
     }
 
     public toString() : string {

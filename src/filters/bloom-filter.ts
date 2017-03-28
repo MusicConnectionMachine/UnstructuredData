@@ -21,11 +21,11 @@ export class BloomFilter extends Filter{
     }
 
     /**
-     * Checks if the bloom filter has seen at least one token in the text
+     * Checks if the bloom filter has seen at least one token in the text (does NOT match pre and suffixes!)
      * @param text                  text to be filtered for search terms
      * @returns boolean             high likelihood of containing at least one term
      */
-    public containsSearchTerm(text : string) : boolean {
+    public hasMatch(text : string) : boolean {
         let tokens = BloomFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
             token = token.toLowerCase();
@@ -37,7 +37,7 @@ export class BloomFilter extends Filter{
     }
 
     /**
-     * Returns all searchTerm matches
+     * Returns all searchTerm matches (does NOT match pre and suffixes!)
      * @param text
      * @returns                        hash set of matches
      */

@@ -18,7 +18,7 @@ export abstract class Filter {
      * @param text
      * @returns true if at least one search term is contained in the text
      */
-    abstract containsSearchTerm(text : string) : boolean;
+    abstract hasMatch(text : string) : boolean;
 
 
     /**
