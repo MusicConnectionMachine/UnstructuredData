@@ -8,7 +8,7 @@ export class NaiveFilter extends IndexFilter {
     constructor(terms? : Array<string>) {
         super();
         this.searchTerms = new Set();
-        if (terms) { super.addSearchTerms(terms); }
+        if (terms) { this.searchTerms = new Set(terms); }
     }
 
     public addSearchTerm(token: string): void {
@@ -56,11 +56,12 @@ export class NaiveFilter extends IndexFilter {
         text = text.toLowerCase();
 
         let startPos = 0;
-        let lastMatch : number;
+        let lastMatch = text.indexOf(searchTerm, startPos);
         let matches : Array<number> = [];
-        while ((lastMatch = text.indexOf(searchTerm, startPos)) > -1) {
+        while (lastMatch > -1) {
             matches.push(lastMatch);
             startPos = lastMatch + searchTerm.length;
+            lastMatch = text.indexOf(searchTerm, startPos);
         }
         return matches;
 
