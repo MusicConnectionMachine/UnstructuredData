@@ -4,16 +4,9 @@ import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
 import { TermSearch } from "./term-search";
-import { BloomFilter } from "./filters/bloom-filter";
-import { Filter } from "./filters/filter";
 import { WetManager } from "./wet-manager";
-import { TermLoader } from "./utils/term-loader";
-import { PrefixTree } from "./filters/prefix-tree";
-import { IndexFilter } from "./filters/index-filter";
-import { Occurrence } from "./utils/occurrence";
-import {WetManager} from "./wet-manager";
-import {CCIndex} from "./cc-index";
-import {Storer} from "./storer";
+import { CCIndex } from "./cc-index";
+import { Storer } from "./storer";
 
 /**
  * Playground for testing.
