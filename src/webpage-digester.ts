@@ -5,13 +5,13 @@ import {Occurrence} from "./utils/occurrence";
 
 
 export class WebPageDigester {
-    private searchTerms : Array<string>;
-    private mainFilter : new () => IndexFilter;
+    private searchTerms : Set<string>;
+    private mainFilter : new (searchTerms? : Set<string>) =>  IndexFilter;
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
     constructor(searchTerms : Array<string>) {
-        this.searchTerms = searchTerms;
+        this.searchTerms = new Set(searchTerms);
     }
 
     /**
@@ -19,7 +19,7 @@ export class WebPageDigester {
      * Be careful which filter to use here as not all filters will give you exact matches!
      * @param filterConstructor                             Class of the filter
      */
-    public setFilter<T extends IndexFilter> (filterConstructor : new () => T) : WebPageDigester {
+    public setFilter<T extends IndexFilter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester {
         this.mainFilter = filterConstructor;
         this.mainFilterInstance = undefined;
         return this;
@@ -31,9 +31,8 @@ export class WebPageDigester {
      * This is very useful if your main filter is slow
      * @param filterConstructor                             Class of the pre-filter
      */
-    public setPreFilter<T extends Filter> (filterConstructor : new () => T) : WebPageDigester{
-        this.preFilterInstance = new filterConstructor();
-        this.preFilterInstance.addSearchTerms(this.searchTerms);
+    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester{
+        this.preFilterInstance = new filterConstructor(this.searchTerms);
         return this;
     }
 
@@ -72,14 +71,12 @@ export class WebPageDigester {
             }
 
             // create new IndexFilter instance from matched searchTerms
-            this.mainFilterInstance = new this.mainFilter();
-            this.mainFilterInstance.addSearchTerms([...matches]); // [... Set] operator converts Set to Array
+            this.mainFilterInstance = new this.mainFilter(matches);
         }
 
         // create new mainFilterInstance from this.searchTerms if not present
         if (!this.mainFilterInstance) {
-            this.mainFilterInstance = new this.mainFilter();
-            this.mainFilterInstance.addSearchTerms(this.searchTerms);
+            this.mainFilterInstance = new this.mainFilter(this.searchTerms);
         }
 
         let occurrences = this.mainFilterInstance.getMatchesIndex(pageContent);

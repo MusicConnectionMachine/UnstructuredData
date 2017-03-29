@@ -5,10 +5,17 @@ export class NaiveFilter extends IndexFilter {
     private static tokenizer = new (require('natural')).WordTokenizer();
     private searchTerms : Set<string>;
 
-    constructor(terms? : Array<string>) {
-        super();
+    /**
+     * Replaces constructor and gets called by the super class constructor
+     * @param searchTerms           search terms to initialize filter with
+     */
+    protected init(searchTerms : Set<string>) : void {
         this.searchTerms = new Set();
-        if (terms) { this.searchTerms = new Set(terms); }
+        if(searchTerms){
+            for (let term of searchTerms) {
+                this.addSearchTerm(term);
+            }
+        }
     }
 
     /**
