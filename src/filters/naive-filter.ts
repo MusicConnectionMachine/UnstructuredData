@@ -59,7 +59,7 @@ export class NaiveFilter extends IndexFilter {
         return NaiveFilter.findOccurrences(text, this.searchTerms);
     }
 
-    public static findOccurrences(text : string, searchTerms : Set<string>) : Array<Occurrence> {
+    private static findOccurrences(text : string, searchTerms : Set<string>) : Array<Occurrence> {
         let occurrences : Array<Occurrence> = [];
         for (let term of searchTerms) {
             let indexes = NaiveFilter.getIndexes(text, term);
@@ -73,7 +73,7 @@ export class NaiveFilter extends IndexFilter {
     /**
      *
      * @param text
-     * @param searchTerm
+     * @param searchTerm                term to look out for, has to be lower case!
      * @return {any}
      */
     private static getIndexes(text : string, searchTerm : string) : Array<number> {
