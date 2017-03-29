@@ -33,7 +33,7 @@ export class SampleDataGenerator {
 
         // some hardcoded composers here
         let terms = TermLoader.loadDummyTerms();
-        let filter = new PrefixTree(terms);
+        let filter = new PrefixTree(new Set(terms));
         let outputFile = SampleDataGenerator.dataFolder + SampleDataGenerator.fileName_unpacked + "_filtered";
         const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;

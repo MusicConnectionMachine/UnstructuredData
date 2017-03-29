@@ -19,13 +19,16 @@ export class PrefixTree extends IndexFilter{
     private root : PTElement;
 
     /**
-     * Create a PrefixTree and add initialize it with a set of terms (optional).
-     * @param tokens
+     * Replaces constructor and gets called by the super class constructor
+     * @param searchTerms           search terms to initialize filter with
      */
-    constructor(tokens? : string[]) {
-        super();
+    protected init(searchTerms : Set<string>) : void {
         this.root = new PTNode(); // not a leaf! we do not want to match any string!
-        if (tokens) { super.addSearchTerms(tokens); }
+        if(searchTerms){
+            for (let term of searchTerms) {
+                this.addSearchTerm(term);
+            }
+        }
     }
 
     /**

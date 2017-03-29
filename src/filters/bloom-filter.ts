@@ -6,10 +6,17 @@ export class BloomFilter extends Filter{
     private static ERROR_RATE = 0.1;
     private filter;
 
-    constructor(tokens? : string[]) {
-        super();
+    /**
+     * Replaces constructor and gets called by the super class constructor
+     * @param searchTerms           search terms to initialize filter with
+     */
+    protected init(searchTerms : Set<string>) : void {
         this.filter = new BloomFilter.bloem.ScalingBloem(BloomFilter.ERROR_RATE);
-        if(tokens){ super.addSearchTerms(tokens); }
+        if(searchTerms){
+            for (let term of searchTerms) {
+                this.addSearchTerm(term);
+            }
+        }
     }
 
     /**
