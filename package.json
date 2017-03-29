@@ -22,7 +22,7 @@
     "chai": "^3.5.0"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "node out/app.js",
     "test": "mocha \"out/test/**/*.js\""
   }
 }

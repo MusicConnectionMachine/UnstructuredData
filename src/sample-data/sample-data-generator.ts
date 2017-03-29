@@ -4,7 +4,7 @@ import {Unpacker} from "../unpacker";
 import {CCIndex} from "../cc-index";
 import {WetManager} from "../wet-manager";
 import {TermLoader} from "../utils/term-loader";
-import {WebPage} from "../utils/web-page";
+import {WebPage} from "../utils/webpage";
 import {Occurrence} from "../utils/occurrence";
 import {PrefixTree} from "../filters/prefix-tree";
 
@@ -79,7 +79,7 @@ export class SampleDataGenerator {
                         // if page is good, print to file
                         if (distinctOccs > 4 && totalOccs > 9) {
                             // this page is considered as good
-                            writeStream.write(p.toString());
+                            writeStream.write(p.toWARCString());
 
                             pagesFound++;
                             if (pagesFound > 100) {
@@ -237,7 +237,7 @@ export class SampleDataGenerator {
                                 // write page to file
                                 foundPages++;
                                 console.log("   :)  found relevant page: " + p.getURI());
-                                writeStream.write(p.toString());
+                                writeStream.write(p.toWARCString());
                                 return;
                             }
                         }

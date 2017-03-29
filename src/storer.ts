@@ -1,4 +1,4 @@
-import {WebPage} from "./utils/web-page";
+import {WebPage} from "./utils/webpage";
 export class Storer {
 
     static azure = require('azure');
@@ -30,7 +30,7 @@ export class Storer {
                 blobContent += property + ": " + webpage.headers[property] + '\n';
             }
         }
-        blobContent += webpage.content
+        blobContent += webpage.content;
         Storer.blobService.createBlockBlobFromText(Storer.container, blobName, blobContent, function(err, result) {
             if(err) {
                 if(callback) {

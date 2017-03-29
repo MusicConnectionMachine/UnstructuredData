@@ -1,4 +1,4 @@
-import {WebPage} from "./utils/web-page";
+import {WebPage} from "./utils/webpage";
 export class WordPreprocessor {
 
     static snowball = require('node-snowball');
