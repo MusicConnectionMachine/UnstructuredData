@@ -1,11 +1,12 @@
-import {TermLoader} from "../term-loader";
 import {LanguageExtractor} from "../language-extractor";
 import {Downloader} from "../downloader";
 import {Unpacker} from "../unpacker";
-import {WebPage} from "../web-page";
-import {Occurrence, TermSearch} from "../term-search";
+import {TermSearch} from "../term-search";
 import {CCIndex} from "../cc-index";
 import {WetManager} from "../wet-manager";
+import {TermLoader} from "../utils/term-loader";
+import {WebPage} from "../utils/web-page";
+import {Occurrence} from "../utils/occurrence";
 
 
 /**
