@@ -1,4 +1,4 @@
-import {WebPage} from "./web-page";
+import {WebPage} from "./utils/web-page";
 export class Storer {
 
     static azure = require('azure');
