@@ -1,12 +1,12 @@
 import {LanguageExtractor} from "../language-extractor";
 import {Downloader} from "../downloader";
 import {Unpacker} from "../unpacker";
-import {TermSearch} from "../term-search";
 import {CCIndex} from "../cc-index";
 import {WetManager} from "../wet-manager";
 import {TermLoader} from "../utils/term-loader";
 import {WebPage} from "../utils/web-page";
 import {Occurrence} from "../utils/occurrence";
+import {PrefixTree} from "../filters/prefix-tree";
 
 
 /**
@@ -33,6 +33,7 @@ export class SampleDataGenerator {
 
         // some hardcoded composers here
         let terms = TermLoader.loadDummyTerms();
+        let filter = new PrefixTree(terms);
         let outputFile = SampleDataGenerator.dataFolder + SampleDataGenerator.fileName_unpacked + "_filtered";
         const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;
@@ -59,7 +60,7 @@ export class SampleDataGenerator {
                         // search for terms
                         let totalOccs = 0;
                         let distinctOccs = 0;
-                        let occs : Array<Occurrence> = TermSearch.searchTermsInString(p.content, terms, false);
+                        let occs : Array<Occurrence> = filter.getMatchesIndex(p.content);
                         for (let occ of occs) {
                             distinctOccs++;
                             totalOccs += occ.positions.length;

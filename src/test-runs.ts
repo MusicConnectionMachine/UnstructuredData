@@ -3,10 +3,11 @@ import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./utils/web-page";
 import { LanguageExtractor } from "./language-extractor";
-import { TermSearch } from "./term-search";
 import { WetManager } from "./wet-manager";
 import { CCIndex } from "./cc-index";
 import { Storer } from "./storer";
+import {TermLoader} from "./utils/term-loader";
+import {BloomFilter} from "./filters/bloom-filter";
 
 /**
  * Playground for testing.
@@ -218,81 +219,6 @@ export class TestRuns {
 
     }
     //endregion
-
-
-
-
-    /**
-     * Download and process file completely without caching on disk.
-     * The processing starts as soon as we get the first bytes from the server.
-     */
-    public static testStreamedDownloadUnpackingAndProcessing() {
-        console.log("Sending request... ");
-
-        Downloader.getResponse(TestRuns.crawlBaseUrl + TestRuns.fileName_packed, (err, response) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log("start receiving and decompressing data... (starting timer)");
-
-            let totalLength = response.headers['content-length'];
-            console.log(totalLength);
-            let totalParsed = 0;
-            let timeStart = new Date().getTime();
-            let entryID = 0;
-            let stems = {};
-
-            response.on('data', data => {
-                totalParsed += data.length;
-            });
-
-            // unpack & feed into WARC parser
-            let decompressed = Unpacker.decompressGZipStream(response);
-            const WARCParser = new TestRuns.WARCStream();
-            decompressed.pipe(WARCParser).on('data', data => {
-
-                // getting WET entries here
-                let p = new WebPage(data);
-                let tld = p.getTLD();
-
-                //Check if page is in english
-                LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
-                    if(!result) {
-                        return;
-                    }
-                    //Add stems to total stem-list
-                    WordPreprocessor.processToTotal(p.content, stems, p);
-
-                    // print only a few entries
-                    if (entryID % 20 == 0) {
-                        let duration = new Date().getTime() -  timeStart;
-                        console.log("entry #" + entryID
-                            + "  \tProgress: " + ((100 * totalParsed) / totalLength).toFixed(2) + "%"
-                            + "   \tTLD: " + tld
-                            + " \t\ttime passed: " + duration + " ms"
-                            + "\t\tavg time per entry: " + Math.round(duration / (entryID+1) * 1000) / 1000 + "ms"
-                            + " \t\tURI: " + p.getURI()
-                        );
-                    }
-                    entryID++;
-                });
-            }).on('end', () => {
-                let durationUntilTermSearch = new Date().getTime() - timeStart;
-                //All documents for this file have been parsed, now match terms to stems
-                console.log('Now looking for matches with the search terms..');
-                let pageList = TermSearch.searchTermsInStemMap(stems);
-                console.log('Results:');
-                for(let i = 0; i < pageList.length; i++) {
-                    console.log('\'' + pageList[i].match + '\': ' + pageList[i].getURI());
-                }
-                let durationUntilEnd = new Date().getTime() - timeStart;
-
-                console.log('Finished. Took ' + durationUntilTermSearch + 'ms for parsing and downloading pages' +
-                    ' and ' + durationUntilEnd + 'ms in total');
-            });
-        });
-    }
 
 
     public static testWetManager() {
