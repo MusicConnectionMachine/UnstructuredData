@@ -1,9 +1,5 @@
-/**
- * Created by Anshul on 3/7/2017.
- */
-
 import {AlreadyExistsError,UnsupportedFileFormat} from './utils/errors';
-import {WebPage} from "./utils/web-page";
+import {WebPage} from "./utils/webpage";
 
 export class LanguageExtractor {
 
@@ -71,7 +67,7 @@ export class LanguageExtractor {
             this.isWebPageInLanguage(page, searchLanguage, function(result : boolean) {
                 if(result) {
                     //console.log('writing entry #' + entryID + '!');
-                    writeStream.write(page.toString());
+                    writeStream.write(page.toWARCString());
                 } else {
                     //console.log('skipping entry #' + entryID + '!');
                 }
@@ -116,7 +112,7 @@ export class LanguageExtractor {
         const testStringMiddleEnd: number = (content.length / 2) + chunkSize < content.length ? (content.length / 2) + chunkSize : content.length;
         const testString = content.substring(0,testStringBeginning) + content.substring(testStringMiddleStart, testStringMiddleEnd) + content.substring(testStringEnding, content.length);
 
-        LanguageExtractor.cld.detect(testString, { isHTML: false,tldHint: page.getTLD()}, function(err, result) {
+        LanguageExtractor.cld.detect(testString, { isHTML: false, tldHint: page.getTLD()}, function(err, result) {
             if(err) {
                 //console.log(err + "page tld: " + page.getTLD());
                 //On the test data only 0.6% pages are not classified, to detect these we can use franc ( execution time increases by only approximately 3% )

@@ -1,7 +1,7 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
 import { WordPreprocessor } from "./word-preprocessor";
-import { WebPage } from "./utils/web-page";
+import { WebPage } from "./utils/webpage";
 import { LanguageExtractor } from "./language-extractor";
 import { WetManager } from "./wet-manager";
 import { CCIndex } from "./cc-index";
