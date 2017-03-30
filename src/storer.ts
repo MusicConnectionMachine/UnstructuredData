@@ -10,10 +10,44 @@ export class Storer {
 
     static container = Storer.config.container;
 
-    public static storeWebsite(webpage : WebPage) : void {
-        Storer.storeWebsiteBlob(webpage);
+    private websites;
 
-        //TODO: Create database entry for website
+    constructor(){
+        let me = this;
+        //Connect to database using api's index
+        require('../api/index').connect(function(context) {
+            //Load websites module
+            me.websites = context.component('../api/dsap').module('websites');
+            /*
+            Make sure that syncing to database is synchronous.
+            Not that there is no {force: true} option here: We don't want to overwrite
+            existing tables.
+             */
+            context.sequelize.sync().then(() => {return me;});
+        });
+    }
+
+    public storeWebsite(webpage : WebPage, callback? : (err? : Error) => void ) : void {
+        let me = this;
+        this.storeWebsiteBlob(webpage, function(err, blobName) {
+            if(err) {
+                if(callback) {
+                    return callback(err);
+                }
+            }
+            me.storeWebsiteMetadata(webpage, blobName);
+            return callback;
+        });
+    }
+
+
+    public storeWebsiteMetadata(webpage : WebPage, blobUrl : string) : void{
+        let websiteObj = {
+            url: webpage.getURI(),
+            blob_url: blobUrl
+        }
+
+        this.websites.addWebsite(websiteObj);
     }
 
     /**
@@ -22,7 +56,7 @@ export class Storer {
      * @param webpage       WebPage object to be stored
      * @param callback      Optional callback param that will receive the filename as a parameter in case of success
      */
-    private static storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
+    private storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = '';
         for (let property in webpage.headers) {
