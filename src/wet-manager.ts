@@ -1,7 +1,6 @@
-import {IncomingMessage} from "http";
-import {UnsupportedProtocolError} from "./utils/errors";
 import {Unpacker} from "./unpacker";
 import ReadableStream = NodeJS.ReadableStream;
+import {Downloader} from "./downloader";
 
 /**
  * This class manages all WET files. It allows for opening WET files as a stream of unpacked
@@ -39,7 +38,7 @@ export class WetManager {
     };
 
     private static openWithoutCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
-        WetManager.getResponse(url, function (err, resp) {
+        Downloader.getResponse(url, function (err, resp) {
             if (err) {
                 callback(err);
                 return;
@@ -96,7 +95,7 @@ export class WetManager {
 
                 //Download file, store compressed on disk and execute callback with decompressed stream
                 console.log('doesnt exist, starting download');
-                WetManager.getResponse(url, function (err, resp) {
+                Downloader.getResponse(url, function (err, resp) {
                     if (err) {
                         callback(err);
                         return;
@@ -116,39 +115,7 @@ export class WetManager {
 
                     callback(null, decompressed);
                 });
-
             }
         });
     }
-
-    /**
-     * Download file via https or http
-     * @param fileURL       URL of the file
-     * @param callback      Callback function taking IncomingMessage stream as a parameter
-     */
-    private static getResponse(fileURL : string,
-                              callback? : (err? : Error, resp? : IncomingMessage) => void) : void {
-
-        let parsedURL = WetManager.url.parse(fileURL);
-
-        // check if protocol is supported
-        if (parsedURL.protocol !== 'https:' && parsedURL.protocol !== 'http:') {
-            let err : Error = new UnsupportedProtocolError(parsedURL.protocol + ' unsupported');
-            if (callback) { callback(err); }
-            return;
-        }
-
-        // download file and pipe to stream
-        if (parsedURL.protocol === 'https:') {
-            WetManager.https.get(fileURL, response => {
-                callback(null, response);
-            });
-        } else if (parsedURL.protocol === 'http:') {
-            WetManager.http.get(fileURL, response => {
-                callback(null, response);
-            });
-        }
-
-    }
-
 }
