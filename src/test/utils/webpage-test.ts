@@ -1,8 +1,9 @@
 import "mocha";
 import {WebPage} from "../../utils/webpage";
+import {Occurrence} from "../../utils/occurrence";
 let assert = require("chai").assert;
 
-function generateDummyWARC(url : string) : object {
+function generateDummyWARC(url : string) {
     return {
         protocol: "WARC/1.0",
         headers: {
@@ -33,5 +34,18 @@ describe("WebPage", () => {
     it("should return the correct TLD", () => {
         let webPage = new WebPage(generateDummyWARC("https://this.host.has.sub.domains.co.uk/meh"));
         assert.strictEqual(webPage.getTLD(), "uk");
-    })
+    });
+    it("should merge occurrences correctly", () => {
+        let webPage = new WebPage(generateDummyWARC(""));
+        webPage.occurrences = [new Occurrence("terms", [42]), new Occurrence("false positive", [10])];
+        webPage.mergeOccurrences([new Occurrence("terms", [42, 93])]);
+
+        let expected = [new Occurrence("terms", [42, 93]), new Occurrence("false positive", [10])];
+        assert(webPage.occurrences, expected);
+    });
+    it("should merge occurrences correctly when this.occurrences is an empty Array", () => {
+        let webPage = new WebPage(generateDummyWARC(""));
+        webPage.mergeOccurrences([new Occurrence("terms", [42, 69])]);
+        assert(webPage.occurrences, [new Occurrence("terms", [42, 69])]);
+    });
 });

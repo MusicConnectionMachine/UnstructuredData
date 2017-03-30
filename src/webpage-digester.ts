@@ -1,7 +1,6 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
-import {Occurrence} from "./utils/occurrence";
 
 
 export class WebPageDigester {
@@ -82,51 +81,14 @@ export class WebPageDigester {
         let occurrences = this.mainFilterInstance.getMatchesIndex(pageContent);
 
         // check if we have to merge occurrences and update webPage object
-        if (mergeOccurrences && webPage.occurrences && occurrences.length > 0 && webPage.occurrences.length > 0) {
-
-            // merge occurrences
-            webPage.occurrences = WebPageDigester.mergeOccurrences(occurrences, webPage.occurrences);
-
+        if (mergeOccurrences) {
+            webPage.mergeOccurrences(occurrences);
         } else {
-
-            // overwrite occurrences
             webPage.occurrences = occurrences
         }
 
         return webPage;
     }
 
-    /**
-     * [HELPER FUNCTION] Deeply merges two arrays of Occurrences into a single one
-     * @param occ1
-     * @param occ2
-     * @return {Array<Occurrence>}
-     */
-    private static mergeOccurrences(occ1 : Array<Occurrence>, occ2 : Array<Occurrence>) : Array<Occurrence> {
 
-        // convert one of the arrays into Map
-        let mergedOccurrencesMap = Occurrence.occurrenceArrayToMap(occ1);
-
-        // add new occurrences one by one to the map
-        for (let occurrence of occ2) {
-
-            // check if term is already present in map
-            if (mergedOccurrencesMap.has(occurrence.term)) {
-
-                // merge indexes, convert already present indexes to map
-                let mergedIndexes = new Set(mergedOccurrencesMap.get(occurrence.term));
-                for (let index of occurrence.positions) {
-                    mergedIndexes.add(index);
-                }
-                mergedOccurrencesMap.set(occurrence.term, [...mergedIndexes]);
-
-            } else {
-                mergedOccurrencesMap.set(occurrence.term, occurrence.positions);
-            }
-
-        }
-
-        // convert map back to an array of Occurrences
-        return Occurrence.occurrenceMapToArray(mergedOccurrencesMap);
-    }
 }
