@@ -6,8 +6,6 @@ import { LanguageExtractor } from "./language-extractor";
 import { WetManager } from "./wet-manager";
 import { CCIndex } from "./cc-index";
 import { Storer } from "./storer";
-import {TermLoader} from "./utils/term-loader";
-import {BloomFilter} from "./filters/bloom-filter";
 
 /**
  * Playground for testing.

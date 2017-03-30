@@ -63,7 +63,11 @@ export class Downloader {
         });
     }
 
-
+    /**
+     * Download file via https or http
+     * @param fileURL       URL of the file
+     * @param callback      Callback function taking IncomingMessage stream as a parameter
+     */
     public static getResponse(fileURL : string,
                               callback? : (err? : Error, resp? : IncomingMessage) => void) : void {
 
