@@ -17,7 +17,7 @@ function createDummyWebPage() : WebPage {
 }
 
 describe("WebSiteDigester", () => {
-    it("adding and removing a pre-filter shouldn't change the results", () => {
+    it("shouldn't change the results when adding and removing a pre-filter", () => {
         let digester = new WebPageDigester(terms).setFilter(PrefixTree);
         let before = digester.digest(createDummyWebPage());
 
@@ -29,7 +29,7 @@ describe("WebSiteDigester", () => {
         let after = digester.digest(createDummyWebPage());
         assert.deepEqual(after, before);
     });
-    it("replacing the filter with the same filter shouldn't change the results", () => {
+    it("shouldn't change the results when replacing the filter with the same filter", () => {
         let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
         let before = digester.digest(createDummyWebPage());
 
@@ -40,7 +40,16 @@ describe("WebSiteDigester", () => {
         let after = digester.digest(createDummyWebPage());
         assert.deepEqual(after, before);
     });
-    it("should merge occurrences correctly", () => {
+    it("shouldn't change the result when applying the same filter as a pre-filter", () => {
+        let digester = new WebPageDigester(terms).setFilter(PrefixTree);
+        let before = digester.digest(createDummyWebPage());
+
+        digester.setPreFilter(PrefixTree);
+
+        let after = digester.digest(createDummyWebPage());
+        assert.deepEqual(after, before);
+    });
+    it("should merge occurrences", () => {
         let webPage = createDummyWebPage();
         webPage.occurrences = [new Occurrence("terms", [42]), new Occurrence("false positive", [10])];
 

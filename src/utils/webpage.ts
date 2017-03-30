@@ -1,19 +1,22 @@
 import {Occurrence} from "./occurrence";
+
+
 export class WebPage {
 
     private static url = require('url');
     private static path = require('path');
 
     public protocol : string;
-    public headers : {[property : string] : string};
+    public headers : {[header : string] : string};
     public content : string;
     public occurrences : Array<Occurrence>;
 
-    constructor(warcData? : any) {
-        if (warcData) {
-            this.protocol = warcData.protocol;
-            this.headers = warcData.headers;
-            this.content = warcData.content.toString('utf8');
+    constructor(WARCData? : {protocol : string, headers : {[header : string] : string}, content : Buffer}) {
+        this.occurrences = [];
+        if (WARCData) {
+            this.protocol = WARCData.protocol;
+            this.headers = WARCData.headers;
+            this.content = WARCData.content.toString('utf8');
         }
     }
 
@@ -76,5 +79,44 @@ export class WebPage {
         return str;
     }
 
+    /**
+     * Deeply merges two array of Occurrences into this.occurrences
+     * @param occurrences
+     */
+    public mergeOccurrences(occurrences : Array<Occurrence>) : void {
 
+        // check for trivial cases
+        if (occurrences.length === 0) {
+            return;
+        }
+        if (this.occurrences.length === 0) {
+            this.occurrences = occurrences;
+            return;
+        }
+
+        // convert one of the arrays into Map
+        let mergedOccurrencesMap = Occurrence.occurrenceArrayToMap(this.occurrences);
+
+        // add new occurrences one by one to the map
+        for (let occurrence of occurrences) {
+
+            // check if term is already present in map
+            if (mergedOccurrencesMap.has(occurrence.term)) {
+
+                // merge indexes, convert already present indexes to map
+                let mergedIndexes = new Set(mergedOccurrencesMap.get(occurrence.term));
+                for (let index of occurrence.positions) {
+                    mergedIndexes.add(index);
+                }
+                mergedOccurrencesMap.set(occurrence.term, [...mergedIndexes]);
+
+            } else {
+                mergedOccurrencesMap.set(occurrence.term, occurrence.positions);
+            }
+
+        }
+
+        // convert map back to an array of Occurrences
+        this.occurrences = Occurrence.occurrenceMapToArray(mergedOccurrencesMap);
+    }
 }
