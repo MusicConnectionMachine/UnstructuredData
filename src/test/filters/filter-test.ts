@@ -44,7 +44,14 @@ function testFilter<T extends Filter> (filterConstructor : new (searchTerms? : S
             let result = filter.getMatches(text);
             let expectedResult = new Set(['words']);
             assert.deepEqual(result, expectedResult);
-        })
+        });
+        it("shouldn't be case sensitive", () => {
+            let searchTerms = ['test', 'some', 'random', 'words'];
+            let text = 'There are a not so many WORDS here';
+            filter = new filterConstructor(new Set(searchTerms));
+            let result = filter.getMatches(text);
+            assert.deepEqual(result, new Set(['words']));
+        });
     });
 }
 
