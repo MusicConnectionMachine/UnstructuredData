@@ -35,7 +35,7 @@ export class SampleDataGenerator {
         let terms = TermLoader.loadDummyTerms();
         let filter = new PrefixTree(new Set(terms));
         let outputFile = SampleDataGenerator.dataFolder + SampleDataGenerator.fileName_unpacked + "_filtered";
-        const writeStream = LanguageExtractor.fs.createWriteStream(outputFile, {flags: 'w'});
+        const writeStream = SampleDataGenerator.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;
 
         Downloader.getResponse(
@@ -54,7 +54,7 @@ export class SampleDataGenerator {
                     let p = new WebPage(data);
 
                     //Check if page is in english
-                    LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function (result: boolean) {
+                    LanguageExtractor.isWebPageInLanguage(p, "en", function (err, result) {
                         if (!result)  return;
 
                         // search for terms
@@ -93,30 +93,6 @@ export class SampleDataGenerator {
                     });
                 });
             });
-    }
-
-    /**
-     * Extract all english pages from a file and write them into another.
-     */
-    public static testExtractAllEnglishPages() {
-        try {
-            SampleDataGenerator.fs.mkdirSync(SampleDataGenerator.dataFolder);
-        } catch(e) {
-            if (e.code != 'EEXIST') { throw e; }
-        }
-
-        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
-        const filepath = SampleDataGenerator.dataFolder + SampleDataGenerator.fileName_unpacked;
-
-        console.log("extracting english only pages from " + filepath);
-        // Extract english pages
-        LanguageExtractor.extractWETPages(filepath, LanguageExtractor.ENGLISH_LANG_CODE, (err,filepath) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("done!");
-            }
-        });
     }
 
 
@@ -188,7 +164,7 @@ export class SampleDataGenerator {
                     outputFileName = "file_" + ("0000" + (index+1)).slice(-4) + "_of_" + wetPaths.length + "_" + outputFileName;
 
                     let outputFilePath = SampleDataGenerator.path.join(SampleDataGenerator.dataFolder, outputFileName);
-                    const writeStream = LanguageExtractor.fs.createWriteStream(outputFilePath, {flags: 'w'});
+                    const writeStream = SampleDataGenerator.fs.createWriteStream(outputFilePath, {flags: 'w'});
 
 
                     let entryID = 0;

@@ -94,7 +94,7 @@ export class TestRuns {
 
             let tld = p.getTLD();
 
-            LanguageExtractor.isWebPageInLanguage(p, LanguageExtractor.ENGLISH_LANG_CODE, function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, "en", function(err, result) {
                 console.log("Entry #" + entryID
                     + "\tTLD: "+ tld + " "
                     + "\tIsEnglish: " + result + " "
@@ -136,7 +136,7 @@ export class TestRuns {
 
             let p = new WebPage(data);
 
-            LanguageExtractor.isWebPageInLanguage(p, 'en', function(result : boolean) {
+            LanguageExtractor.isWebPageInLanguage(p, 'en', function(err, result) {
                 if (result) {
                     console.log("processing result ");
                     WordPreprocessor.process(p.content);
