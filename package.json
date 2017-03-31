@@ -1,10 +1,11 @@
 {
-  "name": "application-name",
+  "name": "mcm-unstructured-data",
   "version": "0.0.1",
   "dependencies": {
     "azure": "0.10.6",
     "bloem": "^0.2.4",
     "cld": "^2.4.7",
+    "commander": "^2.9.0",
     "crypto": "0.0.3",
     "franc": "^3.0.0",
     "langs": "^2.0.0",
@@ -14,15 +15,18 @@
     "warc": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^7.0.0",
-    "@types/mocha": "^2.2.40",
     "@types/chai": "^3.4.35",
-    "typescript": "^2.2.0",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.0",
+    "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "chai": "^3.5.0"
+    "typescript": "^2.2.0"
   },
   "scripts": {
     "start": "node out/app.js",
     "test": "mocha \"out/test/**/*.js\""
+  },
+  "bin": {
+    "processCommonCrawl": "./cli.js"
   }
 }
