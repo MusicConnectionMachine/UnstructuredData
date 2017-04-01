@@ -51,13 +51,15 @@ describe("WebSiteDigester", () => {
     });
     it("should merge occurrences", () => {
         let webPage = createDummyWebPage();
-        webPage.occurrences = [new Occurrence("terms", [42]), new Occurrence("false positive", [10])];
+        webPage.occurrences = [new Occurrence("terms", [42]), new Occurrence("false positive", [10]),
+            new Occurrence("some", [88])];
 
         let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
         let result = digester.digest(webPage, true);
 
         let expected = createDummyWebPage();
-        expected.occurrences = [new Occurrence("terms", [42, 93]), new Occurrence("false positive", [10])];
-        assert(result, expected);
+        expected.occurrences = [new Occurrence("terms", [42, 93]), new Occurrence("false positive", [10]),
+            new Occurrence("some", [88]), new Occurrence("less", [138])];
+        assert.deepEqual(result, expected);
     });
 });

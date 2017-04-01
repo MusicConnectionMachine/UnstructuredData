@@ -41,11 +41,11 @@ describe("WebPage", () => {
         webPage.mergeOccurrences([new Occurrence("terms", [42, 93])]);
 
         let expected = [new Occurrence("terms", [42, 93]), new Occurrence("false positive", [10])];
-        assert(webPage.occurrences, expected);
+        assert.deepEqual(webPage.occurrences, expected);
     });
     it("should merge occurrences correctly when this.occurrences is an empty Array", () => {
         let webPage = new WebPage(generateDummyWARC(""));
         webPage.mergeOccurrences([new Occurrence("terms", [42, 69])]);
-        assert(webPage.occurrences, [new Occurrence("terms", [42, 69])]);
+        assert.deepEqual(webPage.occurrences, [new Occurrence("terms", [42, 69])]);
     });
 });
