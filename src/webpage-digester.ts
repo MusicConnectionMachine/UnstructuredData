@@ -3,21 +3,19 @@ import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
 import {Term} from "./utils/term";
 import {Occurrence} from "./utils/occurrence";
+import {IndexFilterResult} from "./utils/index-filter-result";
 
 
 export class WebPageDigester {
-    private searchTerms : Set<string>;
     private termToIDMap : Map<string, string>;
     private mainFilter : new (searchTerms? : Set<string>) =>  IndexFilter;
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
     constructor(searchTerms : Array<Term>) {
-        this.searchTerms = new Set();
         this.termToIDMap = new Map();
 
         for (let term of searchTerms) {
-            this.searchTerms.add(term.term);
             this.termToIDMap.set(term.term, term.id);
         }
 
@@ -41,8 +39,12 @@ export class WebPageDigester {
      * This is very useful if your main filter is slow
      * @param filterConstructor                             Class of the pre-filter
      */
-    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester{
-        this.preFilterInstance = new filterConstructor(this.searchTerms);
+    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester {
+        // construct a set from the map
+        let set : Set<string> = new Set();
+        for (let [term /*, id*/] of this.termToIDMap.entries())  set.add(term);
+
+        this.preFilterInstance = new filterConstructor(set);
         return this;
     }
 
@@ -86,10 +88,14 @@ export class WebPageDigester {
 
         // create new mainFilterInstance from this.searchTerms if not present
         if (!this.mainFilterInstance) {
-            this.mainFilterInstance = new this.mainFilter(this.searchTerms);
+            // construct a set from the map
+            let set : Set<string> = new Set();
+            for (let [term /*, id*/] of this.termToIDMap.entries())  set.add(term);
+
+            this.mainFilterInstance = new this.mainFilter(set);
         }
 
-        let matchesIndex : Array<{term : string, positions: Array<number>}>
+        let matchesIndex : Array<IndexFilterResult>
             = this.mainFilterInstance.getMatchesIndex(pageContent);
 
         let occs : Array<Occurrence> = [];

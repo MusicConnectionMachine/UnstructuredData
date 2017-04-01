@@ -2,6 +2,7 @@ import "mocha";
 import { IndexFilter } from "../../filters/index-filter";
 import { PrefixTree } from "../../filters/prefix-tree";
 import { NaiveFilter } from "../../filters/naive-filter";
+import {IndexFilterResult} from "../../utils/index-filter-result";
 let assert = require("chai").assert;
 
 
@@ -26,7 +27,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
                 'It should only have one match though!';
             filter = new filterConstructor(new Set(searchTerms));
             let result = filter.getMatchesIndex(text);
-            let expectedResult = [{term:'words', positions: [24]}];
+            let expectedResult = [new IndexFilterResult('words',[24])];
             assert.deepEqual(result, expectedResult);
         })
     });

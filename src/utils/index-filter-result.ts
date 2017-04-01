@@ -1,7 +1,12 @@
 export class IndexFilterResult {
+
     public term: string;
     public positions : Array<number>;
 
+    constructor(t, i) {
+        this.term = t;
+        this.positions = i;
+    }
 
 
     /**
@@ -12,7 +17,7 @@ export class IndexFilterResult {
     public static ifrMapToArray (occurrenceMap : Map<string, Array<number>>) : Array<IndexFilterResult> {
         let occurrences : Array<{term : string, positions: Array<number>}> = [];
         for (let [term, indexes] of occurrenceMap.entries()) {
-            occurrences.push({term: term, positions: indexes});
+            occurrences.push(new IndexFilterResult(term, indexes));
         }
         return occurrences;
     }

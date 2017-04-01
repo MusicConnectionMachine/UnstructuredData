@@ -67,11 +67,11 @@ export class NaiveFilter extends IndexFilter {
     }
 
     private static findOccurrences(text : string, searchTerms : Set<string>) : Array<IndexFilterResult> {
-        let occurrences : Array<{term : string, positions: Array<number>}> = [];
+        let occurrences : Array<IndexFilterResult> = [];
         for (let term of searchTerms) {
             let indexes = NaiveFilter.getIndexes(text, term);
             if (indexes.length > 0) {
-                occurrences.push({term : term, positions: indexes});
+                occurrences.push(new IndexFilterResult(term, indexes));
             }
         }
         return occurrences;
