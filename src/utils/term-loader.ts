@@ -1,4 +1,4 @@
-import {Term} from "./term";
+import {Entity} from "./term";
 export class TermLoader {
 
     static fs = require('fs');
@@ -13,7 +13,7 @@ export class TermLoader {
      * @param filename path to the file
      * @returns {Array<string>} list of unique terms
      */
-    public static loadFromDBPediaJSON(filename : string) : Array<Term> {
+    public static loadFromDBPediaJSON(filename : string) : Array<Entity> {
         let file = TermLoader.fs.readFileSync(filename, 'utf8');
         let entityList = JSON.parse(file);
 
@@ -24,9 +24,9 @@ export class TermLoader {
             uniques.add(names[names.length - 1]);
         }
 
-        let terms : Array<Term> = [];
+        let terms : Array<Entity> = [];
         for (let t of uniques) {
-            terms.push(new Term(t, "id=" + Math.random()));
+            terms.push(new Entity(t, "id=" + Math.random()));
         }
 
         return terms;
@@ -38,8 +38,8 @@ export class TermLoader {
      *
      * @returns {[string]}
      */
-    public static loadFromDB() : Array<Term> {
-        return [new Term("TODO: implement database query here!", "ID")];
+    public static loadFromDB() : Array<Entity> {
+        return [new Entity("TODO: implement database query here!", "ID")];
     }
 
 
@@ -47,7 +47,7 @@ export class TermLoader {
      * Returns some hardcoded composer names.
      * @returns {[string, ... ,string]}
      */
-    public static loadDummyTerms() : Array<Term> {
+    public static loadDummyTerms() : Array<Entity> {
         let str = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
             'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
             'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
@@ -58,9 +58,9 @@ export class TermLoader {
             'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
             'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
 
-        let terms : Array<Term> = [];
+        let terms : Array<Entity> = [];
         for (let i = 0; i < str.length; i++) {
-            terms.push(new Term(str[i], "id=" + i));
+            terms.push(new Entity(str[i], "id=" + i));
         }
 
         return terms;

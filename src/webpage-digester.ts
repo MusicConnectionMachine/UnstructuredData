@@ -1,7 +1,7 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
-import {Term} from "./utils/term";
+import {Entity} from "./utils/term";
 import {Occurrence} from "./utils/occurrence";
 import {IndexFilterResult} from "./utils/index-filter-result";
 
@@ -12,7 +12,7 @@ export class WebPageDigester {
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
-    constructor(searchTerms : Array<Term>) {
+    constructor(searchTerms : Array<Entity>) {
         this.termToIDMap = new Map();
 
         for (let term of searchTerms) {
@@ -103,7 +103,7 @@ export class WebPageDigester {
             let termStr = match.term;
             let termID = this.termToIDMap.get(termStr);
 
-            occs.push(new Occurrence(new Term(termStr, termID), match.positions));
+            occs.push(new Occurrence(new Entity(termStr, termID), match.positions));
 
         }
 

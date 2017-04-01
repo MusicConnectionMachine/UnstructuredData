@@ -1,13 +1,13 @@
 import "mocha";
 import {Occurrence} from "../../utils/occurrence";
-import {Term} from "../../utils/term";
+import {Entity} from "../../utils/term";
 let assert = require("chai").assert;
 
 describe("Occurrence", () => {
     it("should work: arrayToMap and mapToArray", () => {
-        let occ1 = new Occurrence(new Term("term1", "1"), [42]);
-        let occ2 = new Occurrence(new Term("term2", "2"), [43]);
-        let occ3 = new Occurrence(new Term("term3", "3"), [44]);
+        let occ1 = new Occurrence(new Entity("term1", "1"), [42]);
+        let occ2 = new Occurrence(new Entity("term2", "2"), [43]);
+        let occ3 = new Occurrence(new Entity("term3", "3"), [44]);
         let occArrExpected = [occ1, occ2, occ3];
 
         let occMapResult = Occurrence.occArrayToMap(occArrExpected);

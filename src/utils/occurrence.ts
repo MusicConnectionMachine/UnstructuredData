@@ -1,9 +1,9 @@
-import {Term} from "./term";
+import {Entity} from "./term";
 export class Occurrence {
-    public term : Term;
+    public term : Entity;
     public positions : Array<number>;
 
-    constructor(t : Term, p : Array<number>) {
+    constructor(t : Entity, p : Array<number>) {
         this.term = t;
         this.positions = p;
     };
@@ -20,7 +20,7 @@ export class Occurrence {
     public static occMapToArr(map : Map<string, [string, Array<number>]>) : Array<Occurrence> {
         let arr : Array<Occurrence> = [];
         for (let [term, [id, pos]] of map) {
-            arr.push(new Occurrence(new Term(term, id), pos));
+            arr.push(new Occurrence(new Entity(term, id), pos));
         }
         return arr;
     }

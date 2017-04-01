@@ -1,7 +1,7 @@
 import "mocha";
 import {WebPage} from "../../utils/webpage";
 import {Occurrence} from "../../utils/occurrence";
-import {Term} from "../../utils/term";
+import {Entity} from "../../utils/term";
 let assert = require("chai").assert;
 
 function generateDummyWARC(url : string) {
@@ -38,8 +38,8 @@ describe("WebPage", () => {
     });
     it("should merge occurrences correctly", () => {
         let webPage = new WebPage(generateDummyWARC(""));
-        let t1 = new Term("terms", "id1");
-        let t2 = new Term("false positive", "id2");
+        let t1 = new Entity("terms", "id1");
+        let t2 = new Entity("false positive", "id2");
         webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10])];
         webPage.mergeOccurrences([new Occurrence(t1, [42, 93])]);
         let expected = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10])];
@@ -47,7 +47,7 @@ describe("WebPage", () => {
     });
     it("should merge occurrences correctly when this.occurrences is an empty Array", () => {
         let webPage = new WebPage(generateDummyWARC(""));
-        let t1 = new Term("terms", "id1");
+        let t1 = new Entity("terms", "id1");
         webPage.mergeOccurrences([new Occurrence(t1, [42, 69])]);
         assert.deepEqual(webPage.occurrences, [new Occurrence(t1, [42, 69])]);
     });
