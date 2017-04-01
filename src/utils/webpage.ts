@@ -94,29 +94,30 @@ export class WebPage {
             return;
         }
 
-        // convert one of the arrays into Map
-        let mergedOccurrencesMap = Occurrence.occurrenceArrayToMap(this.occurrences);
+        // convert one of the arrays into Map (term -> [id, positions])
+        let mergedMap : Map<string, [string, Array<number>]> = Occurrence.occArrayToMap(this.occurrences);
 
         // add new occurrences one by one to the map
         for (let occurrence of occurrences) {
 
-            // check if term is already present in map
-            if (mergedOccurrencesMap.has(occurrence.term)) {
+            let termStr = occurrence.term.term;
 
-                // merge indexes, convert already present indexes to map
-                let mergedIndexes = new Set(mergedOccurrencesMap.get(occurrence.term));
+            // check if term is already present in map
+            if (mergedMap.has(termStr)) {
+                // merge indexes
+                let [id, pos] = mergedMap.get(termStr);
+                let mergedIndexes = new Set(pos);
                 for (let index of occurrence.positions) {
                     mergedIndexes.add(index);
                 }
-                mergedOccurrencesMap.set(occurrence.term, [...mergedIndexes]);
-
+                mergedMap.set(termStr, [id, Array.from(mergedIndexes)]);
             } else {
-                mergedOccurrencesMap.set(occurrence.term, occurrence.positions);
+                mergedMap.set(termStr, [occurrence.term.id, occurrence.positions]);
             }
 
         }
 
         // convert map back to an array of Occurrences
-        this.occurrences = Occurrence.occurrenceMapToArray(mergedOccurrencesMap);
+        this.occurrences = Occurrence.occMapToArr(mergedMap);
     }
 }

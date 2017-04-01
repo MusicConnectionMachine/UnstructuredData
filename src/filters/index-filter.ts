@@ -1,5 +1,5 @@
 import { Filter } from "./filter";
-import { Occurrence } from "../utils/occurrence";
+import {IndexFilterResult} from "../utils/index-filter-result";
 
 export abstract class IndexFilter extends Filter {
 
@@ -8,5 +8,5 @@ export abstract class IndexFilter extends Filter {
      * @param text
      * @returns [string, number][]          array of tuple consisting of match and index
      */
-    abstract getMatchesIndex(text : string) : Array<Occurrence>;
+    abstract getMatchesIndex(text : string) : Array<IndexFilterResult>;
 }

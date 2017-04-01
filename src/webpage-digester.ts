@@ -1,16 +1,27 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
+import {Term} from "./utils/term";
+import {Occurrence} from "./utils/occurrence";
 
 
 export class WebPageDigester {
     private searchTerms : Set<string>;
+    private termToIDMap : Map<string, string>;
     private mainFilter : new (searchTerms? : Set<string>) =>  IndexFilter;
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
-    constructor(searchTerms : Array<string>) {
-        this.searchTerms = new Set(searchTerms);
+    constructor(searchTerms : Array<Term>) {
+        this.searchTerms = new Set();
+        this.termToIDMap = new Map();
+
+        for (let term of searchTerms) {
+            this.searchTerms.add(term.term);
+            this.termToIDMap.set(term.term, term.id);
+        }
+
+
     }
 
     /**
@@ -78,13 +89,23 @@ export class WebPageDigester {
             this.mainFilterInstance = new this.mainFilter(this.searchTerms);
         }
 
-        let occurrences = this.mainFilterInstance.getMatchesIndex(pageContent);
+        let matchesIndex : Array<{term : string, positions: Array<number>}>
+            = this.mainFilterInstance.getMatchesIndex(pageContent);
+
+        let occs : Array<Occurrence> = [];
+        for (let match of matchesIndex) {
+            let termStr = match.term;
+            let termID = this.termToIDMap.get(termStr);
+
+            occs.push(new Occurrence(new Term(termStr, termID), match.positions));
+
+        }
 
         // check if we have to merge occurrences and update webPage object
         if (mergeOccurrences) {
-            webPage.mergeOccurrences(occurrences);
+            webPage.mergeOccurrences(occs);
         } else {
-            webPage.occurrences = occurrences
+            webPage.occurrences = occs
         }
 
         return webPage;

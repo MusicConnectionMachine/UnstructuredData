@@ -1,5 +1,5 @@
 import { IndexFilter } from "./index-filter";
-import { Occurrence } from "../utils/occurrence";
+import {IndexFilterResult} from "../utils/index-filter-result";
 
 export class NaiveFilter extends IndexFilter {
     private static tokenizer = new (require('natural')).WordTokenizer();
@@ -62,16 +62,16 @@ export class NaiveFilter extends IndexFilter {
      * @param text
      * @returns                         array of occurrences
      */
-    public getMatchesIndex(text: string): Array<Occurrence> {
+    public getMatchesIndex(text: string): Array<IndexFilterResult> {
         return NaiveFilter.findOccurrences(text, this.searchTerms);
     }
 
-    private static findOccurrences(text : string, searchTerms : Set<string>) : Array<Occurrence> {
-        let occurrences : Array<Occurrence> = [];
+    private static findOccurrences(text : string, searchTerms : Set<string>) : Array<IndexFilterResult> {
+        let occurrences : Array<{term : string, positions: Array<number>}> = [];
         for (let term of searchTerms) {
             let indexes = NaiveFilter.getIndexes(text, term);
             if (indexes.length > 0) {
-                occurrences.push(new Occurrence(term, indexes));
+                occurrences.push({term : term, positions: indexes});
             }
         }
         return occurrences;

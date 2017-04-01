@@ -1,5 +1,5 @@
 import { IndexFilter } from "./index-filter";
-import { Occurrence } from "../utils/occurrence";
+import {IndexFilterResult} from "../utils/index-filter-result";
 
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
@@ -80,7 +80,7 @@ export class PrefixTree extends IndexFilter{
      * @param text
      * @returns                             array of occurrences (indexes don't include match prefixes)
      */
-    public getMatchesIndex(text : string) : Array<Occurrence> {
+    public getMatchesIndex(text : string) : Array<IndexFilterResult> {
         let matches : Map<string, Array<number>> = new Map();
 
         for (let position = 0; position < text.length; position++) {
@@ -95,7 +95,7 @@ export class PrefixTree extends IndexFilter{
                 }
             }
         }
-        return Occurrence.occurrenceMapToArray(matches);
+        return IndexFilterResult.ifrMapToArray(matches);
     }
 
     public toString() : string {
