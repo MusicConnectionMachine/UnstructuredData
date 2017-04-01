@@ -42,14 +42,13 @@ describe("WebPage", () => {
         let t2 = new Term("false positive", "id2");
         webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10])];
         webPage.mergeOccurrences([new Occurrence(t1, [42, 93])]);
-
         let expected = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10])];
-        //assert(webPage.occurrences, expected); // TODO: broken
+        assert.deepEqual(webPage.occurrences, expected);
     });
     it("should merge occurrences correctly when this.occurrences is an empty Array", () => {
         let webPage = new WebPage(generateDummyWARC(""));
         let t1 = new Term("terms", "id1");
         webPage.mergeOccurrences([new Occurrence(t1, [42, 69])]);
-        //assert(webPage.occurrences, [new Occurrence(t1, [42, 69])]); // TODO: broken
+        assert.deepEqual(webPage.occurrences, [new Occurrence(t1, [42, 69])]);
     });
 });

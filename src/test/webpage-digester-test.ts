@@ -11,7 +11,7 @@ let assert = require("chai").assert;
 let termStr = ["some", "more", "or", "less", "random", "terms"];
 let terms = [];
 for (let str of termStr) {
-    terms.push(new Term(str, "id=" + Math.random()));
+    terms.push(new Term(str, "id=" + str));
 }
 
 function createDummyWebPage() : WebPage {
@@ -56,16 +56,19 @@ describe("WebSiteDigester", () => {
     });
     it("should merge occurrences", () => {
         let webPage = createDummyWebPage();
-        let t1 = new Term("terms", "id1");
-        let t2 = new Term("false positive", "id2");
 
-        webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10])];
+        let t1 = new Term("terms", "id=terms");
+        let t2 = new Term("false positive", "id=false positive");
+        let t3 = new Term("some", "id=some");
+        let t4 = new Term("less", "id=less");
+
+        webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
 
         let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
         let result = digester.digest(webPage, true);
 
         let expected = createDummyWebPage();
-        expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10])];
-        //assert(result, expected); // TODO: broken
+        expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10]), new Occurrence(t3, [88]), new Occurrence(t4, [138])];
+        assert.deepEqual(result, expected);
     });
 });
