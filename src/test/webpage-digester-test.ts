@@ -5,9 +5,14 @@ import {WebPage} from "../utils/webpage";
 import {BloomFilter} from "../filters/bloom-filter";
 import {NaiveFilter} from "../filters/naive-filter";
 import {Occurrence} from "../utils/occurrence";
+import {Entity} from "../utils/entity";
 let assert = require("chai").assert;
 
-let terms = ["some", "more", "or", "less", "random", "terms"];
+let termStr = ["some", "more", "or", "less", "random", "terms"];
+let terms = [];
+for (let str of termStr) {
+    terms.push(new Entity(str, "id=" + str));
+}
 
 function createDummyWebPage() : WebPage {
     let webPage = new WebPage();
@@ -51,15 +56,19 @@ describe("WebSiteDigester", () => {
     });
     it("should merge occurrences", () => {
         let webPage = createDummyWebPage();
-        webPage.occurrences = [new Occurrence("terms", [42]), new Occurrence("false positive", [10]),
-            new Occurrence("some", [88])];
+
+        let t1 = new Entity("terms", "id=terms");
+        let t2 = new Entity("false positive", "id=false positive");
+        let t3 = new Entity("some", "id=some");
+        let t4 = new Entity("less", "id=less");
+
+        webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
 
         let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
         let result = digester.digest(webPage, true);
 
         let expected = createDummyWebPage();
-        expected.occurrences = [new Occurrence("terms", [42, 93]), new Occurrence("false positive", [10]),
-            new Occurrence("some", [88]), new Occurrence("less", [138])];
+        expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10]), new Occurrence(t3, [88]), new Occurrence(t4, [138])];
         assert.deepEqual(result, expected);
     });
 });

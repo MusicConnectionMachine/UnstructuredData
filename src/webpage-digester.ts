@@ -1,16 +1,40 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
+import {Entity} from "./utils/entity";
+import {Occurrence} from "./utils/occurrence";
+import {IndexFilterResult} from "./utils/index-filter-result";
 
 
 export class WebPageDigester {
-    private searchTerms : Set<string>;
+    private termToIDMap : Map<string, string>;
     private mainFilter : new (searchTerms? : Set<string>) =>  IndexFilter;
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
-    constructor(searchTerms : Array<string>) {
-        this.searchTerms = new Set(searchTerms);
+    constructor(searchTerms : Array<Entity>) {
+        this.termToIDMap = new Map();
+
+        for (let term of searchTerms) {
+            this.termToIDMap.set(term.term, term.id);
+        }
+
+
+    }
+
+    /**
+     * Takes all the keys from the map and returns a set of them.
+     * @param map
+     * @returns {Set<string>}
+     */
+    private static mapToSet(map : Map<string, string>) : Set<string> {
+        let set : Set<string> = new Set();
+
+        for (let [term] of map.entries()) {
+            // strangely "for (let term in map)"  fails the tests
+            set.add(term);
+        }
+        return set;
     }
 
     /**
@@ -30,8 +54,11 @@ export class WebPageDigester {
      * This is very useful if your main filter is slow
      * @param filterConstructor                             Class of the pre-filter
      */
-    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester{
-        this.preFilterInstance = new filterConstructor(this.searchTerms);
+    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester {
+        // construct a set from the map
+        let set : Set<string> = WebPageDigester.mapToSet(this.termToIDMap);
+
+        this.preFilterInstance = new filterConstructor(set);
         return this;
     }
 
@@ -75,16 +102,28 @@ export class WebPageDigester {
 
         // create new mainFilterInstance from this.searchTerms if not present
         if (!this.mainFilterInstance) {
-            this.mainFilterInstance = new this.mainFilter(this.searchTerms);
+            // construct a set from the map
+            let set : Set<string> = WebPageDigester.mapToSet(this.termToIDMap);
+            this.mainFilterInstance = new this.mainFilter(set);
         }
 
-        let occurrences = this.mainFilterInstance.getMatchesIndex(pageContent);
+        let matchesIndex : Array<IndexFilterResult>
+            = this.mainFilterInstance.getMatchesIndex(pageContent);
+
+        let occs : Array<Occurrence> = [];
+        for (let match of matchesIndex) {
+            let termStr = match.term;
+            let termID = this.termToIDMap.get(termStr);
+
+            occs.push(new Occurrence(new Entity(termStr, termID), match.positions));
+
+        }
 
         // check if we have to merge occurrences and update webPage object
         if (mergeOccurrences) {
-            webPage.mergeOccurrences(occurrences);
+            webPage.mergeOccurrences(occs);
         } else {
-            webPage.occurrences = occurrences
+            webPage.occurrences = occs
         }
 
         return webPage;

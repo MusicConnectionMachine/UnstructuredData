@@ -1,31 +1,29 @@
 import "mocha";
-import { Occurrence } from "../../utils/occurrence";
+import {Occurrence} from "../../utils/occurrence";
+import {Entity} from "../../utils/entity";
 let assert = require("chai").assert;
 
 describe("Occurrence", () => {
-    it("should convert a occurrence map into an array of occurrences .occurrenceMapToArray()", () => {
-        let occurrenceMap = new Map();
-        occurrenceMap.set("test", [1, 42]);
-        occurrenceMap.set("random", [69]);
-        let occurrenceArray = [];
-        occurrenceArray.push({term: "test", positions: [1, 42]});
-        occurrenceArray.push({term: "random", positions: [69]});
-        assert.deepEqual(occurrenceArray, Occurrence.occurrenceMapToArray(occurrenceMap));
+    it("should work: arrayToMap and mapToArray", () => {
+        let occ1 = new Occurrence(new Entity("term1", "1"), [42]);
+        let occ2 = new Occurrence(new Entity("term2", "2"), [43]);
+        let occ3 = new Occurrence(new Entity("term3", "3"), [44]);
+        let occArrExpected = [occ1, occ2, occ3];
+
+        let occMapResult = Occurrence.occArrayToMap(occArrExpected);
+        let occArrResult = Occurrence.occMapToArr(occMapResult);
+
+        // deepEqual is not working on Maps: returns OK even if two maps are obviously different
+        assert.isTrue(JSON.stringify(occMapResult.get("term1")) == JSON.stringify(["1", [42]]));
+        assert.isTrue(JSON.stringify(occMapResult.get("term2")) == JSON.stringify(["2", [43]]));
+        assert.isTrue(JSON.stringify(occMapResult.get("term3")) == JSON.stringify(["3", [44]]));
+        assert.isTrue(JSON.stringify(occArrExpected) == JSON.stringify(occArrResult));
+
+        // test false
+        assert.isFalse(JSON.stringify(occMapResult.get("term2")) == JSON.stringify(["3", [44]]));
+        assert.isFalse(JSON.stringify(occMapResult.get("term3")) == JSON.stringify(["2", [43]]));
+        assert.isFalse(JSON.stringify(occMapResult.get("term1")) == JSON.stringify(["3", [44]]));
+
     });
-    it("should convert a an array of occurrences into a map .occurrenceArrayToMap()", () => {
-        let occurrenceMap = new Map();
-        occurrenceMap.set("test", [1, 42]);
-        occurrenceMap.set("random", [69]);
-        let occurrenceArray = [];
-        occurrenceArray.push(new Occurrence("test", [1, 42]));
-        occurrenceArray.push(new Occurrence("random", [69]));
-        assert.deepEqual(occurrenceMap, Occurrence.occurrenceArrayToMap(occurrenceArray));
-    });
-    it(".occurrenceMapToArray() should be inverse to .occurrenceArrayToMap()", () => {
-        let occurrenceArray = [];
-        occurrenceArray.push(new Occurrence("test", [1, 42]));
-        occurrenceArray.push(new Occurrence("random", [69]));
-        let occurrenceMap = Occurrence.occurrenceArrayToMap(occurrenceArray);
-        assert.deepEqual(occurrenceArray, Occurrence.occurrenceMapToArray(occurrenceMap));
-    })
+
 });

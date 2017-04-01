@@ -5,8 +5,8 @@ import {CCIndex} from "../cc-index";
 import {WetManager} from "../wet-manager";
 import {TermLoader} from "../utils/term-loader";
 import {WebPage} from "../utils/webpage";
-import {Occurrence} from "../utils/occurrence";
 import {PrefixTree} from "../filters/prefix-tree";
+import {IndexFilterResult} from "../utils/index-filter-result";
 
 
 /**
@@ -33,7 +33,12 @@ export class SampleDataGenerator {
 
         // some hardcoded composers here
         let terms = TermLoader.loadDummyTerms();
-        let filter = new PrefixTree(new Set(terms));
+        let termStrings : Set<string> = new Set();
+        for (let term of terms) {
+            termStrings.add(term.term);
+        }
+
+        let filter = new PrefixTree(termStrings);
         let outputFile = SampleDataGenerator.dataFolder + SampleDataGenerator.fileName_unpacked + "_filtered";
         const writeStream = SampleDataGenerator.fs.createWriteStream(outputFile, {flags: 'w'});
         let pagesFound = 0;
@@ -60,7 +65,7 @@ export class SampleDataGenerator {
                         // search for terms
                         let totalOccs = 0;
                         let distinctOccs = 0;
-                        let occs : Array<Occurrence> = filter.getMatchesIndex(p.content);
+                        let occs : Array<IndexFilterResult> = filter.getMatchesIndex(p.content);
                         for (let occ of occs) {
                             distinctOccs++;
                             totalOccs += occ.positions.length;
@@ -174,8 +179,7 @@ export class SampleDataGenerator {
                     // our input data might have partially encoded uris -> decode & encode again before comparison
                     function formatURI(uri) {
                         try {
-                            let result = encodeURIComponent(decodeURIComponent(uri.toLowerCase())).toLowerCase().replace("https://", "").replace("http://", "");
-                            return result;
+                            return encodeURIComponent(decodeURIComponent(uri.toLowerCase())).toLowerCase().replace("https://", "").replace("http://", "");
                         } catch (e) {
                             // some URIs fail, return as is
                             //console.log("   strange uri: " + uri);
