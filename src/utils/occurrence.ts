@@ -1,4 +1,4 @@
-import {Entity} from "./term";
+import {Entity} from "./entity";
 export class Occurrence {
     public term : Entity;
     public positions : Array<number>;

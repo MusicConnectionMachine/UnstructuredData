@@ -1,7 +1,7 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
-import {Entity} from "./utils/term";
+import {Entity} from "./utils/entity";
 import {Occurrence} from "./utils/occurrence";
 import {IndexFilterResult} from "./utils/index-filter-result";
 

@@ -5,7 +5,7 @@ import {WebPage} from "../utils/webpage";
 import {BloomFilter} from "../filters/bloom-filter";
 import {NaiveFilter} from "../filters/naive-filter";
 import {Occurrence} from "../utils/occurrence";
-import {Entity} from "../utils/term";
+import {Entity} from "../utils/entity";
 let assert = require("chai").assert;
 
 let termStr = ["some", "more", "or", "less", "random", "terms"];
