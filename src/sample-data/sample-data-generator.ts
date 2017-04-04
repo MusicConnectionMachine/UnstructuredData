@@ -59,7 +59,7 @@ export class SampleDataGenerator {
                     let p = new WebPage(data);
 
                     //Check if page is in english
-                    LanguageExtractor.isWebPageInLanguage(p, "en", function (err, result) {
+                    LanguageExtractor.isWebPageInLanguage(p, ["en"], function (err, result) {
                         if (!result)  return;
 
                         // search for terms

@@ -14,6 +14,7 @@ export class Storer {
         Storer.storeWebsiteBlob(webpage);
 
         //TODO: Create database entry for website
+        console.log(webpage);
     }
 
     /**
