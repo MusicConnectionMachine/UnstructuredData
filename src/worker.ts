@@ -1,4 +1,5 @@
 import ReadableStream = NodeJS.ReadableStream;
+import EventEmitter = NodeJS.EventEmitter;
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -10,7 +11,7 @@ import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker {
+export class Worker extends EventEmitter{
 
     private webPageDigester : WebPageDigester;
     private caching : boolean;
@@ -23,7 +24,7 @@ export class Worker {
      * @param languageCodes                                 (optional) Array of languages to filter for
      */
     constructor (entities : Array<Entity>, caching? : boolean, languageCodes? : Array<string>) {
-
+        super();
         this.webPageDigester = new WebPageDigester(entities)
             .setPreFilter(BloomFilter)
             .setFilter(PrefixTree);
@@ -31,6 +32,8 @@ export class Worker {
         this.caching = caching || process.env.caching || false;
         this.languageCodes = languageCodes || process.env.languageCodes;
     }
+
+
 
     /**
      * Runs the entire processing chain on a WET file specified by the CC path
@@ -76,11 +79,11 @@ export class Worker {
             if (this.languageCodes && this.languageCodes.length > 0) {
 
                 LanguageExtractor.isWebPageInLanguage(webPage, this.languageCodes, (err, result?) => {
-                    if(result) { Worker.onResult(webPage); }
+                    if(result) { this.onResult(webPage); }
                 });
 
             } else {
-                Worker.onResult(webPage);
+                this.onResult(webPage);
             }
         }
     }
@@ -89,7 +92,8 @@ export class Worker {
      * Gets called for every matching WebPage object. Stores web page in cloud and DB
      * @param webPage
      */
-    private static onResult(webPage : WebPage) {
+    private onResult(webPage : WebPage) {
         Storer.storeWebsite(webPage);
+        this.emit("finished");
     }
 }
