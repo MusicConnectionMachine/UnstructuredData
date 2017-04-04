@@ -2,6 +2,7 @@ import {Entity} from "./entity";
 export class TermLoader {
 
     static fs = require('fs');
+    static path = require('path');
 
     /**
      * Loads a list of artists names and only uses their last-names.
@@ -33,13 +34,65 @@ export class TermLoader {
     }
 
     /**
-     * TODO:
-     * Loads all relevant terms provided by group 1 from the database.
+     * Connect to the DB using the API submodule and load all relevant terms provided by group 1.
      *
-     * @returns {[string]}
+     * Right now we only get the composer names.
      */
-    public static loadFromDB() : Array<Entity> {
-        return [new Entity("TODO: implement database query here!", "ID")];
+    public static loadFromDB(callback : (err?, entities? : Array<Entity>) => void) {
+        // we are in:   UnstructuredData/out/utils/term-loader.js
+        // magic is in: UnstructuredData/api/database.js
+        let database = require(TermLoader.path.join("..", "..", "api", "database.js"));
+
+        // optional, if not set: will be taken from API -> database.js -> createContext() -> configDB
+        let databaseURI = undefined;
+
+        let entities : Array<Entity> = [];
+
+        database.connect(databaseURI, function (context) {
+            let artists = context.component('dsap').module('artists');
+            artists.findAllArtists().then(function(list) {
+                // list is an array of Instance objects
+                // Instance has a "dataValues" property
+                // dataValues contains an object like this:
+                /*{
+                     name: 'Frank Zappa',
+                     id: '31b9a8b2-dbfe-4107-ba09-4d8bf5dca123',
+                     artist_type: 'composer',  <--- could be null
+                     dateOfBirth: 1940-12-20T23:00:00.000Z,
+                     placeOfBirth: 'Baltimore, Maryland, U.S.',
+                     dateOfDeath: 1993-12-03T23:00:00.000Z,
+                     placeOfDeath: 'Los Angeles, California, U.S.',
+                     nationality: 'American',
+                     tags: [],   <--- could be null
+                     pseudonym: [],  <--- could be null
+                     source_link: 'http://dbpedia.org/resource/Frank_Zappa'
+                 }
+                 */
+
+                // convert all names to Entities
+                for (let inst of list) {
+                    let name : string = inst.dataValues.name;
+                    let id : string = inst.dataValues.id;
+                    console.log("got name: " + name);
+
+                    // right now very simple:
+                    // for each part of the name create a new Entity
+                    // add pseudonyms later
+                    let parts = name.split(" ");
+                    for (let part of parts) {
+                        entities.push(new Entity(part, id));
+                    }
+                }
+
+                callback(undefined, entities);
+
+
+            }).catch(function(error) {
+                if (callback) callback(error);
+            });
+
+        });
+
     }
 
 
