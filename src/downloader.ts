@@ -1,4 +1,4 @@
-import {AlreadyExistsError, UnsupportedProtocolError} from './utils/errors';
+import {AlreadyExistsError, UnsupportedProtocolError,RequestTimeoutError} from './utils/errors';
 import {IncomingMessage} from "http";
 
 
@@ -9,6 +9,9 @@ export class Downloader {
     static path = require('path');
     static http = require('http');
     static https = require('https');
+
+    // Timeout in ms for requesting from CommonCrawl
+    static timeout = 1000;
 
 
     /**
@@ -82,14 +85,21 @@ export class Downloader {
 
         // download file and pipe to stream
         if (parsedURL.protocol === 'https:') {
-            Downloader.https.get(fileURL, response => {
+            const request = Downloader.https.get(fileURL, response => {
                 callback(undefined, response);
+            });
+            request.setTimeout(Downloader.timeout, response => {
+                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+Downloader.timeout+' ms');
+                callback(err,undefined);
             });
         } else if (parsedURL.protocol === 'http:') {
-            Downloader.http.get(fileURL, response => {
+            const request = Downloader.http.get(fileURL, response => {
                 callback(undefined, response);
             });
+            request.setTimeout(Downloader.timeout, response => {
+                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+Downloader.timeout+' ms');
+                callback(err,undefined);
+            });
         }
-
     }
 }
