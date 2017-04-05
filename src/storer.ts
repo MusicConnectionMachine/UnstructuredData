@@ -53,18 +53,27 @@ export class Storer {
 
         //Create website entry in db
         this.context.models.websites.create(websiteObj).then(website => {
-            let containsObj = {
-                occurrences: JSON.stringify(webpage.occurrences),
-                websiteId: website.get('id')
-            };
 
-            //Create contains entry in db
-            this.context.models.contains.create(containsObj).then(() => {
-                if(callback) {
-                    callback(null);
-                }
+            let containsObjList = [];
+
+            //Collect all the contains entries that should be created (One for each term)
+            for(let i = 0; i < webpage.occurrences.length; i++) {
+                let occ = webpage.occurrences[i];
+                containsObjList.push({
+                    occurences: JSON.stringify({
+                        term: occ.term.term,
+                        positions: occ.positions
+                    }),
+                    websiteId: website.get('id'),
+                    entityId: occ.term.id
+                })
+            }
+
+            //Create all contains entries at once
+            this.context.bulkCreate(containsObjList).then(result => {
+                callback(null);
             }).catch(err => {
-                //Make sure we don't have a website with no occurences object
+                //Make sure we don't leave that website hanging
                 return website.destroy();
             }).then(() => {
                 //Return error after destroying website
@@ -74,7 +83,8 @@ export class Storer {
                         message: 'contains entry could not be created'
                     });
                 }
-            })
+            });
+
         }).catch(err => {
             if(callback) {
                 callback(err);
