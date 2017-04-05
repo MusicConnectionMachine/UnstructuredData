@@ -16,6 +16,7 @@ export class Worker extends EventEmitter {
     private webPageDigester : WebPageDigester;
     private caching : boolean;
     private languageCodes : Array<string>;
+    private processID : number;
 
 
     /**
@@ -31,6 +32,7 @@ export class Worker extends EventEmitter {
 
         this.caching = caching || process.env.caching || false;
         this.languageCodes = languageCodes || process.env.languageCodes;
+        this.processID = process.pid;
     }
 
 

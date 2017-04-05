@@ -4,6 +4,13 @@ import {TermLoader} from "./utils/term-loader";
 import {Worker} from "./worker";
 import {Term} from "./utils/term";
 
+
+/**
+ * The ProcessingManager
+ * 1. fetches CC paths,
+ * 2. fetches terms,
+ * 3. processes files in forked processes
+ */
 export class ProcessingManager {
     private static cpus = os.cpus().length;
 
@@ -15,6 +22,10 @@ export class ProcessingManager {
         }
     }
 
+    /**
+     * Gets called when the current process is the master process
+     * Loads terms, forks processes, communicates with processes and serves work
+     */
     private static letWork() {
         let ccWetPaths : Array<string> = [];
 
@@ -58,6 +69,10 @@ export class ProcessingManager {
 
     }
 
+    /**
+     * Gets called when the current process is a slave process
+     * Initializes Worker with terms and fetches new work from master process
+     */
     private static work() {
         let worker : Worker;
 
@@ -75,7 +90,7 @@ export class ProcessingManager {
             else if (msg.work && worker) {
                 worker.workOn(msg.work);
             }
-            // all WEt files have been processed
+            // all WET files have been processed
             else if (msg.finished) {
                 process.exit(0);
             }
