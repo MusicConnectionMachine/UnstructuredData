@@ -1,5 +1,5 @@
 import ReadableStream = NodeJS.ReadableStream;
-import events = require('events'); // temporaty fix
+import {EventEmitter} from "events";
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -11,7 +11,7 @@ import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker extends events.EventEmitter {
+export class Worker extends EventEmitter {
 
     private static lastID = 0;
 
@@ -50,8 +50,9 @@ export class Worker extends events.EventEmitter {
      * @param wetPath                                       CC path to WET file
      */
     public workOn(wetPath : string) {
-        WetManager.loadWetAsStream(wetPath, this.onFileStreamReady, this.caching);
-
+        WetManager.loadWetAsStream(wetPath, (err, stream) => {
+            this.onFileStreamReady(err, stream);
+        }, this.caching);
     }
 
     /**
@@ -66,7 +67,9 @@ export class Worker extends events.EventEmitter {
             console.warn("WETManager encountered an error!");
         } else {
             let warcParser = new WARCStream();
-            response.pipe(warcParser).on("data", this.onWARCdata);
+            response.pipe(warcParser).on("data", (data) => {
+                this.onWARCdata(data);
+            });
         }
     }
 
