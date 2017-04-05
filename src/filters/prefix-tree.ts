@@ -32,11 +32,11 @@ export class PrefixTree extends IndexFilter{
     }
 
     /**
-     * Add a new token to this tree.
-     * @param token
+     * Add a new term to this tree.
+     * @param term
      */
-    public addSearchTerm(token : string) : void {
-        this.root = this.root.addTerm(token.toLowerCase());
+    public addSearchTerm(term : string) : void {
+        this.root = this.root.addTerm(term.toLowerCase());
     }
 
     /**
