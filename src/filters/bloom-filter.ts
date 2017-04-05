@@ -20,11 +20,14 @@ export class BloomFilter extends Filter{
     }
 
     /**
-     * Add token to bloom filter
-     * @param token                token to add to filter
+     * Add term to bloom filter
+     * @param term                token to add to filter
      */
-    public addSearchTerm(token : string) : void {
-        this.filter.add(new Buffer(token.toLowerCase()));
+    public addSearchTerm(term : string) : void {
+        let tokens = BloomFilter.tokenizer.tokenize(term);
+        for (let token of tokens) {
+            this.filter.add(new Buffer(token.toLowerCase()));
+        }
     }
 
     /**
