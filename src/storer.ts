@@ -4,24 +4,25 @@ export class Storer {
     static azure = require('azure');
     static crypto = require('crypto');
     static config = require('../config.json');
+    static path = require('path');
 
     static blobService = Storer.azure.createBlobService(Storer.config.storageAccountname,
         Storer.config.storageKey);
 
     static container = Storer.config.container;
 
-    private websites;
+    private context;
 
     constructor(){
         let me = this;
         //Connect to database using api's index
-        require('../api/index').connect(function(context) {
+        require('../api/database').connect(function(context) {
             //Load websites module
-            me.websites = context.component('../api/dsap').module('websites');
+            me.context = context;
             /*
-            Make sure that syncing to database is synchronous.
-            Not that there is no {force: true} option here: We don't want to overwrite
-            existing tables.
+             Make sure that syncing to database is synchronous.
+             Not that there is no {force: true} option here: We don't want to overwrite
+             existing tables.
              */
             context.sequelize.sync().then(() => {return me;});
         });
@@ -32,22 +33,40 @@ export class Storer {
         this.storeWebsiteBlob(webpage, function(err, blobName) {
             if(err) {
                 if(callback) {
-                    return callback(err);
+                    callback(err);
                 }
+                return;
             }
-            me.storeWebsiteMetadata(webpage, blobName);
-            return callback;
+            return me.storeWebsiteMetadata(webpage, blobName, callback);
         });
     }
 
 
-    public storeWebsiteMetadata(webpage : WebPage, blobUrl : string) : void{
+    public storeWebsiteMetadata(webpage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
         let websiteObj = {
             url: webpage.getURI(),
             blob_url: blobUrl
-        }
+        };
 
-        this.websites.addWebsite(websiteObj);
+        this.context.websites.create(websiteObj).then(website => {
+            let containsObj = {
+                occurences: JSON.stringify(webpage.occurrences),
+                websitesId: website.get('id')
+            };
+
+            this.context.contains.create(containsObj).then(() => {
+                callback(null);
+            }).catch(err => {
+                return website.destroy();
+            }).then(() => {
+                callback({
+                    name: 'db error',
+                    message: 'contains entry could not be created'
+                });
+            })
+        }).catch(err => {
+            return callback(err);
+        });
     }
 
     /**
