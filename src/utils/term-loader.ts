@@ -119,4 +119,8 @@ export class TermLoader {
         return terms;
     }
 
+    public static loadDummyTermsCallback(callback : (err?, entities? : Array<Entity>) => void) {
+        callback(undefined, TermLoader.loadDummyTerms());
+    }
+
 }
