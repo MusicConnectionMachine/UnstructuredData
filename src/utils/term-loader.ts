@@ -1,4 +1,4 @@
-import {Entity} from "./entity";
+import {Term} from "./term";
 export class TermLoader {
 
     static fs = require('fs');
@@ -14,7 +14,7 @@ export class TermLoader {
      * @param filename path to the file
      * @returns {Array<string>} list of unique terms
      */
-    public static loadFromDBPediaJSON(filename : string) : Array<Entity> {
+    public static loadFromDBPediaJSON(filename : string) : Array<Term> {
         let file = TermLoader.fs.readFileSync(filename, 'utf8');
         let entityList = JSON.parse(file);
 
@@ -25,9 +25,9 @@ export class TermLoader {
             uniques.add(names[names.length - 1]);
         }
 
-        let terms : Array<Entity> = [];
+        let terms : Array<Term> = [];
         for (let t of uniques) {
-            terms.push(new Entity(t, "id=" + Math.random()));
+            terms.push(new Term(t, "id=" + Math.random()));
         }
 
         return terms;
@@ -38,7 +38,7 @@ export class TermLoader {
      *
      * Right now we only get the composer names.
      */
-    public static loadFromDB(callback : (err?, entities? : Array<Entity>) => void) {
+    public static loadFromDB(callback : (err?, entities? : Array<Term>) => void) {
         // we are in:   UnstructuredData/out/utils/term-loader.js
         // magic is in: UnstructuredData/api/database.js
         let database = require("../../api/database.js");
@@ -46,7 +46,7 @@ export class TermLoader {
         // optional, if not set: will be taken from API -> database.js -> createContext() -> configDB
         let databaseURI = undefined;
 
-        let entities : Array<Entity> = [];
+        let entities : Array<Term> = [];
 
         database.connect(databaseURI, function (context) {
             let artists = context.component('dsap').module('artists');
@@ -80,7 +80,7 @@ export class TermLoader {
                     // add pseudonyms later
                     let parts = name.split(" ");
                     for (let part of parts) {
-                        entities.push(new Entity(part, id));
+                        entities.push(new Term(part, id));
                     }
                 }
 
@@ -100,7 +100,7 @@ export class TermLoader {
      * Returns some hardcoded composer names.
      * @returns {[string, ... ,string]}
      */
-    public static loadDummyTerms() : Array<Entity> {
+    public static loadDummyTerms() : Array<Term> {
         let str = ['Adams', 'Bach', 'Barber', 'Beethoven', 'Berg', 'Berlioz',
             'Bernstein', 'Bizet', 'Borodin', 'Brahms', 'Britten', 'Byrd', 'Chopin',
             'Copland', 'Couperin', 'Debussy', 'Donizetti', 'Elgar', 'Ellington',
@@ -111,15 +111,15 @@ export class TermLoader {
             'Schumann', 'Shostakovich', 'Sibelius', 'Smetana', 'Strauss', 'Stravinsky',
             'Tchaikovsky', 'Telemann',  'Verdi', 'Vivaldi', 'Wagner', 'Williams'];
 
-        let terms : Array<Entity> = [];
+        let terms : Array<Term> = [];
         for (let i = 0; i < str.length; i++) {
-            terms.push(new Entity(str[i], "id=" + i));
+            terms.push(new Term(str[i], "id=" + i));
         }
 
         return terms;
     }
 
-    public static loadDummyTermsCallback(callback : (err?, entities? : Array<Entity>) => void) {
+    public static loadDummyTermsCallback(callback : (err?, entities? : Array<Term>) => void) {
         callback(undefined, TermLoader.loadDummyTerms());
     }
 

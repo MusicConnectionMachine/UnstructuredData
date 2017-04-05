@@ -2,7 +2,7 @@ import * as cluster from "cluster";
 import * as os from "os";
 import {TermLoader} from "./utils/term-loader";
 import {Worker} from "./worker";
-import {Entity} from "./utils/entity";
+import {Term} from "./utils/term";
 
 export class ProcessingManager {
     private static cpus = os.cpus().length;
@@ -22,7 +22,7 @@ export class ProcessingManager {
         ccWetPaths.push('crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz');
 
         // load entities
-        TermLoader.loadDummyTermsCallback((err : Error, entities : Array<Entity>) => {
+        TermLoader.loadDummyTermsCallback((err : Error, entities : Array<Term>) => {
             if (err) {
                 console.warn("SHIT!\n", err);
                 return;

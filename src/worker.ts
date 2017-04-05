@@ -3,7 +3,7 @@ import {EventEmitter} from "events";
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
-import {Entity} from "./utils/entity";
+import {Term} from "./utils/term";
 import {LanguageExtractor} from "./language-extractor";
 import {Storer} from "./storer";
 import {WebPage} from "./utils/webpage";
@@ -26,7 +26,7 @@ export class Worker extends EventEmitter {
      * @param caching                                       (optional) enable WET file caching
      * @param languageCodes                                 (optional) Array of languages to filter for
      */
-    constructor (entities : Array<Entity>, caching? : boolean, languageCodes? : Array<string>) {
+    constructor (entities : Array<Term>, caching? : boolean, languageCodes? : Array<string>) {
         super();
         this.webPageDigester = new WebPageDigester(entities)
             .setPreFilter(BloomFilter)
@@ -100,7 +100,7 @@ export class Worker extends EventEmitter {
      * @param webPage
      */
     private onResult(webPage : WebPage) {
+        console.log(webPage.occurrences);
         Storer.storeWebsite(webPage);
-        this.emit("finished");
     }
 }
