@@ -5,6 +5,8 @@ export class Storer {
     static crypto = require('crypto');
     static config = require('../config.json');
     static path = require('path');
+    //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
+    static blobPrefix = 'https://wetstorage.blob.core.windows.net/websites/';
 
     static blobService = Storer.azure.createBlobService(Storer.config.storageAccountname,
         Storer.config.storageKey);
@@ -16,8 +18,8 @@ export class Storer {
     constructor(){
         let me = this;
         //Connect to database using api's index
-        require('../api/database').connect(function(context) {
-            //Load websites module
+        require('../api/database').connect(null, function(context) {
+            //Store context
             me.context = context;
             /*
              Make sure that syncing to database is synchronous.
@@ -37,35 +39,47 @@ export class Storer {
                 }
                 return;
             }
-            return me.storeWebsiteMetadata(webpage, blobName, callback);
+            return me.storeWebsiteMetadata(webpage, Storer.blobPrefix + blobName, callback);
         });
     }
 
 
     public storeWebsiteMetadata(webpage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
+        console.log(webpage.getURI());
         let websiteObj = {
             url: webpage.getURI(),
             blob_url: blobUrl
         };
 
-        this.context.websites.create(websiteObj).then(website => {
+        //Create website entry in db
+        this.context.models.websites.create(websiteObj).then(website => {
             let containsObj = {
-                occurences: JSON.stringify(webpage.occurrences),
-                websitesId: website.get('id')
+                occurrences: JSON.stringify(webpage.occurrences),
+                websiteId: website.get('id')
             };
 
-            this.context.contains.create(containsObj).then(() => {
-                callback(null);
+            //Create contains entry in db
+            this.context.models.contains.create(containsObj).then(() => {
+                if(callback) {
+                    callback(null);
+                }
             }).catch(err => {
+                //Make sure we don't have a website with no occurences object
                 return website.destroy();
             }).then(() => {
-                callback({
-                    name: 'db error',
-                    message: 'contains entry could not be created'
-                });
+                //Return error after destroying website
+                if(callback) {
+                    callback({
+                        name: 'db error',
+                        message: 'contains entry could not be created'
+                    });
+                }
             })
         }).catch(err => {
-            return callback(err);
+            if(callback) {
+                callback(err);
+            }
+            return;
         });
     }
 
