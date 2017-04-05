@@ -10,11 +10,13 @@ export class Storer {
 
     static container = Storer.config.container;
 
-    public static storeWebsite(webpage : WebPage) : void {
-        Storer.storeWebsiteBlob(webpage);
+    public static storeWebsite(webpage : WebPage, callback? : (err? : Error) => void) : void {
+        Storer.storeWebsiteBlob(webpage, () => {
 
-        //TODO: Create database entry for website
-        console.log(webpage);
+            //TODO: Create database entry for website
+
+            callback();
+        });
     }
 
     /**

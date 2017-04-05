@@ -22,6 +22,7 @@ export class ProcessingManager {
         ccWetPaths.push('crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz');
 
         // load entities
+        // TODO: don't use the dummy function
         TermLoader.loadDummyTermsCallback((err : Error, entities : Array<Term>) => {
             if (err) {
                 console.warn("SHIT!\n", err);

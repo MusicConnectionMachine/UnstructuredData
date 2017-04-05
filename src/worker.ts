@@ -13,12 +13,9 @@ import {PrefixTree} from "./filters/prefix-tree";
 
 export class Worker extends EventEmitter {
 
-    private static lastID = 0;
-
     private webPageDigester : WebPageDigester;
     private caching : boolean;
     private languageCodes : Array<string>;
-    private workerID : number;
 
 
     /**
@@ -34,7 +31,6 @@ export class Worker extends EventEmitter {
 
         this.caching = caching || process.env.caching || false;
         this.languageCodes = languageCodes || process.env.languageCodes;
-        this.workerID = Worker.lastID++;
     }
 
 
@@ -50,57 +46,91 @@ export class Worker extends EventEmitter {
      * @param wetPath                                       CC path to WET file
      */
     public workOn(wetPath : string) {
-        WetManager.loadWetAsStream(wetPath, (err, stream) => {
-            this.onFileStreamReady(err, stream);
-        }, this.caching);
-    }
+        let streamFinished = false;
+        let pendingPages = 0;
 
-    /**
-     * Gets called once the unpacked WET stream starts and pipes stream to WARC parser
-     * Parses WET entries and then calls for each of them 'onWARCdata'
-     * @param err
-     * @param response
-     */
-    private onFileStreamReady(err? : Error, response? : ReadableStream) : void {
-        if(err || !response) {
-            // TODO: Proper error handling!
-            console.warn("WETManager encountered an error!");
-        } else {
-            let warcParser = new WARCStream();
-            response.pipe(warcParser).on("data", (data) => {
-                this.onWARCdata(data);
-            });
-        }
-    }
-
-    /**
-     * Gets called once a WET entry has been parsed. Converts WET entry into WebPAge object and adds occurrences
-     * Detects language and then calls 'onResult'
-     * @param data
-     */
-    private onWARCdata(data : {protocol : string, headers : {[header : string] : string}, content : Buffer}) {
-        let webPage = new WebPage(data);
-        this.webPageDigester.digest(webPage);
-
-        if (webPage.occurrences && webPage.occurrences.length > 0) {
-            if (this.languageCodes && this.languageCodes.length > 0) {
-
-                LanguageExtractor.isWebPageInLanguage(webPage, this.languageCodes, (err, result?) => {
-                    if(result) { this.onResult(webPage); }
-                });
-
+        /**
+         * Gets called once the unpacked WET stream starts and pipes stream to WARC parser
+         * Parses WET entries and then calls for each of them 'onWARCdata'
+         * @param err
+         * @param response
+         */
+        let onFileStreamReady = (err? : Error, response? : ReadableStream) => {
+            if(err || !response) {
+                // TODO: Proper error handling!
+                console.warn("WETManager encountered an error!");
             } else {
-                this.onResult(webPage);
+                let warcParser = new WARCStream();
+                response.pipe(warcParser)
+                    .on("data", onWetEntry)
+                    .on('end', () => {
+                        streamFinished = true;
+                        if (pendingPages === 0) {
+                            this.emit('finished');
+                        }
+                    });
             }
-        }
-    }
+        };
 
-    /**
-     * Gets called for every matching WebPage object. Stores web page in cloud and DB
-     * @param webPage
-     */
-    private onResult(webPage : WebPage) {
-        console.log(webPage.occurrences);
-        Storer.storeWebsite(webPage);
+        /**
+         * Gets called once a WET entry has been parsed. Converts WET entry into WebPAge object and adds occurrences
+         * Detects language and then calls 'onResult'
+         * @param data
+         */
+        let onWetEntry = (data : {protocol : string, headers : {[header : string] : string}, content : Buffer}) => {
+            pendingPages++;
+
+            let webPage = new WebPage(data);
+            this.webPageDigester.digest(webPage);
+
+            // do have a match, aka has the page occurrences attached to it?
+            if (webPage.occurrences && webPage.occurrences.length > 0) {
+                onTermMatch(webPage);
+            } else {
+                onWetEntryFinished();
+            }
+        };
+
+        /**
+         * Gets called when a web page matches a term. Does language detection if required
+         * @param webPage
+         */
+        let onTermMatch = (webPage : WebPage) => {
+
+            // no language codes specified, we can skip language detection
+            if (!this.languageCodes || this.languageCodes.length === 0) {
+                onPageMatch(webPage);
+                return;
+            }
+
+            LanguageExtractor.isWebPageInLanguage(webPage, this.languageCodes, (err, result?) => {
+                if(result) {
+                    onPageMatch(webPage);
+                } else {
+                    onWetEntryFinished();
+                }
+            });
+        };
+
+        /**
+         * Gets called for every term and language matching WebPage object. Stores web page in cloud and DB
+         * @param webPage
+         */
+        let onPageMatch = (webPage : WebPage) => {
+            Storer.storeWebsite(webPage, onWetEntryFinished);
+        };
+
+        /**
+         * Gets called when a WET entry has been processed. Emits event when work on WET file is finished
+         */
+        let onWetEntryFinished = () => {
+            pendingPages--;
+            if (streamFinished && pendingPages === 0) {
+                this.emit('finished');
+            }
+        };
+
+        // start processing chain
+        WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
     }
 }
