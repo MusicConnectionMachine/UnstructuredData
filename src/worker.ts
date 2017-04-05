@@ -1,5 +1,5 @@
 import ReadableStream = NodeJS.ReadableStream;
-import EventEmitter = NodeJS.EventEmitter;
+import events = require('events'); // temporaty fix
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -11,11 +11,14 @@ import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker extends EventEmitter{
+export class Worker extends events.EventEmitter {
+
+    private static lastID = 0;
 
     private webPageDigester : WebPageDigester;
     private caching : boolean;
     private languageCodes : Array<string>;
+    private workerID : number;
 
 
     /**
@@ -31,6 +34,7 @@ export class Worker extends EventEmitter{
 
         this.caching = caching || process.env.caching || false;
         this.languageCodes = languageCodes || process.env.languageCodes;
+        this.workerID = Worker.lastID++;
     }
 
 
