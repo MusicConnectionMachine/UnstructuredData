@@ -86,31 +86,26 @@ export class Downloader {
             return;
         }
 
+        // sends a get request using the specified module (http or https)
+        function getUsing(module) {
+            const request = module.get(fileURL, response => {
+                callback(undefined, response);
+            });
+            request.setTimeout(timeout, () => {
+                request.abort();
+                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
+                callback(err,undefined);
+            });
+            request.on('error', function(err) {
+                callback(err,undefined);
+            });
+        }
+
         // download file and pipe to stream
         if (parsedURL.protocol === 'https:') {
-            const request = Downloader.https.get(fileURL, response => {
-                callback(undefined, response);
-            });
-            request.setTimeout(timeout, () => {
-                request.abort();
-                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
-                callback(err,undefined);
-            });
-            request.on('error', function(err) {
-                callback(err,undefined);
-            });
+            getUsing(Downloader.https);
         } else if (parsedURL.protocol === 'http:') {
-            const request = Downloader.http.get(fileURL, response => {
-                callback(undefined, response);
-            });
-            request.setTimeout(timeout, () => {
-                request.abort();
-                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
-                callback(err,undefined);
-            });
-            request.on('error', function(err) {
-                callback(err,undefined);
-            });
+            getUsing(Downloader.http);
         }
     }
 }
