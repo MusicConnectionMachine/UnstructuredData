@@ -68,7 +68,7 @@ export class Storer {
             }
 
             //Create all contains entries at once
-            this.context.bulkCreate(containsObjList).then(result => {
+            this.context.models.contains.bulkCreate(containsObjList).then(result => {
                 callback(null);
             }).catch(err => {
                 //Make sure we don't leave that website hanging

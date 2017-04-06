@@ -13,6 +13,9 @@ export class WebPageDigester {
     private preFilterInstance : Filter;
 
     constructor(searchTerms : Array<Term>) {
+        searchTerms.forEach(term => {
+            term.term = term.term.toLowerCase();
+        });
         this.termToIDMap = new Map();
 
         for (let term of searchTerms) {

@@ -24,7 +24,6 @@ export class NaiveFilter extends IndexFilter {
      * @param term                term to add to filter
      */
     public addSearchTerm(term: string): void {
-        term = term.toLowerCase();
         this.searchTerms.add(term);
         this.addToSearchTokens(term);
     }

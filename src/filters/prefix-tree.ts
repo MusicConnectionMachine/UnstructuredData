@@ -36,7 +36,7 @@ export class PrefixTree extends IndexFilter{
      * @param term
      */
     public addSearchTerm(term : string) : void {
-        this.root = this.root.addTerm(term.toLowerCase());
+        this.root = this.root.addTerm(term);
     }
 
     /**
@@ -165,7 +165,7 @@ class PTNode implements PTElement {
         }
 
         // term not empty -> take first char as key; everything else is the remainder
-        let key = term.charAt(0).toLowerCase();
+        let key = term.charAt(0);
         let remainder = term.substring(1);
 
 
