@@ -16,30 +16,28 @@ export class Storer {
     private context;
 
     constructor(){
-        let me = this;
         //Connect to database using api's index
-        require('../api/database').connect(null, function(context) {
+        require('../api/database').connect(null, context => {
             //Store context
-            me.context = context;
+            this.context = context;
             /*
              Make sure that syncing to database is synchronous.
              Not that there is no {force: true} option here: We don't want to overwrite
              existing tables.
              */
-            context.sequelize.sync().then(() => {return me;});
+            context.sequelize.sync().then(() => {return this;});
         });
     }
 
     public storeWebsite(webpage : WebPage, callback? : (err? : Error) => void ) : void {
-        let me = this;
-        this.storeWebsiteBlob(webpage, function(err, blobName) {
+        this.storeWebsiteBlob(webpage, (err, blobName) => {
             if(err) {
                 if(callback) {
                     callback(err);
                 }
                 return;
             }
-            return me.storeWebsiteMetadata(webpage, Storer.blobPrefix + blobName, callback);
+            return this.storeWebsiteMetadata(webpage, Storer.blobPrefix + blobName, callback);
         });
     }
 
