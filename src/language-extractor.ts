@@ -34,19 +34,29 @@ export class LanguageExtractor {
     /**
      * Filter function. Returns true if the specified web page is most likely to be in the specified language.
      * @param webPage                           WebPage object
-     * @param languageCode                      language code in ISO 639-1
+     * @param languageCodes                     language codes in ISO 639-1
      * @param callback                          will called with TRUE if the web page is in the specified language
      */
-    public static isWebPageInLanguage(webPage : WebPage, languageCode : string,
+    public static isWebPageInLanguage(webPage : WebPage, languageCodes : Array<string>,
                                       callback: (err : Error, result : boolean) => void) {
 
-        if (!LanguageExtractor.langs.has(1, languageCode)) {
-            callback(new SyntaxError("Language code not in ISO 639-1!"), undefined);
-            return;
+        // check language codes
+        for (let languageCode of languageCodes) {
+            if (!LanguageExtractor.langs.has(1, languageCode)) {
+                callback(new SyntaxError("Language code '" + languageCode + "' not in ISO 639-1!"), undefined);
+                return;
+            }
         }
 
+
         LanguageExtractor.getPageLanguage(webPage, (result) => {
-            callback(undefined, languageCode === result);
+            for (let languageCode of languageCodes) {
+                if (result === languageCode) {
+                    callback(undefined, true);
+                    return;
+                }
+            }
+            callback(undefined, false);
         });
     }
 

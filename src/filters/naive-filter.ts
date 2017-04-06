@@ -1,9 +1,10 @@
-import { IndexFilter } from "./index-filter";
+import {IndexFilter} from "./index-filter";
 import {IndexFilterResult} from "../utils/index-filter-result";
 
 export class NaiveFilter extends IndexFilter {
     private static tokenizer = new (require('natural')).WordTokenizer();
     private searchTerms : Set<string>;
+    private searchTokens : Set<string>;
 
     /**
      * Replaces constructor and gets called by the super class constructor
@@ -19,11 +20,13 @@ export class NaiveFilter extends IndexFilter {
     }
 
     /**
-     * Add token to filter
-     * @param token                token to add to filter
+     * Add term to filter
+     * @param term                term to add to filter
      */
-    public addSearchTerm(token: string): void {
-        this.searchTerms.add(token.toLowerCase());
+    public addSearchTerm(term: string): void {
+        term = term.toLowerCase();
+        this.searchTerms.add(term);
+        this.addToSearchTokens(term);
     }
 
     /**
@@ -32,9 +35,12 @@ export class NaiveFilter extends IndexFilter {
      * @returns boolean             text contains at least one term
      */
     public hasMatch(text: string): boolean {
+        if (!this.searchTokens) {
+            this.lazyInitSearchTokens();
+        }
         let tokens = NaiveFilter.tokenizer.tokenize(text.toLowerCase());
         for (let token of tokens) {
-            if (this.searchTerms.has(token)) {
+            if (this.searchTokens.has(token)) {
                 return true;
             }
         }
@@ -47,10 +53,13 @@ export class NaiveFilter extends IndexFilter {
      * @returns                        hash set of matches
      */
     public getMatches(text: string): Set<string> {
+        if (!this.searchTokens) {
+            this.lazyInitSearchTokens();
+        }
         let matches : Set<string> = new Set();
         let tokens = NaiveFilter.tokenizer.tokenize(text.toLowerCase());
         for (let token of tokens) {
-            if (this.searchTerms.has(token)) {
+            if (this.searchTokens.has(token)) {
                 matches.add(token);
             }
         }
@@ -58,7 +67,7 @@ export class NaiveFilter extends IndexFilter {
     }
 
     /**
-     * Returns all searchTerm matches with index (does NOT match pre and suffixes!)
+     * Returns all searchTerm matches with index (does match pre and suffixes!)
      * @param text
      * @returns                         array of occurrences
      */
@@ -78,7 +87,6 @@ export class NaiveFilter extends IndexFilter {
     }
 
     /**
-     *
      * @param text
      * @param searchTerm                term to look out for, has to be lower case!
      * @return {any}
@@ -99,4 +107,28 @@ export class NaiveFilter extends IndexFilter {
 
     }
 
+    /**
+     * Gets called by .hasMatch() and .getMatches() when the token set hasn't been initialized
+     * The token set only gets initialized when we really need it.
+     */
+    private lazyInitSearchTokens() {
+        this.searchTokens = new Set();
+        for (let term of this.searchTerms) {
+            this.addToSearchTokens(term);
+        }
+    }
+
+    /**
+     * Splits term into tokens and adds it to token set. Doesn't add anything if token set is undefined as
+     * the token set gets layy initialized when we need it.
+     * @param term
+     */
+    private addToSearchTokens(term : string) {
+        if (this.searchTokens) {
+            let tokens = NaiveFilter.tokenizer.tokenize(term);
+            for (let token of tokens) {
+                this.searchTokens.add(token);
+            }
+        }
+    }
 }

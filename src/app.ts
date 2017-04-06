@@ -1,11 +1,6 @@
-import {TermLoader} from "./utils/term-loader";
+import {ProcessingManager} from "./processing-manager";
+import {Worker} from "./worker";
 
-TermLoader.loadFromDB((err, entities) => {
-    if (err) {
-        console.log("SHIT!\n", err);
-        return;
-    }
-    console.log("\n\n\n\n");
-    console.log("entities:\n", entities);
 
-});
+ProcessingManager.run();
+Worker.run();

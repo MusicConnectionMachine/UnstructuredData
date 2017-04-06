@@ -19,7 +19,7 @@ describe("LanguageExtractor", () => {
     });
     it("should throw an error if language code isn't ISO 639-1 conform", (done) => {
        let webPage = createDummyWebPage();
-       LanguageExtractor.isWebPageInLanguage(webPage, "eng", (err) => {
+       LanguageExtractor.isWebPageInLanguage(webPage, ["eng"], (err) => {
            assert.isDefined(err);
            done();
        });
