@@ -11,7 +11,7 @@ export class Downloader {
     static https = require('https');
 
     // Timeout in ms for requesting from CommonCrawl
-    static timeout = 1000;
+    static timeout = 20000; // default timeout: 20 sec, CC index is slow
 
 
     /**
@@ -70,11 +70,14 @@ export class Downloader {
      * Download file via https or http
      * @param fileURL       URL of the file
      * @param callback      Callback function taking IncomingMessage stream as a parameter
+     * @param timeout       (optional) timeout for the request, default timeout will be used if not set
      */
     public static getResponse(fileURL : string,
-                              callback? : (err? : Error, resp? : IncomingMessage) => void) : void {
+                              callback? : (err? : Error, resp? : IncomingMessage) => void,
+                              timeout? : number) : void {
 
         let parsedURL = Downloader.url.parse(fileURL);
+        timeout = timeout || Downloader.timeout;
 
         // check if protocol is supported
         if (parsedURL.protocol !== 'https:' && parsedURL.protocol !== 'http:') {
@@ -88,16 +91,16 @@ export class Downloader {
             const request = Downloader.https.get(fileURL, response => {
                 callback(undefined, response);
             });
-            request.setTimeout(Downloader.timeout, response => {
-                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+Downloader.timeout+' ms');
+            request.setTimeout(timeout, () => {
+                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
                 callback(err,undefined);
             });
         } else if (parsedURL.protocol === 'http:') {
             const request = Downloader.http.get(fileURL, response => {
                 callback(undefined, response);
             });
-            request.setTimeout(Downloader.timeout, response => {
-                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+Downloader.timeout+' ms');
+            request.setTimeout(timeout, () => {
+                let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
                 callback(err,undefined);
             });
         }
