@@ -97,6 +97,8 @@ export class Worker extends EventEmitter {
                 // TODO: Proper error handling!
                 console.warn("WETManager encountered an error!");
             } else {
+                console.log("[WORKER-" + this.processID + "] start processing " + wetPath);
+
                 let warcParser = new WARCStream();
                 response.pipe(warcParser)
                     .on("data", onWetEntry)
@@ -155,7 +157,7 @@ export class Worker extends EventEmitter {
          */
         let onPageMatch = (webPage : WebPage) => {
             this.storer.storeWebsite(webPage, onWetEntryFinished);
-            console.log(webPage);
+            console.log("[WORKER-" + this.processID + "] found relevant page " + webPage.getURI());
             onWetEntryFinished();
         };
 
