@@ -49,11 +49,10 @@ export class TermLoader {
         let entities : Array<Term> = [];
 
         database.connect(databaseURI, function (context) {
-            let artists = context.component('dsap').module('artists');
-            artists.findAllArtists().then(function(list) {
-                // list is an array of Instance objects
-                // Instance has a "dataValues" property
-                // dataValues contains an object like this:
+            let artists = context.models.artists;
+            //Use { raw: true } to get raw objects instead of sequelize instances
+            artists.findAll({ raw: true }).then(function(list) {
+                // List is an array of artists objects
                 /*{
                      name: 'Frank Zappa',
                      id: '31b9a8b2-dbfe-4107-ba09-4d8bf5dca123',
@@ -65,15 +64,15 @@ export class TermLoader {
                      nationality: 'American',
                      tags: [],   <--- could be null
                      pseudonym: [],  <--- could be null
-                     source_link: 'http://dbpedia.org/resource/Frank_Zappa'
+                     source_link: 'http://dbpedia.org/resource/Frank_Zappa',
+                     entityId: 'd4158624-7c68-4567-a3e8-b2ade72281d1'
                  }
                  */
 
                 // convert all names to Entities
                 for (let inst of list) {
-                    let name : string = inst.dataValues.name;
-                    let id : string = inst.dataValues.id;
-                    console.log("got name: " + name);
+                    let name : string = inst.name;
+                    let id : string = inst.entityId;
 
                     // right now very simple:
                     // for each part of the name create a new Entity
