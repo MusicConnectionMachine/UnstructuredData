@@ -75,14 +75,6 @@ export class Storer {
             }).catch(err => {
                 //Make sure we don't leave that website hanging
                 return website.destroy();
-            }).then(() => {
-                //Return error after destroying website
-                if(callback) {
-                    callback({
-                        name: 'db error',
-                        message: 'contains entry could not be created'
-                    });
-                }
             });
 
         }).catch(err => {
