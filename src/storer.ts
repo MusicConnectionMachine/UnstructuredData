@@ -91,13 +91,7 @@ export class Storer {
      */
     private storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
-        let blobContent = '';
-        for (let property in webpage.headers) {
-            if (webpage.headers.hasOwnProperty(property)) {
-                blobContent += property + ": " + webpage.headers[property] + '\n';
-            }
-        }
-        blobContent += webpage.content;
+        let blobContent = webpage.toWARCString();
         Storer.blobService.createBlockBlobFromText(Storer.container, blobName, blobContent, function(err, result) {
             if(err) {
                 if(callback) {
