@@ -41,7 +41,7 @@ export class TermLoader {
     public static loadFromDB(callback : (err?, entities? : Array<Entity>) => void) {
         // we are in:   UnstructuredData/out/utils/term-loader.js
         // magic is in: UnstructuredData/api/database.js
-        let database = require("../../api/database.js");
+        let database = require(TermLoader.path.join("..", "..", "api", "database.js"));
 
         // optional, if not set: will be taken from API -> database.js -> createContext() -> configDB
         let databaseURI = undefined;
