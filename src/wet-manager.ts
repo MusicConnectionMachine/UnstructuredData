@@ -28,8 +28,8 @@ export class WetManager {
      */
     public static loadWetAsStream(filename : string, callback : (err? : Error, resp? : ReadableStream) => void,
         useCaching : boolean = true) : void {
-        //URL address of file on server
-        let url = WetManager.path.join(WetManager.basePath, filename);
+        //URL address of file on server, path.join did weird things
+        let url = WetManager.basePath + filename; //WetManager.path.join(WetManager.basePath, filename);
         if (useCaching) {
             WetManager.openWithCaching(url, callback);
         } else {

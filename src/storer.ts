@@ -63,7 +63,7 @@ export class Storer {
                         positions: occ.positions
                     }),
                     websiteId: website.get('id'),
-                    entityId: occ.term.id
+                    entityId: occ.term.entityId
                 })
             }
 

@@ -112,7 +112,7 @@ export class WebPage {
                 }
                 mergedMap.set(termStr, [id, Array.from(mergedIndexes)]);
             } else {
-                mergedMap.set(termStr, [occurrence.term.id, occurrence.positions]);
+                mergedMap.set(termStr, [occurrence.term.entityId, occurrence.positions]);
             }
 
         }

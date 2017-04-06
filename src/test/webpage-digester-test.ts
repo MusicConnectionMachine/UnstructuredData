@@ -5,13 +5,13 @@ import {WebPage} from "../utils/webpage";
 import {BloomFilter} from "../filters/bloom-filter";
 import {NaiveFilter} from "../filters/naive-filter";
 import {Occurrence} from "../utils/occurrence";
-import {Entity} from "../utils/entity";
+import {Term} from "../utils/term";
 let assert = require("chai").assert;
 
 let termStr = ["some", "more", "or", "less", "random", "terms"];
 let terms = [];
 for (let str of termStr) {
-    terms.push(new Entity(str, "id=" + str));
+    terms.push(new Term(str, "id=" + str));
 }
 
 function createDummyWebPage() : WebPage {
@@ -57,10 +57,10 @@ describe("WebSiteDigester", () => {
     it("should merge occurrences", () => {
         let webPage = createDummyWebPage();
 
-        let t1 = new Entity("terms", "id=terms");
-        let t2 = new Entity("false positive", "id=false positive");
-        let t3 = new Entity("some", "id=some");
-        let t4 = new Entity("less", "id=less");
+        let t1 = new Term("terms", "id=terms");
+        let t2 = new Term("false positive", "id=false positive");
+        let t3 = new Term("some", "id=some");
+        let t4 = new Term("less", "id=less");
 
         webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
 
