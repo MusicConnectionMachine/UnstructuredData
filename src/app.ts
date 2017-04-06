@@ -1,4 +1,6 @@
 import {ProcessingManager} from "./processing-manager";
+import {Worker} from "./worker";
 
-// fingers crossed, hope this works :3
+
 ProcessingManager.run();
+Worker.run();

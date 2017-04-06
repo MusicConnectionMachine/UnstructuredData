@@ -1,4 +1,5 @@
 import ReadableStream = NodeJS.ReadableStream;
+import * as cluster from "cluster";
 import {EventEmitter} from "events";
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
@@ -12,6 +13,38 @@ import {PrefixTree} from "./filters/prefix-tree";
 
 
 export class Worker extends EventEmitter {
+
+    private static worker : Worker;
+
+    public static run() {
+
+        // check if worker process
+        if (!cluster.isWorker) { return; }
+
+        // add event listeners to communicate with master
+        process.on('message', (msg) => {
+
+            // receiving entities from master
+            if (msg.entities) {
+                Worker.worker = new Worker(msg.entities);
+                Worker.worker.on('finished', () => {
+                    process.send({needWork: true});
+                });
+                process.send({needWork: true});
+            }
+
+            // receiving WET path
+            else if (msg.work && Worker.worker) {
+                Worker.worker.workOn(msg.work);
+            }
+
+            // all WET files have been processed
+            else if (msg.finished) {
+                process.exit(0);
+            }
+        });
+    }
+
 
     private webPageDigester : WebPageDigester;
     private storer : Storer;
@@ -122,6 +155,8 @@ export class Worker extends EventEmitter {
          */
         let onPageMatch = (webPage : WebPage) => {
             this.storer.storeWebsite(webPage, onWetEntryFinished);
+            console.log(webPage);
+            onWetEntryFinished();
         };
 
         /**
