@@ -2,6 +2,7 @@ import * as cluster from "cluster";
 import * as os from "os";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
+import {CCPathLoader} from "./utils/cc-path-loader";
 
 
 /**
@@ -60,11 +61,7 @@ export class ProcessingManager {
             }
         };
 
-        // TODO: programmatically add CC paths to array
-        onPaths(undefined,
-            ['crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/' +
-            'CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz']
-        );
+        CCPathLoader.loadPaths(undefined, onPaths);
 
     }
 }
