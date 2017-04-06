@@ -14,6 +14,7 @@ import {PrefixTree} from "./filters/prefix-tree";
 export class Worker extends EventEmitter {
 
     private webPageDigester : WebPageDigester;
+    private storer : Storer;
     private caching : boolean;
     private languageCodes : Array<string>;
     private processID : number;
@@ -32,6 +33,7 @@ export class Worker extends EventEmitter {
 
         this.caching = caching || process.env.caching || false;
         this.languageCodes = languageCodes || process.env.languageCodes;
+        this.storer = new Storer();
         this.processID = process.pid;
     }
 
@@ -119,7 +121,7 @@ export class Worker extends EventEmitter {
          * @param webPage
          */
         let onPageMatch = (webPage : WebPage) => {
-            Storer.storeWebsite(webPage, onWetEntryFinished);
+            this.storer.storeWebsite(webPage, onWetEntryFinished);
         };
 
         /**
