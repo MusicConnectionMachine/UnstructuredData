@@ -92,7 +92,11 @@ export class Downloader {
                 callback(undefined, response);
             });
             request.setTimeout(timeout, () => {
+                request.abort();
                 let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
+                callback(err,undefined);
+            });
+            request.on('error', function(err) {
                 callback(err,undefined);
             });
         } else if (parsedURL.protocol === 'http:') {
@@ -100,7 +104,11 @@ export class Downloader {
                 callback(undefined, response);
             });
             request.setTimeout(timeout, () => {
+                request.abort();
                 let err : Error = new RequestTimeoutError('Request for file:'+parsedURL.pathname+' was timed out after '+timeout+' ms');
+                callback(err,undefined);
+            });
+            request.on('error', function(err) {
                 callback(err,undefined);
             });
         }
