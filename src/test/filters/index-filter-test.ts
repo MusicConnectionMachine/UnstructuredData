@@ -29,7 +29,15 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let result = filter.getMatchesIndex(text);
             let expectedResult = [new IndexFilterResult('words',[24])];
             assert.deepEqual(result, expectedResult);
-        })
+        });
+        it("should be case sensitive .getMatchesIndex()", () => {
+            let searchTerms = ['Not', 'random', 'words', 'WORDS'];
+            let text = 'There are a not so many WORDS here';
+            filter = new filterConstructor(new Set(searchTerms));
+            let result = filter.getMatchesIndex(text);
+            let expectedResult = [new IndexFilterResult('WORDS',[24])];
+            assert.deepEqual(result, expectedResult);
+        });
     });
 }
 

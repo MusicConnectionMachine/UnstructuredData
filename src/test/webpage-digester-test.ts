@@ -8,7 +8,7 @@ import {Occurrence} from "../utils/occurrence";
 import {Term} from "../utils/term";
 let assert = require("chai").assert;
 
-let termStr = ["some", "more", "or", "less", "random", "terms"];
+let termStr = ["some", "more", "less", "random", "terms"];
 let terms = [];
 for (let str of termStr) {
     terms.push(new Term(str, "id=" + str));
@@ -71,4 +71,12 @@ describe("WebSiteDigester", () => {
         expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10]), new Occurrence(t3, [88]), new Occurrence(t4, [138])];
         assert.deepEqual(result, expected);
     });
+    it("shouldn't be case sensitive", () => {
+        let webPage = new WebPage();
+        webPage.content = "Do I really have to write SOME tests?";
+        let digester = new WebPageDigester(terms).setFilter(PrefixTree);
+        let result = digester.digest(webPage);
+        assert.strictEqual(result.occurrences.length, 1);
+
+    })
 });

@@ -38,7 +38,6 @@ export class BloomFilter extends Filter{
     public hasMatch(text : string) : boolean {
         let tokens = BloomFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
-            token = token.toLowerCase();
             if (this.filter.has(new Buffer(token))) {
                 return true;
             }
@@ -55,7 +54,7 @@ export class BloomFilter extends Filter{
 
         let matches : Set<string> = new Set();
 
-        let tokens = BloomFilter.tokenizer.tokenize(text.toLowerCase());
+        let tokens = BloomFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
             if (this.filter.has(new Buffer(token))) {
                 matches.add(token);

@@ -184,7 +184,7 @@ class PTNode implements PTElement {
     }
 
     match(searchStr : string, searchPos : number): [boolean, string, number] {
-        let key = searchStr.charAt(searchPos).toLowerCase(); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
+        let key = searchStr.charAt(searchPos); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
 
         if (!this.hasOwnProperty(key))  return [false, '', searchPos]; // no such key in this PT node -> no match
 
