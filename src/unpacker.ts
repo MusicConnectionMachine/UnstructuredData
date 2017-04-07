@@ -69,6 +69,33 @@ export class Unpacker {
         return input.pipe(gunzip);
     }
 
+    /**
+     * Compresses a utf8 string using zlib.deflate. Callback will receive a buffer with raw compressed data.
+     * @param str_utf8          string to compress
+     * @param callback
+     * @returns {Buffer}        buffer with raw compressed data
+     */
+    public static compressStringToBuffer(str_utf8 : string, callback : (err? : Error, compressedBuffer? : Buffer) => void) {
+        let buffer = new Buffer(str_utf8, "utf8");
+        Unpacker.zlib.deflate(buffer, callback);
+        //return Unpacker.zlib.deflateSync(buffer);
+    }
+
+    /**
+     * Decompresses a buffer with raw compressed data to a utf8 string.
+     * @param compressed     buffer with raw compressed data
+     * @param callback
+     * @returns {string}     decompressed utf8 string
+     */
+    public static decompressBufferToString(compressed : Buffer, callback : (err? : Error, decompressedString? : string) => void) {
+        Unpacker.zlib.inflate(compressed, (err, decompressedBuffer) => {
+            if (err) {
+                callback(err);
+            } else {
+                callback(undefined, decompressedBuffer.toString('utf8'));
+            }
+        });
+    }
 
     /**
      * @deprecated not tested well yet
