@@ -1,9 +1,6 @@
 import {ProcessingManager} from "./processing-manager";
 import {Worker} from "./worker";
-import {TestRuns} from "./test-runs";
 
-
-//ProcessingManager.run();
-//Worker.run();
-
-TestRuns.testCompressedStorage();
+// Don't touch this otherwise Felix will kill you :P
+ProcessingManager.run();
+Worker.run();

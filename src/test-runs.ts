@@ -267,12 +267,19 @@ export class TestRuns {
                     // got all data
                     let buf = Buffer.concat(bufs);
 
-                    let unpacked = Unpacker.decompressStringSync(buf);
-                    console.log("got all data:");
-                    console.log(unpacked);
+                    Unpacker.decompressBufferToString(buf, (err, decompressed) => {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
 
-                    //
-                    console.log("Checking equality: " + (w.toWARCString() == unpacked));
+                        console.log("got all data!");
+                        //console.log(decompressed);
+
+                        // check if everything is osome
+                        console.log("Checking equality: " + (w.toWARCString() == decompressed));
+
+                    });
 
                 });
 
@@ -285,3 +292,6 @@ export class TestRuns {
 
     }
 }
+
+
+TestRuns.testCompressedStorage();

@@ -103,19 +103,25 @@ export class Storer {
     public storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = webpage.toWARCString();
-        let compressedBlobContent = Unpacker.compressStringSync(blobContent);
 
-        Storer.blobService.createBlockBlobFromText(Storer.container, blobName, compressedBlobContent, function(err) {
-            if(err) {
-                if(callback) {
-                    callback(err);
-                }
+        Unpacker.compressStringToBuffer(blobContent, (err, compressedBlobContent) => {
+            if (err) {
+                if (callback) callback(err);
                 return;
             }
-            if(callback) {
-                callback(null, blobName);
-            }
+            Storer.blobService.createBlockBlobFromText(Storer.container, blobName, compressedBlobContent, function(err) {
+                if(err) {
+                    if(callback) callback(err);
+                    return;
+                }
+                if(callback) {
+                    callback(null, blobName);
+                }
+            });
+
         });
+
+
     }
 
     private static hashWebsite(webpage : WebPage) : string {
