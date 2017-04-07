@@ -32,6 +32,8 @@ export class ProcessingManager {
             if (err) {
                 console.warn("SHIT!\n", err);
                 return;
+            } else {
+                console.log("[MASTER] loaded entities:\n", entities);
             }
 
 
