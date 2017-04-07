@@ -13,6 +13,9 @@ export class WebPageDigester {
     private preFilterInstance : Filter;
 
     constructor(searchTerms : Array<Term>) {
+        searchTerms.forEach(term => {
+            term.term = term.term.toLowerCase();
+        });
         this.termToIDMap = new Map();
 
         for (let term of searchTerms) {
@@ -69,7 +72,7 @@ export class WebPageDigester {
             return webPage;
         }
 
-        let pageContent = webPage.content;
+        let pageContent = webPage.content.toLowerCase();
 
         // use preFilter if present
         if (this.preFilterInstance) {

@@ -24,7 +24,6 @@ export class NaiveFilter extends IndexFilter {
      * @param term                term to add to filter
      */
     public addSearchTerm(term: string): void {
-        term = term.toLowerCase();
         this.searchTerms.add(term);
         this.addToSearchTokens(term);
     }
@@ -38,7 +37,7 @@ export class NaiveFilter extends IndexFilter {
         if (!this.searchTokens) {
             this.lazyInitSearchTokens();
         }
-        let tokens = NaiveFilter.tokenizer.tokenize(text.toLowerCase());
+        let tokens = NaiveFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
             if (this.searchTokens.has(token)) {
                 return true;
@@ -57,7 +56,7 @@ export class NaiveFilter extends IndexFilter {
             this.lazyInitSearchTokens();
         }
         let matches : Set<string> = new Set();
-        let tokens = NaiveFilter.tokenizer.tokenize(text.toLowerCase());
+        let tokens = NaiveFilter.tokenizer.tokenize(text);
         for (let token of tokens) {
             if (this.searchTokens.has(token)) {
                 matches.add(token);
@@ -93,7 +92,6 @@ export class NaiveFilter extends IndexFilter {
      */
     private static getIndexes(text : string, searchTerm : string) : Array<number> {
         if (searchTerm.length > text.length) { return []; }
-        text = text.toLowerCase();
 
         let startPos = 0;
         let lastMatch = text.indexOf(searchTerm, startPos);

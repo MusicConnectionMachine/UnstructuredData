@@ -41,16 +41,23 @@ function testFilter<T extends Filter> (filterConstructor : new (searchTerms? : S
             let text = 'There are a not so many words here... Well, let\'s add a few more, just to be sure. ' +
                 'It should only have one match though!';
             filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatches(text);
-            let expectedResult = new Set(['words']);
+            let result = [...filter.getMatches(text)];
+            let expectedResult = ['words'];
             assert.deepEqual(result, expectedResult);
         });
-        it("shouldn't be case sensitive", () => {
-            let searchTerms = ['test', 'some', 'random', 'words'];
+        it("should be case sensitive .getMatches()", () => {
+            let searchTerms = ['Not', 'random', 'words', 'WORDS'];
             let text = 'There are a not so many WORDS here';
             filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatches(text);
-            assert.deepEqual(result, new Set(['words']));
+            let result = [...filter.getMatches(text)];
+            assert.deepEqual(result, ['WORDS']);
+        });
+        it("should be case sensitive .hasMatch()", () => {
+            let searchTerms = ['Not', 'random', 'words'];
+            let text = 'There are a not so many WORDS here';
+            filter = new filterConstructor(new Set(searchTerms));
+            let result = filter.hasMatch(text);
+            assert.strictEqual(result, false);
         });
     });
 }
