@@ -1,4 +1,5 @@
 import {WebPage} from "./utils/webpage";
+import {Unpacker} from "./unpacker";
 export class Storer {
 
     static azure = require('azure');
@@ -29,6 +30,11 @@ export class Storer {
         });
     }
 
+    /**
+     * Stores the website in the Azure blob and in the DB.
+     * @param webpage
+     * @param callback
+     */
     public storeWebsite(webpage : WebPage, callback? : (err? : Error) => void ) : void {
         this.storeWebsiteBlob(webpage, (err, blobName) => {
             if(err) {
@@ -68,31 +74,38 @@ export class Storer {
             }
 
             //Create all contains entries at once
-            this.context.bulkCreate(containsObjList).then(result => {
+            this.context.bulkCreate(containsObjList).then(() => {
                 callback(null);
             }).catch(err => {
+                console.log(err);
                 //Make sure we don't leave that website hanging
-                return website.destroy();
+                return website.destroy();  // TODO: why return here?
             });
 
         }).catch(err => {
             if(callback) {
                 callback(err);
             }
-            return;
+            return; // TODO: why return here?
         });
     }
 
     /**
+     * Use "storeWebsite()" if you want to store the website in the blob and the DB.
+     * This function is only for Azure. Made this public to be able to test it from outside.
+     *
      * Stores given website as a blob in the azure blob storage. The filename will be an md5 hash
-     * of website uri + content
+     * of website uri + content.
+     *
      * @param webpage       WebPage object to be stored
      * @param callback      Optional callback param that will receive the filename as a parameter in case of success
      */
-    private storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
+    public storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         let blobName = Storer.hashWebsite(webpage);
         let blobContent = webpage.toWARCString();
-        Storer.blobService.createBlockBlobFromText(Storer.container, blobName, blobContent, function(err, result) {
+        let compressedBlobContent = Unpacker.compressStringSync(blobContent);
+
+        Storer.blobService.createBlockBlobFromText(Storer.container, blobName, compressedBlobContent, function(err) {
             if(err) {
                 if(callback) {
                     callback(err);
