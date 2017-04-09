@@ -11,10 +11,8 @@ import {Worker} from "./worker";
 import {CLI} from "./cli";
 
 
-
 CLI.initCLI();
-
-console.log("Start config:\n", CLI.parameters);
+CLI.logParms(); // will hide sensitive parameters, never log CLI.parameters directly!
 
 
 // Don't touch this otherwise Felix will kill you :P

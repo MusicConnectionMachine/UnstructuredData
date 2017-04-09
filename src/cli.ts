@@ -16,6 +16,14 @@ export class CLI {
         crawlVersion: "CC-MAIN-2017-13"
     };
 
+    // these parameters will not be logged
+    private static privateParms = new Set([
+        "dbPW", "blobKey"
+    ]);
+
+    /**
+     * Init the commander module, parse env variables, config file and command line args.
+     */
     public static initCLI() {
 
         // init commander
@@ -43,10 +51,19 @@ export class CLI {
         // TODO: replace default values in CLI.parameters with environment variables
     }
 
+    /**
+     * Load parameters from "config.json".
+     */
     public static parseConfigFile() {
-        // TODO: replace default values in CLI.parameters with values from config.json
+        let configFile = require('../config.json');
+        for (let parm in CLI.parameters) {
+            if (configFile[parm]) CLI.parameters[parm] = configFile[parm];
+        }
     }
 
+    /**
+     * Parse command line arguments and store values in CLI.parameters
+     */
     public static parseCmdOptions() {
 
         if (CLI.commander.wetRange) {
@@ -105,6 +122,20 @@ export class CLI {
             CLI.parameters.crawlVersion = CLI.commander.crawl;
         }
 
+    }
+
+    /**
+     * Log CLI.parameters, except "blobKey" (will be hidden).
+     */
+    public static logParms() {
+        console.log("Runtime parameters:");
+        for (let parm in CLI.parameters) {
+            if (!CLI.privateParms.has(parm)) {
+                console.log("\t" + parm + " = " + CLI.parameters[parm]);
+            } else {
+                console.log("\t" + parm + " = [HIDDEN]");
+            }
+        }
     }
 
 }
