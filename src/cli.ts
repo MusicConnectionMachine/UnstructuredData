@@ -2,6 +2,7 @@ export class CLI {
 
     private static commander = require('commander');
 
+    // runtime parameters, default values
     public static parameters = {
         wetFrom: 0,
         wetTo: 999999,
@@ -47,6 +48,9 @@ export class CLI {
 
     }
 
+    /**
+     * Load parameters from environment variables.
+     */
     public static parseEnvVars() {
         // TODO: replace default values in CLI.parameters with environment variables
     }
@@ -125,7 +129,7 @@ export class CLI {
     }
 
     /**
-     * Log CLI.parameters, except "blobKey" (will be hidden).
+     * Log CLI.parameters, sensitive parameters will be hidden.
      */
     public static logParms() {
         console.log("Runtime parameters:");

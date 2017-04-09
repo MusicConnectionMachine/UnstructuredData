@@ -139,7 +139,7 @@ export class SampleDataGenerator {
         // assumes that you have already processed some WET files and you don't want to do that again
 
 
-
+        CCIndex.initDefaultIndex();
         CCIndex.getWETPathsForEachURLStepByStep(urls, takeOnlyTheFirstWetPath, cacheFile, saveAfter, (wetPaths) => {
             //console.log("Finished! Following WETs are relevant:\n", wetPaths);
 

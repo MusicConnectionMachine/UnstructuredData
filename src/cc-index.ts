@@ -1,4 +1,5 @@
 import {Downloader} from "./downloader";
+import {CLI} from "./cli";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.
@@ -24,8 +25,10 @@ export class CCIndexResponse {
 export class CCIndex {
 
     static fs = require('fs');
-    public static defaultCCIndex = "http://index.commoncrawl.org/CC-MAIN-2017-04-index";
-
+    public static defaultCCIndex;  // call initDefaultIndex() after CLI is done!
+    public static initDefaultIndex() {
+        CCIndex.defaultCCIndex = "http://index.commoncrawl.org/" + CLI.parameters.crawlVersion + "-index";
+    }
 
     /**
      * Takes a URL to look up, queries the CC index, parses the CC response and returns
@@ -235,6 +238,9 @@ export class CCIndex {
                              ccIndexPageURL? : string) {
 
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
+        if (! CCIndex.defaultCCIndex) {
+            CCIndex.initDefaultIndex();
+        }
         let indexPage = ccIndexPageURL || CCIndex.defaultCCIndex;
 
         let query = indexPage + "?url=" + encodeURI(lookupURL) + "&output=json";
