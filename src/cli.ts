@@ -1,3 +1,5 @@
+import * as os from "os";
+
 export class CLI {
 
     private static commander = require('commander');
@@ -13,7 +15,7 @@ export class CLI {
         blobAccount: "wetstorage",
         blobContainer: "websites",
         blobKey: "privateStuff",
-        threads: 4,
+        threads: os.cpus().length,
         crawlVersion: "CC-MAIN-2017-13"
     };
 
