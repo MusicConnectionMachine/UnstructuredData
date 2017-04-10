@@ -72,13 +72,8 @@ export class Storer {
             for(let i = 0; i < webpage.occurrences.length; i++) {
                 let occ = webpage.occurrences[i];
 
-                // @Lukas
-                // I get following console output:
-                // INSERT INTO "contains" ("id","websiteId","entityId","createdAt","updatedAt")
-                //        VALUES ('xxx','yyy','zzz','t1','t2');
-                // Occurrences are not inserted! Maybe typo: "occurRences"?
                 containsObjList.push({
-                    occurences: JSON.stringify({ // <-- typo here? @Lukas
+                    occurrences: JSON.stringify({
                         term: occ.term.term,
                         positions: occ.positions
                     }),
