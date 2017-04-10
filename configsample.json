@@ -1,9 +1,20 @@
 /*
-  This is a sample configuration file. To use the storer create a config.json file in this directory
-  Which will then be used.
+  REMOVE THIS COMMENT TO GET A VALID JSON FILE!  
+  This is a sample configuration file. 
+  The real file must be named "config.json" and belocated in this directory.
+  
+  Parameters with "null" value will be ignored.
 */
 {
-  "storageAccountname": "storageAccountName, e.g. wetstorage",
-  "storageKey": "yourstoragekeyhere",
-  "container": "default: websites"
+	"wetFrom": 0,
+	"wetTo": 42,
+	"dbHost": "13.74.11.216",
+	"dbPort": 5432,
+	"dbUser": "<database username>",
+	"dbPW": "<database password>",
+	"blobAccount": "wetstorage",
+	"blobContainer": "websites",
+	"blobKey": "<your azure key here>",
+	"threads": null,
+	"crawlVersion": "CC-MAIN-2017-13"
 }

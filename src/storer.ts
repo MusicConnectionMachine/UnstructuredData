@@ -1,20 +1,19 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
+import {CLI} from "./cli";
 export class Storer {
 
     static azure = require('azure');
     static crypto = require('crypto');
-    static config = require('../config.json');
     static path = require('path');
-    //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
-    static blobPrefix = 'https://wetstorage.blob.core.windows.net/websites/';
 
-    static blobService = Storer.azure.createBlobService(Storer.config.storageAccountname,
-        Storer.config.storageKey);
-
-    static container = Storer.config.container;
-
+    // not static anymore
+    // moved init to constructor, otherwise CLI.parameters are not initialized
+    private container;
+    private blobService;
     private context;
+    //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
+    private blobPrefix : string;
 
     constructor(){
         //Connect to database using api's index
@@ -28,6 +27,13 @@ export class Storer {
              */
             context.sequelize.sync().then(() => {return this;});
         });
+        this.blobService = Storer.azure.createBlobService(
+            CLI.parameters.blobAccount,
+            CLI.parameters.blobKey
+        );
+        this.blobPrefix = 'https://' + CLI.parameters.blobAccount +
+            '.blob.core.windows.net/' + CLI.parameters.blobContainer + '/';
+        this.container = CLI.parameters.blobContainer
     }
 
     /**
@@ -43,7 +49,7 @@ export class Storer {
                 }
                 return;
             }
-            return this.storeWebsiteMetadata(webpage, Storer.blobPrefix + blobName, callback);
+            return this.storeWebsiteMetadata(webpage, this.blobPrefix + blobName, callback); // TODO: why return here? @Lukas
         });
     }
 
@@ -55,6 +61,8 @@ export class Storer {
             blob_url: blobUrl
         };
 
+
+
         //Create website entry in db
         this.context.models.websites.create(websiteObj).then(website => {
 
@@ -63,8 +71,9 @@ export class Storer {
             //Collect all the contains entries that should be created (One for each term)
             for(let i = 0; i < webpage.occurrences.length; i++) {
                 let occ = webpage.occurrences[i];
+
                 containsObjList.push({
-                    occurences: JSON.stringify({
+                    occurrences: JSON.stringify({
                         term: occ.term.term,
                         positions: occ.positions
                     }),
@@ -79,14 +88,14 @@ export class Storer {
             }).catch(err => {
                 console.log(err);
                 //Make sure we don't leave that website hanging
-                return website.destroy();  // TODO: why return here?
+                return website.destroy();  // TODO: why return here? @Lukas
             });
 
         }).catch(err => {
             if(callback) {
                 callback(err);
             }
-            return; // TODO: why return here?
+            return; // TODO: why return here? @Lukas
         });
     }
 
@@ -109,7 +118,7 @@ export class Storer {
                 if (callback) callback(err);
                 return;
             }
-            Storer.blobService.createBlockBlobFromText(Storer.container, blobName, compressedBlobContent, function(err) {
+            this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, function(err) {
                 if(err) {
                     if(callback) callback(err);
                     return;

@@ -6,6 +6,7 @@ import { LanguageExtractor } from "./language-extractor";
 import { WetManager } from "./wet-manager";
 import { CCIndex } from "./cc-index";
 import { Storer } from "./storer";
+import {CLI} from "./cli";
 
 /**
  * Playground for testing.
@@ -181,7 +182,9 @@ export class TestRuns {
     public static testCCIndex() {
         let lookupURL = "https://github.com/";
         console.log("looking up: " + lookupURL);
-        CCIndex.getWETPathsForURL(lookupURL, (err, wetPaths) => {
+
+        const ccIndex = new CCIndex();
+        ccIndex.getWETPathsForURL(lookupURL, (err, wetPaths) => {
             if (err) {
                 console.error(err);
                 return;
@@ -189,7 +192,7 @@ export class TestRuns {
             console.log("found " + lookupURL + " in following files:");
             console.log(wetPaths);
 
-        });
+        }, 20000);
 
     }
 
@@ -293,5 +296,6 @@ export class TestRuns {
     }
 }
 
+CLI.initCLI();
 
-TestRuns.testCompressedStorage();
+TestRuns.testCCIndex();

@@ -1,8 +1,8 @@
 import * as cluster from "cluster";
-import * as os from "os";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CCPathLoader} from "./utils/cc-path-loader";
+import {CLI} from "./cli";
 
 
 /**
@@ -13,7 +13,6 @@ import {CCPathLoader} from "./utils/cc-path-loader";
  */
 export class ProcessingManager {
 
-    private static cpus = os.cpus().length;
     private static wetPaths : Array<string>;
 
     public static run() {
@@ -42,7 +41,7 @@ export class ProcessingManager {
              * 2. add listener when worker requests work
              * 3. initially send entities
              */
-            for (let i = 0; i < ProcessingManager.cpus; i++) {
+            for (let i = 0; i < CLI.parameters.threads; i++) {
 
                 // start thread
                 let thread = cluster.fork();
