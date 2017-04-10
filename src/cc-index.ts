@@ -25,10 +25,16 @@ export class CCIndexResponse {
 export class CCIndex {
 
     static fs = require('fs');
-    public static defaultCCIndex;  // call initDefaultIndex() after CLI is done!
-    public static initDefaultIndex() {
-        CCIndex.defaultCCIndex = "http://index.commoncrawl.org/" + CLI.parameters.crawlVersion + "-index";
+
+    public defaultCCIndex : string;
+
+    constructor(crawlVersion? : string) {
+        if (!crawlVersion) {
+            crawlVersion = CLI.parameters.crawlVersion;
+        }
+        this.defaultCCIndex = "http://index.commoncrawl.org/" + crawlVersion + "-index";
     }
+
 
     /**
      * Takes a URL to look up, queries the CC index, parses the CC response and returns
@@ -41,11 +47,11 @@ export class CCIndex {
      * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
-    public static getWETPathsForURL(lookupURL : string,
+    public getWETPathsForURL(lookupURL : string,
                                     callback : (err? : Error, wetPaths? : Array<string>) => void,
                                     timeout? : number,
                                     ccIndexPageURL? : string ) {
-        CCIndex.lookUpURL(lookupURL, (err, rawResponse) => {
+        this.lookUpURL(lookupURL, (err, rawResponse) => {
             if (err) {  callback(err);       return; }
 
             // got a raw response -> parse it
@@ -75,7 +81,7 @@ export class CCIndex {
      * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
-    public static getWETPathsForEachURL(lookupURLs : Array<string>,
+    public getWETPathsForEachURL(lookupURLs : Array<string>,
                                         takeOnlyTheFirstWetPath : boolean,
                                         callback : (wetPaths : Array<string>) => void,
                                         timeout? : number,
@@ -113,7 +119,7 @@ export class CCIndex {
             console.log(progress + " looking up " + urlToLookUp);
 
             // look up single url
-            CCIndex.getWETPathsForURL(lookupURLs[lookupIndex], function (err, wetPaths) {
+            this.getWETPathsForURL(lookupURLs[lookupIndex], function (err, wetPaths) {
                 // log error but continue anyway
                 if (err) {
                     console.log("      :(  error: " + err.message);
@@ -160,7 +166,7 @@ export class CCIndex {
      * @param timeout                       (optional) max waiting time for the response
      * @param ccIndexPageURL                (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
-    public static getWETPathsForEachURLStepByStep(lookupURLs : Array<string>,
+    public getWETPathsForEachURLStepByStep(lookupURLs : Array<string>,
                                                   takeOnlyTheFirstWetPath : boolean,
                                                   outputFile : string,
                                                   stepSize : number,
@@ -178,7 +184,7 @@ export class CCIndex {
             console.log("starting new step, resolving entries from " + (start+1) + " to " + end + "  (total number: " + lookupURLs.length + ")");
 
             let selectedUrls = lookupURLs.slice(start, end);
-            CCIndex.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
+            this.getWETPathsForEachURL(selectedUrls, takeOnlyTheFirstWetPath, function allLookedUp(wetPaths) {
                 // save resolved paths along with the old ones
                 let allWets = new Set<string>();
                 for (let newWet of wetPaths) allWets.add(newWet);
@@ -232,16 +238,13 @@ export class CCIndex {
      * @param timeout               (optional) max waiting time for the response
      * @param ccIndexPageURL        (optional) base URL of the CC index page; if not provided -> defaultCCIndex is used
      */
-    private static lookUpURL(lookupURL : string,
+    private lookUpURL(lookupURL : string,
                              callback? : (err? : Error, body? : string) => void,
                              timeout? : number,
                              ccIndexPageURL? : string) {
 
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
-        if (! CCIndex.defaultCCIndex) {
-            CCIndex.initDefaultIndex();
-        }
-        let indexPage = ccIndexPageURL || CCIndex.defaultCCIndex;
+        let indexPage = ccIndexPageURL || this.defaultCCIndex;
 
         let query = indexPage + "?url=" + encodeURI(lookupURL) + "&output=json";
 
@@ -274,16 +277,16 @@ export class CCIndex {
                 }
             });
 
-        });
+        }, timeout);
 
-        // test timeout
+        // test timeout, already implemented in Downloader, this can be removed
         setTimeout(function() {
             if (status == 'waiting') { // we are still waiting
                 //console.log("Timeout! Request for " + lookupURL + " probably failed");
                 status = 'aborted';
                 if (callback) callback(new Error("request aborted after timeout!"));
             }
-        }, timeout ? timeout : 5000);
+        }, timeout ? timeout + 1000 : 5000);
     }
 
     /**
