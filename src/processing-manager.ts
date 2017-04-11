@@ -1,8 +1,9 @@
 import * as cluster from "cluster";
+import * as os from "os";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CCPathLoader} from "./utils/cc-path-loader";
-import {CLI} from "./cli";
+import * as CLI from "./cli";
 
 
 /**
@@ -13,57 +14,103 @@ import {CLI} from "./cli";
  */
 export class ProcessingManager {
 
-    private static wetPaths : Array<string>;
+    private static CONFIG_FILE = require("../config.json");
+
+    private static DEFAULTS = {
+        dbHost: "localhost",
+        dbPort: "5432",
+        blobAccount: "wetstorage",
+        blobContainer: "websites",
+        processes: os.cpus().length,
+        crawlVersion: "CC-MAIN-2017-13"
+    };
 
     public static run() {
 
         // check if master process
-        if (!cluster.isMaster){ return; }
+        if (!cluster.isMaster) return;
 
+        let wetPaths : Array<string>;
+        let terms : Array<Term>;
 
-        let onPaths = (err: Error, wetPaths : Array<string>) => {
-            ProcessingManager.wetPaths = wetPaths;
-            TermLoader.loadFromDB(onTerms);
+        let loadWetPaths = () => {
+            let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"
+                + ProcessingManager.getParam("crawlVersion")
+                + "/wet.paths.gz";
+            CCPathLoader.loadPaths(indexURL, (err: Error, response : Array<string>) => {
+                if (err) throw err;
+
+                wetPaths = response.slice(ProcessingManager.getParam("wetFrom"), ProcessingManager.getParam("wetTo"));
+                console.log("[MASTER] successfully loaded WET paths!");
+
+                loadTerms();
+            });
         };
 
+        let loadTerms = () => {
+            TermLoader.loadFromDB((err : Error, result : Array<Term>) => {
+                if (err) throw err;
+                terms = result;
+                console.log("[MASTER] successfully loaded terms!");
 
-        let onTerms = (err : Error, entities : Array<Term>) => {
-            if (err) {
-                console.warn("SHIT!\n", err);
-                return;
-            } else {
-                console.log("[MASTER] loaded entities:\n", entities);
-            }
+                spawnProcesses();
+            });
+        };
 
+        let spawnProcesses = () => {
+            for (let i = 0; i < ProcessingManager.getParam("processes"); i++) {
 
-            /** Threading
-             * 1. start threads
-             * 2. add listener when worker requests work
-             * 3. initially send entities
-             */
-            for (let i = 0; i < CLI.parameters.threads; i++) {
-
-                // start thread
-                let thread = cluster.fork();
+                let worker = cluster.fork();
 
                 // add listener to assign work
-                thread.on('message', (msg) => {
+                worker.on('message', (msg) => {
+
                     if (msg.needWork) {
-                        if (ProcessingManager.wetPaths.length > 0) {
-                            thread.send({work: ProcessingManager.wetPaths.pop()})
+                        if (wetPaths.length > 0) {
+                            worker.send({
+                                work: wetPaths.pop()
+                            });
                         } else {
-                            thread.send({finished: true});
+                            worker.send({
+                                finished: true
+                            });
                         }
                     }
                 });
 
-                // send entities
-                thread.send({entities: entities});
+                // init worker
+                worker.send({
+                    init: {
+                        terms: terms,
+                        languageCodes: undefined,
+                        caching: false,
+                        blobParams: {
+                            "blobAccount": ProcessingManager.getParam("blobAccount"),
+                            "blobContainer": ProcessingManager.getParam("blobContainer"),
+                            "blobKey": ProcessingManager.getParam("blobKey")
+                        },
+                        dbParams: {
+                            "dbHost": ProcessingManager.getParam("dbHost"),
+                            "dbPort": ProcessingManager.getParam("dbPort"),
+                            "dbUser": ProcessingManager.getParam("dbUser"),
+                            "dbPW": ProcessingManager.getParam("dbPW")
+                        }
+                    }
+                });
+
+                console.log("[MASTER] successfully spawned a worker process!");
             }
         };
 
-        CCPathLoader.loadPaths(undefined, onPaths);
+
+        loadWetPaths();
 
     }
+
+    private static getParam(param : string) {
+        return CLI.params[param] || ProcessingManager.CONFIG_FILE[param]
+            || process.env[param] || ProcessingManager.DEFAULTS[param]
+    }
+
 }
 

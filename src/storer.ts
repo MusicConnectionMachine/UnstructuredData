@@ -1,6 +1,5 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
-import {CLI} from "./cli";
 export class Storer {
 
     static azure = require('azure');
@@ -15,7 +14,7 @@ export class Storer {
     //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
     private blobPrefix : string;
 
-    constructor(){
+    constructor(blobAccount : string, blobContainer : string, blobKey : string){
         //Connect to database using api's index
         require('../api/database').connect(null, context => {
             //Store context
@@ -28,36 +27,36 @@ export class Storer {
             context.sequelize.sync().then(() => {return this;});
         });
         this.blobService = Storer.azure.createBlobService(
-            CLI.parameters.blobAccount,
-            CLI.parameters.blobKey
+            blobAccount,
+            blobKey
         );
-        this.blobPrefix = 'https://' + CLI.parameters.blobAccount +
-            '.blob.core.windows.net/' + CLI.parameters.blobContainer + '/';
-        this.container = CLI.parameters.blobContainer
+        this.blobPrefix = 'https://' + blobAccount +
+            '.blob.core.windows.net/' + blobContainer + '/';
+        this.container = blobContainer;
     }
 
     /**
      * Stores the website in the Azure blob and in the DB.
-     * @param webpage
+     * @param webPage
      * @param callback
      */
-    public storeWebsite(webpage : WebPage, callback? : (err? : Error) => void ) : void {
-        this.storeWebsiteBlob(webpage, (err, blobName) => {
+    public storeWebsite(webPage : WebPage, callback? : (err? : Error) => void ) : void {
+        this.storeWebsiteBlob(webPage, (err, blobName) => {
             if(err) {
                 if(callback) {
                     callback(err);
                 }
                 return;
             }
-            return this.storeWebsiteMetadata(webpage, this.blobPrefix + blobName, callback); // TODO: why return here? @Lukas
+            return this.storeWebsiteMetadata(webPage, this.blobPrefix + blobName, callback); // TODO: why return here? @Lukas
         });
     }
 
 
-    public storeWebsiteMetadata(webpage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
-        console.log(webpage.getURI());
+    public storeWebsiteMetadata(webPage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
+        console.log(webPage.getURI());
         let websiteObj = {
-            url: webpage.getURI(),
+            url: webPage.getURI(),
             blob_url: blobUrl
         };
 
@@ -69,8 +68,8 @@ export class Storer {
             let containsObjList = [];
 
             //Collect all the contains entries that should be created (One for each term)
-            for(let i = 0; i < webpage.occurrences.length; i++) {
-                let occ = webpage.occurrences[i];
+            for(let i = 0; i < webPage.occurrences.length; i++) {
+                let occ = webPage.occurrences[i];
 
                 containsObjList.push({
                     occurrences: JSON.stringify({
@@ -106,12 +105,12 @@ export class Storer {
      * Stores given website as a blob in the azure blob storage. The filename will be an md5 hash
      * of website uri + content.
      *
-     * @param webpage       WebPage object to be stored
+     * @param webPage       WebPage object to be stored
      * @param callback      Optional callback param that will receive the filename as a parameter in case of success
      */
-    public storeWebsiteBlob(webpage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
-        let blobName = Storer.hashWebsite(webpage);
-        let blobContent = webpage.toWARCString();
+    public storeWebsiteBlob(webPage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
+        let blobName = Storer.hashWebsite(webPage);
+        let blobContent = webPage.toWARCString();
 
         Unpacker.compressStringToBuffer(blobContent, (err, compressedBlobContent) => {
             if (err) {
@@ -133,8 +132,8 @@ export class Storer {
 
     }
 
-    private static hashWebsite(webpage : WebPage) : string {
+    private static hashWebsite(webPage : WebPage) : string {
         let md5sum = Storer.crypto.createHash('md5');
-        return md5sum.update(webpage.getURI() + webpage.content).digest('hex');
+        return md5sum.update(webPage.getURI() + webPage.content).digest('hex');
     }
 }

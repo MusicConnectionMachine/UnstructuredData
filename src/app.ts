@@ -8,12 +8,6 @@
 
 import {ProcessingManager} from "./processing-manager";
 import {Worker} from "./worker";
-import {CLI} from "./cli";
-
-
-CLI.initCLI();
-CLI.logParms(); // will hide sensitive parameters, never log CLI.parameters directly!
-
 
 // Don't touch this otherwise Felix will kill you :P
 ProcessingManager.run();

@@ -1,33 +1,25 @@
-import * as os from "os";
-
-export class CLI {
+class CLI {
 
     private static commander = require('commander');
 
-    // runtime parameters, default values
     public static parameters = {
-        wetFrom: 0,
-        wetTo: 999999,
-        dbHost: "13.74.11.216",
-        dbPort: 5432,
-        dbUser: "privateStuff",
-        dbPW: "privateStuff",
-        blobAccount: "wetstorage",
-        blobContainer: "websites",
-        blobKey: "privateStuff",
-        threads: os.cpus().length,
-        crawlVersion: "CC-MAIN-2017-13"
+        wetFrom: undefined,
+        wetTo: undefined,
+        dbHost: undefined,
+        dbPort: undefined,
+        dbUser: undefined,
+        dbPW: undefined,
+        blobAccount: undefined,
+        blobContainer: undefined,
+        blobKey: undefined,
+        processes: undefined,
+        crawlVersion: undefined
     };
-
-    // these parameters will not be logged
-    private static privateParms = new Set([
-        "dbPW", "blobKey"
-    ]);
 
     /**
      * Init the commander module, parse env variables, config file and command line args.
      */
-    public static initCLI() {
+    public static init() {
 
         // init commander
         CLI.commander
@@ -41,36 +33,15 @@ export class CLI {
             .parse(process.argv);
 
 
-        // environment variables override default hardcoded values
-        CLI.parseEnvVars();
-        // config overrides environment vars
-        CLI.parseConfigFile();
-        // command line overrides all
         CLI.parseCmdOptions();
 
     }
 
-    /**
-     * Load parameters from environment variables.
-     */
-    public static parseEnvVars() {
-        // TODO: replace default values in CLI.parameters with environment variables
-    }
-
-    /**
-     * Load parameters from "config.json".
-     */
-    public static parseConfigFile() {
-        let configFile = require('../config.json');
-        for (let parm in CLI.parameters) {
-            if (configFile[parm]) CLI.parameters[parm] = configFile[parm];
-        }
-    }
 
     /**
      * Parse command line arguments and store values in CLI.parameters
      */
-    public static parseCmdOptions() {
+    private static parseCmdOptions() {
 
         if (CLI.commander.wetRange) {
             if (!CLI.commander.wetRange.split) {
@@ -119,29 +90,18 @@ export class CLI {
             CLI.parameters.blobKey = CLI.commander.blobKey;
         }
 
-        if (CLI.commander.threads) {
-            let threads = parseInt(CLI.commander.threads);
-            if (threads) CLI.parameters.threads = threads;
+        if (CLI.commander.processes) {
+            let threads = parseInt(CLI.commander.processes);
+            if (threads) CLI.parameters.processes = threads;
         }
 
         if (CLI.commander.crawl) {
             CLI.parameters.crawlVersion = CLI.commander.crawl;
         }
-
     }
-
-    /**
-     * Log CLI.parameters, sensitive parameters will be hidden.
-     */
-    public static logParms() {
-        console.log("Runtime parameters:");
-        for (let parm in CLI.parameters) {
-            if (!CLI.privateParms.has(parm)) {
-                console.log("\t" + parm + " = " + CLI.parameters[parm]);
-            } else {
-                console.log("\t" + parm + " = [HIDDEN]");
-            }
-        }
-    }
-
 }
+
+export let params = function () {
+    CLI.init();
+    return CLI.parameters;
+}();

@@ -1,5 +1,4 @@
 import {Downloader} from "./downloader";
-import {CLI} from "./cli";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.
@@ -29,10 +28,7 @@ export class CCIndex {
     public defaultCCIndex : string;
 
     constructor(crawlVersion? : string) {
-        if (!crawlVersion) {
-            crawlVersion = CLI.parameters.crawlVersion;
-        }
-        this.defaultCCIndex = "http://index.commoncrawl.org/" + crawlVersion + "-index";
+        this.defaultCCIndex = crawlVersion ? "http://index.commoncrawl.org/" + crawlVersion + "-index" : undefined;
     }
 
 
