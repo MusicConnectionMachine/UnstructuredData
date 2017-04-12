@@ -1,6 +1,5 @@
 import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
-import {EventEmitter} from "events";
 import * as WARCStream from "warc";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -12,7 +11,7 @@ import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker extends EventEmitter {
+export class Worker {
 
     private static worker : Worker;
 
@@ -24,18 +23,28 @@ export class Worker extends EventEmitter {
         // add event listeners to communicate with master
         process.on('message', (msg) => {
 
-            // receiving entities from master
-            if (msg.entities) {
-                Worker.worker = new Worker(msg.entities);
-                Worker.worker.on('finished', () => {
-                    process.send({needWork: true});
+            // receiving worker parameters from master
+            if (msg.init) {
+                Worker.worker = new Worker(
+                    msg.init.blobParams,
+                    msg.init.dbParams,
+                    msg.init.terms,
+                    msg.init.languageCodes,
+                    msg.init.caching
+                );
+
+                process.send({
+                    needWork: true
                 });
-                process.send({needWork: true});
             }
 
             // receiving WET path
             else if (msg.work && Worker.worker) {
-                Worker.worker.workOn(msg.work);
+                Worker.worker.workOn(msg.work, () => {
+                    process.send({
+                        needWork: true
+                    });
+                });
             }
 
             // all WET files have been processed
@@ -54,19 +63,22 @@ export class Worker extends EventEmitter {
 
 
     /**
-     * @param entities                                      Array of entities to filter for
-     * @param caching                                       (optional) enable WET file caching
+     * @param blobParams                                    Azure blob storage access data
+     * @param dbParams                                      database access data
+     * @param terms                                         Array of entities to filter for
      * @param languageCodes                                 (optional) Array of languages to filter for
+     * @param caching                                       (optional) enable WEt file caching
      */
-    constructor (entities : Array<Term>, caching? : boolean, languageCodes? : Array<string>) {
-        super();
-        this.webPageDigester = new WebPageDigester(entities)
+    private constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
+                         terms : Array<Term>, languageCodes? : Array<string>, caching? : boolean) {
+
+        this.webPageDigester = new WebPageDigester(terms)
             .setPreFilter(BloomFilter)
             .setFilter(PrefixTree);
 
-        this.caching = caching || process.env.caching || false;
-        this.languageCodes = languageCodes || process.env.languageCodes;
-        this.storer = new Storer();
+        this.caching = caching || false;
+        this.languageCodes = languageCodes;
+        this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
         this.processID = process.pid;
     }
 
@@ -81,8 +93,9 @@ export class Worker extends EventEmitter {
      * 5. stores web page
      *
      * @param wetPath                                       CC path to WET file
+     * @param callback                                      gets called when all pages have been processed
      */
-    public workOn(wetPath : string) {
+    private workOn(wetPath : string, callback : () => void) {
         let streamFinished = false;
         let pendingPages = 0;
 
@@ -105,7 +118,7 @@ export class Worker extends EventEmitter {
                     .on('end', () => {
                         streamFinished = true;
                         if (pendingPages === 0) {
-                            this.emit('finished');
+                            callback();
                         }
                     });
             }
@@ -167,7 +180,7 @@ export class Worker extends EventEmitter {
         let onWetEntryFinished = () => {
             pendingPages--;
             if (streamFinished && pendingPages === 0) {
-                this.emit('finished');
+                callback();
             }
         };
 

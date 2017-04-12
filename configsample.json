@@ -15,6 +15,6 @@
 	"blobAccount": "wetstorage",
 	"blobContainer": "websites",
 	"blobKey": "<your azure key here>",
-	"threads": null,
+	"processes": null,
 	"crawlVersion": "CC-MAIN-2017-13"
 }
