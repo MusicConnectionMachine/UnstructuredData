@@ -21,6 +21,7 @@ export class TestRuns {
     //static rwStream = require("read-write-stream");
 
     static dataFolder = './data/';
+    static config = require("../config.json");
 
     //Feb 17 Crawl data which contains https://www.britannica.com/topic/Chaconne-by-Bach
     static crawlBaseUrl = 'https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/';
@@ -198,7 +199,11 @@ export class TestRuns {
 
     public static testStorer() {
         let url = 'crawl-data/CC-MAIN-2017-09/segments/1487501172017.60/wet/CC-MAIN-20170219104612-00150-ip-10-171-10-108.ec2.internal.warc.wet.gz';
-        let storer = new Storer("blobAccount", "blobContainer", "blobKey");
+        let storer = new Storer(
+            TestRuns.config["blobAccount"],
+            TestRuns.config["blobContainer"],
+            TestRuns.config["blobKey"]
+        );
         WetManager.loadWetAsStream(url, function(err, result) {
             if(err) {
                 console.log(err);
@@ -246,7 +251,11 @@ export class TestRuns {
         };
 
         // store on azure (storer will compress it)
-        let storer = new Storer("blobAccount", "blobContainer", "blobKey");
+        let storer = new Storer(
+            TestRuns.config["blobAccount"],
+            TestRuns.config["blobContainer"],
+            TestRuns.config["blobKey"]
+        );
         storer.storeWebsiteBlob(w, (err, blobName) => {
             if (err) {
                 console.log(err);

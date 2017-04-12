@@ -58,6 +58,23 @@ export class ProcessingManager {
         };
 
         let spawnProcesses = () => {
+
+            const workerParams = {
+                terms: terms,
+                languageCodes: undefined,
+                caching: false,
+                blobParams: {
+                    "blobAccount": ProcessingManager.getParam("blobAccount"),
+                    "blobContainer": ProcessingManager.getParam("blobContainer"),
+                    "blobKey": ProcessingManager.getParam("blobKey")
+                },
+                dbParams: {
+                    "dbHost": ProcessingManager.getParam("dbHost"),
+                    "dbPort": ProcessingManager.getParam("dbPort"),
+                    "dbUser": ProcessingManager.getParam("dbUser"),
+                    "dbPW": ProcessingManager.getParam("dbPW")
+                }
+            };
             for (let i = 0; i < ProcessingManager.getParam("processes"); i++) {
 
                 let worker = cluster.fork();
@@ -80,22 +97,7 @@ export class ProcessingManager {
 
                 // init worker
                 worker.send({
-                    init: {
-                        terms: terms,
-                        languageCodes: undefined,
-                        caching: false,
-                        blobParams: {
-                            "blobAccount": ProcessingManager.getParam("blobAccount"),
-                            "blobContainer": ProcessingManager.getParam("blobContainer"),
-                            "blobKey": ProcessingManager.getParam("blobKey")
-                        },
-                        dbParams: {
-                            "dbHost": ProcessingManager.getParam("dbHost"),
-                            "dbPort": ProcessingManager.getParam("dbPort"),
-                            "dbUser": ProcessingManager.getParam("dbUser"),
-                            "dbPW": ProcessingManager.getParam("dbPW")
-                        }
-                    }
+                    init: workerParams
                 });
 
                 console.log("[MASTER] successfully spawned a worker process!");
