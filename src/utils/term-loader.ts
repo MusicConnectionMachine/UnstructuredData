@@ -41,55 +41,34 @@ export class TermLoader {
     public static loadFromDB(callback : (err?, entities? : Array<Term>) => void) {
         // we are in:   UnstructuredData/out/utils/term-loader.js
         // magic is in: UnstructuredData/api/database.js
-        let database = require("../../api/database.js");
-
-        // optional, if not set: will be taken from API -> database.js -> createContext() -> configDB
-        let databaseURI = undefined;
+        let context = require("../../api/database.js").getContext();
 
         let entities : Array<Term> = [];
 
-        database.connect(databaseURI, function (context) {
-            let artists = context.models.artists;
-            //Use { raw: true } to get raw objects instead of sequelize instances
-            artists.findAll({ raw: true }).then(function(list) {
-                // List is an array of artists objects
-                /*{
-                 name: 'Frank Zappa',
-                 id: '31b9a8b2-dbfe-4107-ba09-4d8bf5dca123',
-                 artist_type: 'composer',  <--- could be null
-                 dateOfBirth: 1940-12-20T23:00:00.000Z,
-                 placeOfBirth: 'Baltimore, Maryland, U.S.',
-                 dateOfDeath: 1993-12-03T23:00:00.000Z,
-                 placeOfDeath: 'Los Angeles, California, U.S.',
-                 nationality: 'American',
-                 tags: [],   <--- could be null
-                 pseudonym: [],  <--- could be null
-                 source_link: 'http://dbpedia.org/resource/Frank_Zappa',
-                 entityId: 'd4158624-7c68-4567-a3e8-b2ade72281d1'
-                 }
-                 */
+        let artists = context.models.artists;
+        //Use { raw: true } to get raw objects instead of sequelize instances
+        artists.findAll({ raw: true }).then(function(list) {
+            // List is an array of artists objects
 
-                // convert all names to Entities
-                for (let inst of list) {
-                    let name : string = inst.name;
-                    let id : string = inst.entityId;
+            // convert all names to Entities
+            for (let inst of list) {
+                let name : string = inst.name;
+                let id : string = inst.entityId;
 
-                    // right now very simple:
-                    // for each part of the name create a new Entity
-                    // add pseudonyms later
-                    let parts = name.split(" ");
-                    for (let part of parts) {
-                        entities.push(new Term(part, id));
-                    }
+                // right now very simple:
+                // for each part of the name create a new Entity
+                // add pseudonyms later
+                let parts = name.split(" ");
+                for (let part of parts) {
+                    entities.push(new Term(part, id));
                 }
+            }
 
-                callback(undefined, entities);
+            callback(undefined, entities);
 
 
-            }).catch(function(error) {
-                if (callback) callback(error);
-            });
-
+        }).catch(function(error) {
+            if (callback) callback(error);
         });
 
     }

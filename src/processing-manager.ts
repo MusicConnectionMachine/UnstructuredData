@@ -62,7 +62,15 @@ export class ProcessingManager {
             }
         };
 
-        CCPathLoader.loadPaths(undefined, onPaths);
+        let databaseURI = "postgresql://"
+            + CLI.parameters.dbUser + ":"
+            + CLI.parameters.dbPW + "@"
+            + CLI.parameters.dbHost + ":"
+            + CLI.parameters.dbPort + "/mcm";
+
+        require('../api/database').connect(databaseURI, () => {
+            CCPathLoader.loadPaths(undefined, onPaths);
+        });
 
     }
 }
