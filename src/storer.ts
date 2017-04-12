@@ -6,26 +6,15 @@ export class Storer {
     static crypto = require('crypto');
     static path = require('path');
 
-    // not static anymore
-    // moved init to constructor, otherwise CLI.parameters are not initialized
     private container;
     private blobService;
+    // this guy has to be initialized with connectToDB()!
     private context;
     //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
     private blobPrefix : string;
 
     constructor(blobAccount : string, blobContainer : string, blobKey : string){
-        //Connect to database using api's index
-        require('../api/database').connect(null, context => {
-            //Store context
-            this.context = context;
-            /*
-             Make sure that syncing to database is synchronous.
-             Not that there is no {force: true} option here: We don't want to overwrite
-             existing tables.
-             */
-            context.sequelize.sync().then(() => {return this;});
-        });
+
         this.blobService = Storer.azure.createBlobService(
             blobAccount,
             blobKey
@@ -34,6 +23,35 @@ export class Storer {
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
     }
+
+
+
+    // config.json can be passed as dbParms, quick and dirty :P
+    public connectToDB(dbParms, callback : (err? : Error) => void) : void {
+        // TODO: error handling/generation
+
+        let databaseURI = "postgresql://"
+            + dbParms.dbUser + ":"
+            + dbParms.dbPW + "@"
+            + dbParms.dbHost + ":"
+            + dbParms.dbPort + "/mcm";
+
+
+        //Connect to database using api's index
+        require('../api/database').connect(databaseURI, context => {
+            //Store context
+            this.context = context;
+            /*
+             Make sure that syncing to database is synchronous.
+             Not that there is no {force: true} option here: We don't want to overwrite
+             existing tables.
+             */
+            context.sequelize.sync().then(() => {
+                callback();
+            });
+        });
+    }
+
 
     /**
      * Stores the website in the Azure blob and in the DB.
@@ -60,6 +78,11 @@ export class Storer {
             blob_url: blobUrl
         };
 
+        if (!this.context) {
+            console.error("DB connection is not established! Use connectToDB() after init!");
+            callback(new Error("DB connection is not established!"));
+            return;
+        }
 
 
         //Create website entry in db

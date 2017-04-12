@@ -204,30 +204,37 @@ export class TestRuns {
             TestRuns.config["blobContainer"],
             TestRuns.config["blobKey"]
         );
-        WetManager.loadWetAsStream(url, function(err, result) {
-            if(err) {
-                console.log(err);
+        storer.connectToDB(TestRuns.config, (err) => {
+            if (err) {
+                console.error(err);
                 return;
             }
 
-            let warcParser = new TestRuns.WARCStream();
-            let counter = 0;
-            result.pipe(warcParser).on('data', data => {
-
-                let tick = Math.random() * 10000;
-                // getting WET entries here
-                if(tick < 1) {
-                    counter++;
-                    if (counter <= 10) {
-                        console.log('Storing number ' + counter);
-                        let p = new WebPage(data);
-                        storer.storeWebsite(p);
-                    }
+            WetManager.loadWetAsStream(url, function (err, result) {
+                if (err) {
+                    console.log(err);
+                    return;
                 }
-            }).on('end', () => {
-                console.log('Finished.');
-            });
-        }, true);
+
+                let warcParser = new TestRuns.WARCStream();
+                let counter = 0;
+                result.pipe(warcParser).on('data', data => {
+
+                    let tick = Math.random() * 10000;
+                    // getting WET entries here
+                    if (tick < 1) {
+                        counter++;
+                        if (counter <= 10) {
+                            console.log('Storing number ' + counter);
+                            let p = new WebPage(data);
+                            storer.storeWebsite(p);
+                        }
+                    }
+                }).on('end', () => {
+                    console.log('Finished.');
+                });
+            }, true);
+        });
     }
 
     /**
