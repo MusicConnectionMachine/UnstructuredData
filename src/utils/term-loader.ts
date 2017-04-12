@@ -38,13 +38,17 @@ export class TermLoader {
      *
      * Right now we only get the composer names.
      */
-    public static loadFromDB(callback : (err?, entities? : Array<Term>) => void) {
+    public static loadFromDB(dbParms, callback : (err?, entities? : Array<Term>) => void) {
         // we are in:   UnstructuredData/out/utils/term-loader.js
         // magic is in: UnstructuredData/api/database.js
         let database = require("../../api/database.js");
 
         // optional, if not set: will be taken from API -> database.js -> createContext() -> configDB
-        let databaseURI = undefined;
+        let databaseURI = "postgresql://"
+            + dbParms.dbUser + ":"
+            + dbParms.dbPW + "@"
+            + dbParms.dbHost + ":"
+            + dbParms.dbPort + "/mcm";
 
         let entities : Array<Term> = [];
 

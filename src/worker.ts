@@ -60,6 +60,7 @@ export class Worker {
     private caching : boolean;
     private languageCodes : Array<string>;
     private processID : number;
+    private dbParameters : {[param : string] : string };
 
 
     /**
@@ -80,6 +81,7 @@ export class Worker {
         this.languageCodes = languageCodes;
         this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
         this.processID = process.pid;
+        this.dbParameters = dbParams;
     }
 
 
@@ -98,6 +100,18 @@ export class Worker {
     private workOn(wetPath : string, callback : () => void) {
         let streamFinished = false;
         let pendingPages = 0;
+
+        /**
+         * Let's connect to DB before we load the first WET.
+         * @param err     not used right now
+         */
+        let onStorerConnectedToDB = (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
+        };
 
         /**
          * Gets called once the unpacked WET stream starts and pipes stream to WARC parser
@@ -185,6 +199,6 @@ export class Worker {
         };
 
         // start processing chain
-        WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
+        this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB);
     }
 }

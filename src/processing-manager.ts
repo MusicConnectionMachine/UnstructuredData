@@ -37,6 +37,7 @@ export class ProcessingManager {
             let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"
                 + ProcessingManager.getParam("crawlVersion")
                 + "/wet.paths.gz";
+
             CCPathLoader.loadPaths(indexURL, (err: Error, response : Array<string>) => {
                 if (err) throw err;
 
@@ -48,7 +49,15 @@ export class ProcessingManager {
         };
 
         let loadTerms = () => {
-            TermLoader.loadFromDB((err : Error, result : Array<Term>) => {
+
+            let dbParms = {
+                dbHost: ProcessingManager.getParam("dbHost"),
+                dbPort: ProcessingManager.getParam("dbPort"),
+                dbUser: ProcessingManager.getParam("dbUser"),
+                dbPW: ProcessingManager.getParam("dbPW")
+            };
+
+            TermLoader.loadFromDB(dbParms, (err : Error, result : Array<Term>) => {
                 if (err) throw err;
                 terms = result;
                 console.log("[MASTER] successfully loaded terms!");
