@@ -17,16 +17,8 @@ export class Storer {
 
     constructor(){
         //Connect to database using api's index
-        require('../api/database').connect(null, context => {
-            //Store context
-            this.context = context;
-            /*
-             Make sure that syncing to database is synchronous.
-             Not that there is no {force: true} option here: We don't want to overwrite
-             existing tables.
-             */
-            context.sequelize.sync().then(() => {return this;});
-        });
+        this.context = require('../api/database').getContext();
+
         this.blobService = Storer.azure.createBlobService(
             CLI.parameters.blobAccount,
             CLI.parameters.blobKey
