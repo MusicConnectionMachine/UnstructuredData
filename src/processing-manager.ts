@@ -3,7 +3,7 @@ import * as os from "os";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CCPathLoader} from "./utils/cc-path-loader";
-import * as CLI from "./cli";
+import {CLI} from "./cli";
 
 
 /**
@@ -108,7 +108,7 @@ export class ProcessingManager {
     }
 
     private static getParam(param : string) {
-        return CLI.params[param] || ProcessingManager.CONFIG_FILE[param]
+        return CLI.getInstance().parameters[param] || ProcessingManager.CONFIG_FILE[param]
             || process.env[param] || ProcessingManager.DEFAULTS[param]
     }
 
