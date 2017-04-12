@@ -241,6 +241,7 @@ export class CCIndex {
 
         lookupURL = lookupURL.replace("https://", "").replace("http://", ""); // remove http(s)
         let indexPage = ccIndexPageURL || this.defaultCCIndex;
+        if (!indexPage) callback(new TypeError("No CC index page was supplied!"));
 
         let query = indexPage + "?url=" + encodeURI(lookupURL) + "&output=json";
 
