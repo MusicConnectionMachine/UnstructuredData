@@ -184,7 +184,7 @@ export class TestRuns {
         let lookupURL = "https://github.com/";
         console.log("looking up: " + lookupURL);
 
-        const ccIndex = new CCIndex();
+        const ccIndex = new CCIndex(TestRuns.config["crawlVersion"]);
         ccIndex.getWETPathsForURL(lookupURL, (err, wetPaths) => {
             if (err) {
                 console.error(err);
