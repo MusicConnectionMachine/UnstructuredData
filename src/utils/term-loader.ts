@@ -49,41 +49,31 @@ export class TermLoader {
         let entities : Array<Term> = [];
 
         database.connect(databaseURI, function (context) {
-            let artists = context.models.artists;
             //Use { raw: true } to get raw objects instead of sequelize instances
-            artists.findAll({ raw: true }).then(function(list) {
-                // List is an array of artists objects
-                /*{
-                 name: 'Frank Zappa',
-                 id: '31b9a8b2-dbfe-4107-ba09-4d8bf5dca123',
-                 artist_type: 'composer',  <--- could be null
-                 dateOfBirth: 1940-12-20T23:00:00.000Z,
-                 placeOfBirth: 'Baltimore, Maryland, U.S.',
-                 dateOfDeath: 1993-12-03T23:00:00.000Z,
-                 placeOfDeath: 'Los Angeles, California, U.S.',
-                 nationality: 'American',
-                 tags: [],   <--- could be null
-                 pseudonym: [],  <--- could be null
-                 source_link: 'http://dbpedia.org/resource/Frank_Zappa',
-                 entityId: 'd4158624-7c68-4567-a3e8-b2ade72281d1'
-                 }
-                 */
+            let artistsProm = context.models.artists.findAll({ raw: true });
+            let instrumentsProm = context.models.instruments.findAll({ raw: true });
+            let worksProm = context.models.works.findAll({ raw: true });
+            let releasesProm = context.models.releases.findAll({ raw: true });
 
-                // convert all names to Entities
-                for (let inst of list) {
-                    let name : string = inst.name;
-                    let id : string = inst.entityId;
-
-                    // no splitting
-                    entities.push(new Term(name, id));
-                }
-
-                callback(undefined, entities);
-
-
-            }).catch(function(error) {
-                if (callback) callback(error);
-            });
+            //wait for all promises to resolve
+            Promise.all([artistsProm, instrumentsProm, worksProm, releasesProm])
+                .then(([artists, instruments, works, releases]) => {
+                    for(let artist of artists) {
+                        entities.push(new Term(artist.name, artist.entityId));
+                    }
+                    for(let instrument of instruments) {
+                        entities.push(new Term(instrument.name, instrument.entityId));
+                    }
+                    for(let work of works) {
+                        entities.push(new Term(work.title, work.entityId));
+                    }
+                    for(let release of releases) {
+                        entities.push(new Term(release.title, release.entityId));
+                    }
+                    callback(null, entities);
+                }).catch(err => {
+                    callback(err);
+                });
 
         });
 
