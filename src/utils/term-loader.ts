@@ -60,6 +60,9 @@ export class TermLoader {
                 .then(([artists, instruments, works, releases]) => {
                     for(let artist of artists) {
                         entities.push(new Term(artist.name, artist.entityId));
+                        for(let aka of artist.pseudonym) {
+                            entities.push(new Term(aka, artist.entityId));
+                        }
                     }
                     for(let instrument of instruments) {
                         entities.push(new Term(instrument.name, instrument.entityId));
