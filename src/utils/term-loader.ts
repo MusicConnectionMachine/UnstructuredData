@@ -74,13 +74,8 @@ export class TermLoader {
                     let name : string = inst.name;
                     let id : string = inst.entityId;
 
-                    // right now very simple:
-                    // for each part of the name create a new Entity
-                    // add pseudonyms later
-                    let parts = name.split(" ");
-                    for (let part of parts) {
-                        entities.push(new Term(part, id));
-                    }
+                    // no splitting
+                    entities.push(new Term(name, id));
                 }
 
                 callback(undefined, entities);
