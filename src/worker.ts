@@ -74,7 +74,6 @@ export class Worker {
                          terms : Array<Term>, languageCodes? : Array<string>, caching? : boolean) {
 
         this.webPageDigester = new WebPageDigester(terms)
-            .setPreFilter(BloomFilter)
             .setFilter(PrefixTree);
 
         this.caching = caching || false;
