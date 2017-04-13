@@ -101,9 +101,12 @@ export class WebPageDigester {
         let occs : Array<Occurrence> = [];
         for (let match of matchesIndex) {
             let termStr = match.term;
-            let termID = this.termToIDMap.get(termStr);
+            let entityID = this.termToIDMap.get(termStr);
 
-            occs.push(new Occurrence(new Term(termStr, termID), match.positions));
+            if (!entityID) {
+                console.warn("NO entityID for term " + termStr + "! What is wrong with filters?");
+            }
+            occs.push(new Occurrence(new Term(termStr, entityID), match.positions));
 
         }
 
