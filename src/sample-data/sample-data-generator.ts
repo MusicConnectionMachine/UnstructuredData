@@ -65,7 +65,7 @@ export class SampleDataGenerator {
                         // search for terms
                         let totalOccs = 0;
                         let distinctOccs = 0;
-                        let occs : Array<IndexFilterResult> = filter.getMatchesIndex(p.content);
+                        let occs : Array<IndexFilterResult> = filter.getMatches(p.content);
                         for (let occ of occs) {
                             distinctOccs++;
                             totalOccs += occ.positions.length;

@@ -2,13 +2,11 @@ import "mocha";
 import { Filter } from "../../filters/filter";
 import { BloomFilter } from "../../filters/bloom-filter";
 import { PrefixTree } from "../../filters/prefix-tree";
-import { NaiveFilter } from "../../filters/naive-filter";
 let assert = require("chai").assert;
 
 
 testFilter(BloomFilter);
 testFilter(PrefixTree);
-testFilter(NaiveFilter);
 
 function testFilter<T extends Filter> (filterConstructor : new (searchTerms? : Set<string>) => T) {
     let filter : T;
@@ -28,29 +26,6 @@ function testFilter<T extends Filter> (filterConstructor : new (searchTerms? : S
             filter = new filterConstructor(new Set(searchTerms));
             let result = filter.hasMatch(text);
             assert.strictEqual(result, false);
-        });
-        it("should have at least one match, pre- and suffixes might match .getMatches()", () => {
-            let searchTerms = ['test', 'some', 'random', 'words'];
-            let text = 'Sometimes I wonder what I am doing here with all these random tests...';
-            filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatches(text);
-            assert.ok(result.size > 0);
-        });
-        it("should only have one match .getMatches()", () => {
-            let searchTerms = ['test', 'some', 'random', 'words'];
-            let text = 'There are a not so many words here... Well, let\'s add a few more, just to be sure. ' +
-                'It should only have one match though!';
-            filter = new filterConstructor(new Set(searchTerms));
-            let result = [...filter.getMatches(text)];
-            let expectedResult = ['words'];
-            assert.deepEqual(result, expectedResult);
-        });
-        it("should be case sensitive .getMatches()", () => {
-            let searchTerms = ['Not', 'random', 'words', 'WORDS'];
-            let text = 'There are a not so many WORDS here';
-            filter = new filterConstructor(new Set(searchTerms));
-            let result = [...filter.getMatches(text)];
-            assert.deepEqual(result, ['WORDS']);
         });
         it("should be case sensitive .hasMatch()", () => {
             let searchTerms = ['Not', 'random', 'words'];

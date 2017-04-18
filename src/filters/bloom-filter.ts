@@ -44,22 +44,4 @@ export class BloomFilter extends Filter{
         }
         return false;
     }
-
-    /**
-     * Returns all searchTerm matches (does NOT match pre and suffixes!)
-     * @param text
-     * @returns                        hash set of matches
-     */
-    public getMatches(text : string) : Set<string> {
-
-        let matches : Set<string> = new Set();
-
-        let tokens = BloomFilter.tokenizer.tokenize(text);
-        for (let token of tokens) {
-            if (this.filter.has(new Buffer(token))) {
-                matches.add(token);
-            }
-        }
-        return matches;
-    }
 }

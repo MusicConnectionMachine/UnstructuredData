@@ -30,11 +30,4 @@ export abstract class Filter {
      */
     abstract hasMatch(text : string) : boolean;
 
-
-    /**
-     * Returns all searchTerm matches
-     * @param text
-     * @returns                   hash set of matches
-     */
-    abstract getMatches(text : string) : Set<string>;
 }

@@ -8,5 +8,5 @@ export abstract class IndexFilter extends Filter {
      * @param text
      * @returns [string, number][]          array of tuple consisting of match and index
      */
-    abstract getMatchesIndex(text : string) : Array<IndexFilterResult>;
+    abstract getMatches(text : string) : Array<IndexFilterResult>;
 }

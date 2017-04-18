@@ -77,15 +77,12 @@ export class WebPageDigester {
         // use preFilter if present
         if (this.preFilterInstance) {
             // find all matches, but ignore the match indexes for now
-            let matches = this.preFilterInstance.getMatches(pageContent);
+            let matches = this.preFilterInstance.hasMatch(pageContent);
 
             // Stop here if there aren't any matches.
-            if (matches.size === 0) {
+            if (!matches) {
                 return webPage;
             }
-
-            // create new IndexFilter instance from matched searchTerms
-            this.mainFilterInstance = new this.mainFilter(matches);
         }
 
         // create new mainFilterInstance from this.searchTerms if not present
@@ -96,7 +93,7 @@ export class WebPageDigester {
         }
 
         let matchesIndex : Array<IndexFilterResult>
-            = this.mainFilterInstance.getMatchesIndex(pageContent);
+            = this.mainFilterInstance.getMatches(pageContent);
 
         let occs : Array<Occurrence> = [];
         for (let match of matchesIndex) {

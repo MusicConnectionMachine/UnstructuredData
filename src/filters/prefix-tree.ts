@@ -57,30 +57,13 @@ export class PrefixTree extends IndexFilter{
         return false;
     }
 
-    /**
-     * Returns all searchTerm matches (does MATCH pre and suffixes!!!!)
-     * @param text
-     * @returns                        hash set of matches
-     */
-    public getMatches(text : string) : Set<string> {
-
-        let matches : Set<string> = new Set();
-
-        for (let position = 0; position < text.length; position++) {
-            let result = this.root.match(text, position); // tuple [boolean, string, number]
-            if (result[0]) {
-                matches.add(result[1]);
-            }
-        }
-        return matches;
-    }
 
     /**
      * Returns all searchTerm matches with index (does MATCH pre and suffixes!!!!)
      * @param text
      * @returns                             array of occurrences (indexes don't include match prefixes)
      */
-    public getMatchesIndex(text : string) : Array<IndexFilterResult> {
+    public getMatches(text : string) : Array<IndexFilterResult> {
         let matches : Map<string, Array<number>> = new Map();
 
         for (let position = 0; position < text.length; position++) {

@@ -1,13 +1,11 @@
 import "mocha";
 import { IndexFilter } from "../../filters/index-filter";
 import { PrefixTree } from "../../filters/prefix-tree";
-import { NaiveFilter } from "../../filters/naive-filter";
 import {IndexFilterResult} from "../../utils/index-filter-result";
 let assert = require("chai").assert;
 
 
 testFilter(PrefixTree);
-testFilter(NaiveFilter);
 
 function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms? : Set<string>) => T) {
     let filter : T;
@@ -18,7 +16,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let searchTerms = ['test', 'some', 'random', 'words'];
             let text = 'Sometimes I wonder what I am doing here with all these random tests...';
             filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatchesIndex(text);
+            let result = filter.getMatches(text);
             assert.ok(result.length > 0);
         });
         it("should only have one match .getMatchesIndex()", () => {
@@ -26,7 +24,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let text = 'There are a not so many words here... Well, let\'s add a few more, just to be sure. ' +
                 'It should only have one match though!';
             filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatchesIndex(text);
+            let result = filter.getMatches(text);
             let expectedResult = [new IndexFilterResult('words',[24])];
             assert.deepEqual(result, expectedResult);
         });
@@ -34,7 +32,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let searchTerms = ['Not', 'random', 'words', 'WORDS'];
             let text = 'There are a not so many WORDS here';
             filter = new filterConstructor(new Set(searchTerms));
-            let result = filter.getMatchesIndex(text);
+            let result = filter.getMatches(text);
             let expectedResult = [new IndexFilterResult('WORDS',[24])];
             assert.deepEqual(result, expectedResult);
         });

@@ -3,7 +3,6 @@ import {WebPageDigester} from "../webpage-digester";
 import {PrefixTree} from "../filters/prefix-tree";
 import {WebPage} from "../utils/webpage";
 import {BloomFilter} from "../filters/bloom-filter";
-import {NaiveFilter} from "../filters/naive-filter";
 import {Occurrence} from "../utils/occurrence";
 import {Term} from "../utils/term";
 let assert = require("chai").assert;
@@ -35,12 +34,11 @@ describe("WebSiteDigester", () => {
         assert.deepEqual(after, before);
     });
     it("shouldn't change the results when replacing the filter with the same filter", () => {
-        let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
+        let digester = new WebPageDigester(terms).setFilter(PrefixTree);
         let before = digester.digest(createDummyWebPage());
 
-        // replace filter twice
+        // replace filter
         digester.setFilter(PrefixTree);
-        digester.setFilter(NaiveFilter);
 
         let after = digester.digest(createDummyWebPage());
         assert.deepEqual(after, before);
@@ -64,7 +62,7 @@ describe("WebSiteDigester", () => {
 
         webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
 
-        let digester = new WebPageDigester(terms).setFilter(NaiveFilter);
+        let digester = new WebPageDigester(terms).setFilter(PrefixTree);
         let result = digester.digest(webPage, true);
 
         let expected = createDummyWebPage();
