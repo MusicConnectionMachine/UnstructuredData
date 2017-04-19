@@ -37,6 +37,13 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let expectedResult = [new Occurrence(searchTerms[3],[24])];
             assert.deepEqual(result, expectedResult);
         });
+        it("should find the correct match", () => {
+            let searchTerm = generateTerms(["cello", "cello concerto no. 6 in g major"]);
+            let text = "cellos are instruments.";
+            filter = new filterConstructor(searchTerm);
+            let result = filter.getMatches(text);
+            assert.strictEqual(result[0].term.value, "cello");
+        });
     });
 }
 
