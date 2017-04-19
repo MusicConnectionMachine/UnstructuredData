@@ -23,7 +23,7 @@ export class Storer {
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
         this.blobService.createContainerIfNotExists(blobContainer, err => {
-            console.log(err);
+            console.error(err);
         });
     }
 
@@ -75,7 +75,6 @@ export class Storer {
 
 
     public storeWebsiteMetadata(webPage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
-        console.log(webPage.getURI());
         let websiteObj = {
             url: webPage.getURI(),
             blob_url: blobUrl
@@ -111,7 +110,7 @@ export class Storer {
             this.context.models.contains.bulkCreate(containsObjList).then(() => {
                 callback(null);
             }).catch(err => {
-                console.log(err);
+                console.error(err);
                 //Make sure we don't leave that website hanging
                 return website.destroy();  // TODO: why return here? @Lukas
             });

@@ -32,7 +32,7 @@ export class ProcessingManager {
         if (!cluster.isMaster) return;
 
         let wetPaths : Array<string>;
-        let terms : Array<Term>;
+        let terms : Array<Term> = [];
 
         let loadWetPaths = () => {
             let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"

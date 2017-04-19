@@ -206,7 +206,6 @@ export class Worker {
          */
         let onPageMatch = (webPage : WebPage) => {
             this.storer.storeWebsite(webPage, onWetEntryFinished);
-            console.log("[WORKER-" + this.processID + "] found relevant page " + webPage.getURI());
             onWetEntryFinished();
         };
 

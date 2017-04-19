@@ -12,7 +12,4 @@ export class Term {
         return term.value == this.value && term.entityId == this.entityId;
     }
 
-    public toLowerCase() : string {
-        return this.value = this.value.toLowerCase();
-    }
 }
