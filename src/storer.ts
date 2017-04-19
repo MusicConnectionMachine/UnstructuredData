@@ -1,5 +1,7 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
+import {winston} from "./app";
+
 export class Storer {
 
     static azure = require('azure');
@@ -23,7 +25,7 @@ export class Storer {
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
         this.blobService.createContainerIfNotExists(blobContainer, err => {
-            console.error(err);
+            winston.error(err);
         });
     }
 
@@ -81,7 +83,7 @@ export class Storer {
         };
 
         if (!this.context) {
-            console.error("DB connection is not established! Use connectToDB() after init!");
+            winston.error("DB connection is not established! Use connectToDB() after init!");
             callback(new Error("DB connection is not established!"));
             return;
         }
@@ -110,7 +112,7 @@ export class Storer {
             this.context.models.contains.bulkCreate(containsObjList).then(() => {
                 callback(null);
             }).catch(err => {
-                console.error(err);
+                winston.error(err);
                 //Make sure we don't leave that website hanging
                 return website.destroy();  // TODO: why return here? @Lukas
             });

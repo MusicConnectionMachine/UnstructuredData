@@ -3,6 +3,7 @@ import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
 import {Term} from "./utils/term";
 import {Occurrence} from "./utils/occurrence";
+import {winston} from "./app";
 
 
 export class WebPageDigester {
@@ -54,7 +55,7 @@ export class WebPageDigester {
     public digest(webPage : WebPage, mergeOccurrences? : boolean) : WebPage {
 
         if(!this.mainFilterInstance) {
-            console.warn("Couldn't apply any filters as filter isn't set! Set a filter with .setFilter()!");
+            winston.warn("Couldn't apply any filters as filter isn't set! Set a filter with .setFilter()!");
             return webPage;
         }
 

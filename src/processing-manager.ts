@@ -1,5 +1,6 @@
 import * as cluster from "cluster";
 import * as os from "os";
+import {winston} from "./app";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CCPathLoader} from "./utils/cc-path-loader";
@@ -34,6 +35,8 @@ export class ProcessingManager {
         let wetPaths : Array<string>;
         let terms : Array<Term> = [];
 
+        winston.info('Master created and running');
+
         let loadWetPaths = () => {
             let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"
                 + ProcessingManager.getParam("crawlVersion")
@@ -43,7 +46,7 @@ export class ProcessingManager {
                 if (err) throw err;
 
                 wetPaths = response.slice(ProcessingManager.getParam("wetFrom"), ProcessingManager.getParam("wetTo"));
-                console.log("[MASTER] successfully loaded WET paths!");
+                winston.info("[MASTER] successfully loaded WET paths!");
 
                 loadTerms();
             });
@@ -67,7 +70,7 @@ export class ProcessingManager {
                         terms.push(term);
                     }
                 }
-                console.log("[MASTER] successfully loaded terms!");
+                winston.info("[MASTER] successfully loaded terms!");
 
                 spawnProcesses();
             });
@@ -102,9 +105,11 @@ export class ProcessingManager {
 
                     if (msg.needWork) {
                         if (wetPaths.length > 0) {
+                            let path = wetPaths.pop();
                             worker.send({
-                                work: wetPaths.pop()
+                                work: path
                             });
+                            winston.info('[Worker-' + worker.process.pid + '] was assigned path \'' + path + '\'');
                         } else {
                             worker.send({
                                 finished: true
@@ -118,7 +123,7 @@ export class ProcessingManager {
                     init: workerParams
                 });
 
-                console.log("[MASTER] successfully spawned a worker process!");
+                winston.info("[MASTER] successfully spawned a worker process!");
             }
         };
 
