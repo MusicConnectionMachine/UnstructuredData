@@ -32,7 +32,8 @@ export class Worker {
                     msg.init.terms,
                     msg.init.heuristicThreshold,
                     msg.init.languageCodes,
-                    msg.init.caching
+                    msg.init.caching,
+                    msg.init.enablePreFilter
                 );
 
                 process.send({
@@ -72,15 +73,18 @@ export class Worker {
      * @param terms                                         Array of entities to filter for
      * @param heuristicThreshold                            threshold for heuristic
      * @param languageCodes                                 (optional) Array of languages to filter for
-     * @param caching                                       (optional) enable WEt file caching
+     * @param caching                                       (optional) enable WET file caching
+     * @param enablePreFilter                               (optional) enable pre filter
      */
     private constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
                          terms : Array<Term>, heuristicThreshold : number, languageCodes? : Array<string>,
-                         caching? : boolean) {
+                         caching? : boolean, enablePreFilter? : boolean) {
 
-        this.webPageDigester = new WebPageDigester(terms)
-            .setPreFilter(BloomFilter)
-            .setFilter(PrefixTree);
+        this.webPageDigester = new WebPageDigester(terms).setFilter(PrefixTree);
+
+        if (enablePreFilter) {
+            this.webPageDigester.setPreFilter(BloomFilter);
+        }
 
         this.caching = caching || false;
         this.languageCodes = languageCodes;
@@ -203,7 +207,6 @@ export class Worker {
          */
         let onPageMatch = (webPage : WebPage) => {
             this.storer.storeWebsite(webPage, onWetEntryFinished);
-            console.log("[WORKER-" + this.processID + "] found relevant page " + webPage.getURI());
             onWetEntryFinished();
         };
 

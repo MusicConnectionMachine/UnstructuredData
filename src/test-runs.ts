@@ -1,6 +1,5 @@
 import { Downloader } from "./downloader";
 import { Unpacker } from "./unpacker";
-import { WordPreprocessor } from "./word-preprocessor";
 import { WebPage } from "./utils/webpage";
 import { LanguageExtractor } from "./language-extractor";
 import { WetManager } from "./wet-manager";
@@ -105,44 +104,6 @@ export class TestRuns {
                     + "\tURI: " + p.getURI()
                 );
                 entryID++;
-            });
-        });
-
-        stream.on('end', () => {
-            console.log('finished. Time passed: ' + ((new Date().getTime()) - timeStart));
-        })
-
-    }
-    //endregion
-
-
-    /**
-     * Load already downloaded and unpacked WET file, feed it to WARC parser, create a WebPage
-     * object from each entry and filter the results with LanguageExtractor directly and feed them
-     * into the WordPreprocessor. No temporary buffering on the disk.
-     */
-    //region Pre-Processing
-    static testPreProcessingChain() {
-        TestRuns.prepareEnvironment();
-        let timeStart = new Date().getTime();
-
-        // THE DATA FILE IS ALREADY DOWNLOADED AND UNPACKED
-
-        const WARCParser = new TestRuns.WARCStream();
-        const filepath = TestRuns.path.join(TestRuns.dataFolder, TestRuns.fileName_unpacked);
-
-
-        let stream = TestRuns.fs.createReadStream(filepath).pipe(WARCParser);
-
-        stream.on('data', data => {
-
-            let p = new WebPage(data);
-
-            LanguageExtractor.isWebPageInLanguage(p, ['en'], function(err, result) {
-                if (result) {
-                    console.log("processing result ");
-                    WordPreprocessor.process(p.content);
-                }
             });
         });
 
