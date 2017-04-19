@@ -24,7 +24,8 @@ export class CLI {
         blobKey: undefined,
         processes: undefined,
         crawlVersion: undefined,
-        languageCodes: undefined
+        languageCodes: undefined,
+        enablePreFilter: undefined
     };
 
     /**
@@ -43,6 +44,7 @@ export class CLI {
             .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
             .option('-l, --languages', 'languages to filter for in ISO 639-1, e.g. "[de, en, fr]"')
+            .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
             .parse(process.argv);
 
 
@@ -119,6 +121,10 @@ export class CLI {
 
         if (this.commander.crawl) {
             this.parameters.crawlVersion = this.commander.crawl;
+        }
+
+        if (this.commander.enablePreFilter) {
+            this.parameters.enablePreFilter = this.commander.enablePreFilter;
         }
     }
 }
