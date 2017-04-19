@@ -22,6 +22,9 @@ export class Storer {
         this.blobPrefix = 'https://' + blobAccount +
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
+        this.blobService.createContainerIfNotExists(blobContainer, err => {
+            console.log(err);
+        });
     }
 
 
