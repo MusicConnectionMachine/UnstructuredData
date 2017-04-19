@@ -122,7 +122,7 @@ class PTLeaf implements PTElement {
 
     private term : Term;
 
-    addTerm(term: Term): PTElement {
+    addTerm(term: Term): PTLeaf {
         // leafs only save entity IDs
         this.term = term;
         return this;
@@ -145,16 +145,18 @@ class PTLeaf implements PTElement {
  */
 class PTNode implements PTElement {
 
-    public children : {[key : string] : PTElement};
+    public childNodes : {[key : string] : PTElement};
+    public childLeaf : PTLeaf;
 
     constructor() {
-        this.children = {};
+        this.childNodes = {};
     }
 
     addTerm(term: Term, remainder : string): PTElement {
         if (remainder.length == 0) {
             // empty string as term -> create a leaf
-            return new PTLeaf().addTerm(term);
+            this.childLeaf = new PTLeaf().addTerm(term);
+            return this;
         }
 
         // term not empty -> take first char as key; everything else is the remainder
@@ -162,15 +164,15 @@ class PTNode implements PTElement {
         remainder = remainder.substring(1);
 
 
-        if (this.children[key]) {
+        if (this.childNodes[key]) {
             // same key already exists
-            this.children[key].addTerm(term, remainder);
+            this.childNodes[key].addTerm(term, remainder);
 
         } else {
             // this key is new -> create a new element
             let element : PTElement = new PTNode();
-            element = element.addTerm(term, remainder); // will create a leaf if remainder == ""
-            this.children[key] = element;
+            element = element.addTerm(term, remainder);
+            this.childNodes[key] = element;
         }
 
         return this;
@@ -179,9 +181,11 @@ class PTNode implements PTElement {
     match(searchStr : string, searchPos : number): [Term, number] {
         let key = searchStr.charAt(searchPos); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
 
-        let childNode = this.children[key]; // continue search in child node
+        let childNode = this.childNodes[key] || this.childLeaf;
 
-        if (!childNode) return [null, searchPos]; // no such key in this PT node -> no match
+        if (!childNode) {
+            return [null, searchPos]; // no such key in this PT node -> no match
+        }
 
         let [term] = childNode.match(searchStr, searchPos + 1);
         return [term, searchPos];
@@ -190,8 +194,8 @@ class PTNode implements PTElement {
 
     public toString() : string {
         let result = "";
-        for (let key in this.children) {
-            result += key + "(" + this.children[key].toString() + "); ";
+        for (let key in this.childNodes) {
+            result += key + "(" + this.childNodes[key].toString() + "); ";
         }
 
         return result.substring(0, result.length - 2);

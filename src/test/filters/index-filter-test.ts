@@ -42,7 +42,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let text = "cellos are instruments.";
             filter = new filterConstructor(searchTerm);
             let result = filter.getMatches(text);
-            assert.strictEqual(result[0].term.value, "cello");
+            assert.deepEqual(result, [new Occurrence(new Term("cello", "0"), [0])]);
         });
     });
 }
