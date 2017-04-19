@@ -27,7 +27,9 @@ export class BloomFilter extends Filter{
     public addSearchTerm(term : Term) : void {
         let tokens = BloomFilter.tokenizer.tokenize(term.value);
         for (let token of tokens) {
-            this.filter.add(new Buffer(token));
+            if (token.length > 2) {
+                this.filter.add(new Buffer(token));
+            }
         }
     }
 
