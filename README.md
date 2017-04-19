@@ -4,6 +4,7 @@
 Navigate to the project root and run `yarn install`. [Yarn](https://yarnpkg.com/lang/en/) has to be installed on the machine.
 
 ## Usage
+Via command line interface:
 ```
 $ node out/app.js -h
 
@@ -23,4 +24,28 @@ $ node out/app.js -h
     -l, --languages                            languages to filter for in ISO 639-1, e.g. "[de, en, fr]"
     -e, --enable-pre-filter                    enable bloom filter as pre filter
 
+```
+
+Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
+```
+{
+  "wetFrom": 0,
+  "wetTo": 99,
+  "dbHost": "127.0.0.1",
+  "dbPort": 5432,
+  "dbUser": "USER",
+  "dbPW": "PASSWORD",
+  "blobAccount": "wetstorage",
+  "blobContainer": "websites",
+  "blobKey": "AZURE_KEY_HERE",
+  "processes": 4,
+  "crawlVersion": "CC-MAIN-2017-13",
+  "heuristicThreshold": 3,
+  "languageCodes": [
+    "de",
+    "en",
+    "fr"
+  ],
+  "enablePreFilter": false,
+}
 ```
