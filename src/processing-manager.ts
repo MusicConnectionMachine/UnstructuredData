@@ -14,7 +14,6 @@ import {CLI} from "./cli";
  */
 export class ProcessingManager {
 
-    private static CONFIG_FILE = require("../config.json");
 
     private static DEFAULTS = {
         dbHost: "localhost",
@@ -119,8 +118,17 @@ export class ProcessingManager {
     }
 
     private static getParam(param : string) {
-        return CLI.getInstance().parameters[param] || ProcessingManager.CONFIG_FILE[param]
-            || process.env[param] || ProcessingManager.DEFAULTS[param]
+        let value = CLI.getInstance().parameters[param];
+
+        if(value) {
+            return value;
+        }
+
+        try {
+            return require('../config.json')[param] || process.env[param] || ProcessingManager.DEFAULTS[param];
+        } catch(e) {
+            return process.env[param] || ProcessingManager.DEFAULTS[param];
+        }
     }
 
 }
