@@ -45,7 +45,7 @@ export class WetManager {
             }
             let decompressed = Unpacker.decompressGZipStream(resp);
             decompressed.on('error', err => {
-                console.log(err);
+                console.error(err);
             });
             callback(null, decompressed);
         });
@@ -72,12 +72,9 @@ export class WetManager {
             localFilename
         );
 
-        console.log("File path: " + filepath);
-
         WetManager.fs.exists(filepath, function (exists) {
             if (exists) {
                 //Read existing file from file system as decompressed stream for callback
-                console.log('exists, opening from fs');
                 let fileReadStream = WetManager.fs.createReadStream(filepath);
                 callback(null, Unpacker.decompressGZipStream(fileReadStream));
 
@@ -90,11 +87,9 @@ export class WetManager {
                 //Create segment directory if not exists
                 if (!WetManager.fs.existsSync(dirPath)) {
                     WetManager.fs.mkdirSync(dirPath);
-                    console.log('Created directory ' + dirPath);
                 }
 
                 //Download file, store compressed on disk and execute callback with decompressed stream
-                console.log('doesnt exist, starting download');
                 Downloader.getResponse(url, function (err, resp) {
                     if (err) {
                         callback(err);
@@ -104,11 +99,10 @@ export class WetManager {
                     resp.pipe(outputFile);
                     let decompressed = Unpacker.decompressGZipStream(resp);
                     decompressed.on('error', err => {
-                        console.log(err);
+                        console.error(err);
                         outputFile.close();
                         WetManager.fs.unlinkSync(filepath);
                     }).on('end', () => {
-                        console.log('Download finished');
                         outputFile.close();
                     });
 

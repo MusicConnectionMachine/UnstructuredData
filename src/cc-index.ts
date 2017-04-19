@@ -262,9 +262,7 @@ export class CCIndex {
             res.on('end', () => {
                 if (status == 'waiting') {
                     status = 'done';
-                    if (callback) callback(undefined, body); else console.log("response body for " + lookupURL + ":\n" + body);
-                } else {
-                    //console.log("too late for " + lookupURL);
+                    if (callback) callback(undefined, body);
                 }
             });
             res.on('aborted', () => {
@@ -279,7 +277,6 @@ export class CCIndex {
         // test timeout, already implemented in Downloader, this can be removed
         setTimeout(function() {
             if (status == 'waiting') { // we are still waiting
-                //console.log("Timeout! Request for " + lookupURL + " probably failed");
                 status = 'aborted';
                 if (callback) callback(new Error("request aborted after timeout!"));
             }
@@ -307,7 +304,6 @@ export class CCIndex {
             }
 
             if (json.hasOwnProperty("error")) {
-                //console.log("[warning] CC index returned an error: " + json.error);
                 continue;
             }
 
@@ -367,7 +363,7 @@ export class CCIndex {
             let formattedLookupURL = encodeURIComponent(decodeURIComponent(lookupURL.toLowerCase())).toLowerCase();
 
             if (!formattedResponseURL.includes(formattedLookupURL)) {
-                console.log("[warning] CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
+                console.warn("CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
                 //continue;
             }
 

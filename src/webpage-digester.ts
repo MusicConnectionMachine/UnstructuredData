@@ -12,7 +12,7 @@ export class WebPageDigester {
 
     constructor(searchTerms : Array<Term>) {
         for (let term of searchTerms) {
-            term.toLowerCase();
+            term.value = term.value.toLowerCase();
         }
         this.searchTerms = searchTerms;
     }
