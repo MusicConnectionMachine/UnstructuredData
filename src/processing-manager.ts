@@ -77,6 +77,7 @@ export class ProcessingManager {
 
             const workerParams = {
                 terms: terms,
+                enablePreFilter: ProcessingManager.getParam("enablePreFilter"),
                 heuristicThreshold : ProcessingManager.getParam("heuristicThreshold"),
                 languageCodes: ProcessingManager.getParam("languageCodes"),
                 caching: false,
