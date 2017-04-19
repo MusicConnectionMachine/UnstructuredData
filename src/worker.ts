@@ -207,7 +207,6 @@ export class Worker {
          */
         let onPageMatch = (webPage : WebPage) => {
             this.storer.storeWebsite(webPage, onWetEntryFinished);
-            onWetEntryFinished();
         };
 
         /**
