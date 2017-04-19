@@ -158,7 +158,7 @@ export class Worker {
             let webPage = new WebPage(data);
             this.webPageDigester.digest(webPage);
 
-            if (webPage.occurrences) {
+            if (webPage.occurrences && webPage.occurrences.length >= this.heuristicThreshold) {
 
                 // calculate heuristic
                 let numEntities = webPage.occurrences.length;
