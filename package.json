@@ -24,7 +24,7 @@
     "typescript": "^2.2.0"
   },
   "scripts": {
-    "start": "node out/app.js",
+    "postinstall": "tsc && git submodule update && cd ./api && yarn install",
     "test": "mocha \"out/test/**/*.js\""
   },
   "bin": {
