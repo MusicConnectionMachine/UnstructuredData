@@ -18,6 +18,7 @@ export class CLI {
         dbPort: undefined,
         dbUser: undefined,
         dbPW: undefined,
+        heuristicThreshold: undefined,
         blobAccount: undefined,
         blobContainer: undefined,
         blobKey: undefined,
@@ -37,8 +38,9 @@ export class CLI {
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
-            .option('-t, --threads [number]', 'number of worker threads, e.g. "4"')
+            .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
             .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
+            .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g "3"')
             .parse(process.argv);
 
 
@@ -99,10 +101,15 @@ export class CLI {
         }
 
         if (this.commander.processes) {
-            let threads = parseInt(this.commander.processes);
-            if (threads) this.parameters.processes = threads;
+            let processes = parseInt(this.commander.processes);
+            if (processes) this.parameters.processes = processes;
         }
 
+        if (this.commander.heuristicThreshold) {
+            let threshold = parseInt(this.commander.heuristicThreshold);
+            if (threshold) this.parameters.heuristicThreshold = threshold;
+        }
+        
         if (this.commander.crawl) {
             this.parameters.crawlVersion = this.commander.crawl;
         }
