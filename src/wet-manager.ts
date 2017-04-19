@@ -1,7 +1,7 @@
 import {Unpacker} from "./unpacker";
 import ReadableStream = NodeJS.ReadableStream;
 import {Downloader} from "./downloader";
-import {Logger} from "./utils/logger";
+import {winston} from "./app";
 
 /**
  * This class manages all WET files. It allows for opening WET files as a stream of unpacked
@@ -46,7 +46,7 @@ export class WetManager {
             }
             let decompressed = Unpacker.decompressGZipStream(resp);
             decompressed.on('error', err => {
-                Logger.winston.error(err);
+                winston.error(err);
             });
             callback(null, decompressed);
         });
@@ -100,7 +100,7 @@ export class WetManager {
                     resp.pipe(outputFile);
                     let decompressed = Unpacker.decompressGZipStream(resp);
                     decompressed.on('error', err => {
-                        Logger.winston.error(err);
+                        winston.error(err);
                         outputFile.close();
                         WetManager.fs.unlinkSync(filepath);
                     }).on('end', () => {

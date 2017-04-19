@@ -1,5 +1,5 @@
 import {Downloader} from "./downloader";
-import {Logger} from "./utils/logger";
+import {winston} from "./app";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.
@@ -85,7 +85,7 @@ export class CCIndex {
                                         ccIndexPageURL? : string) {
 
         let wets : Set<string> = new Set<string>();
-        Logger.winston.info("start looking up " + lookupURLs.length + " urls");
+        winston.info("start looking up " + lookupURLs.length + " urls");
 
         // We can't send 100500 requests at the same time, instead we:
         //  - query cc index with one url,
@@ -253,7 +253,7 @@ export class CCIndex {
                 if (callback) {
                     callback(err);
                 } else {
-                    Logger.winston.error(err);
+                    winston.error(err);
                 }
                 return;
             }
@@ -368,7 +368,7 @@ export class CCIndex {
             let formattedLookupURL = encodeURIComponent(decodeURIComponent(lookupURL.toLowerCase())).toLowerCase();
 
             if (!formattedResponseURL.includes(formattedLookupURL)) {
-                Logger.winston.warn("CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
+                winston.warn("CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
                 //continue;
             }
 

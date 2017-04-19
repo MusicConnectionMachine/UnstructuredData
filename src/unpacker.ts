@@ -1,6 +1,6 @@
 import {AlreadyExistsError} from './utils/errors';
 import ReadableStream = NodeJS.ReadableStream;
-import {Logger} from "./utils/logger";
+import {winston} from "./app";
 
 export class Unpacker {
 
@@ -37,7 +37,7 @@ export class Unpacker {
         //do not use the same name for input & output
         if (outputFilePath == gzipFilePath) {
             outputFilePath += ".unpacked";
-            Logger.winston.warn("Using same name for input & output files! Output file was changed to " + outputFilePath);
+            winston.warn("Using same name for input & output files! Output file was changed to " + outputFilePath);
         }
 
         // unpack

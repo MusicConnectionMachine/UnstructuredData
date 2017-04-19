@@ -1,5 +1,5 @@
 import {WebPage} from "./utils/webpage";
-import {Logger} from "./utils/logger";
+import {winston} from "./app";
 
 
 export class LanguageExtractor {
@@ -26,7 +26,7 @@ export class LanguageExtractor {
                 try {
                     langCode = LanguageExtractor.langs.where("2", francResult)["1"];
                 } catch (e){
-                    Logger.winston.warn("Language code unknown: " + francResult);
+                    winston.warn("Language code unknown: " + francResult);
                 }
             } else {
                 langCode = result.languages[0].code;

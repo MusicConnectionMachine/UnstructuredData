@@ -1,7 +1,7 @@
 import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
-import {Logger} from "./utils/logger";
+import {winston} from "./app";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
 import {Term} from "./utils/term";
@@ -113,7 +113,7 @@ export class Worker {
          */
         let onStorerConnectedToDB = (err) => {
             if (err) {
-                Logger.winston.error(err);
+                winston.error(err);
                 return;
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
@@ -128,9 +128,9 @@ export class Worker {
         let onFileStreamReady = (err? : Error, response? : ReadableStream) => {
             if(err || !response) {
                 // TODO: Proper error handling!
-                Logger.winston.warn("WETManager encountered an error!");
+                winston.warn("WETManager encountered an error!");
             } else {
-                Logger.winston.info("[WORKER-" + this.processID + "] start processing " + wetPath);
+                winston.info("[WORKER-" + this.processID + "] start processing " + wetPath);
 
                 let warcParser = new WARCStream();
                 response.pipe(warcParser)
