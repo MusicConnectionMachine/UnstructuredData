@@ -22,7 +22,8 @@ export class ProcessingManager {
         blobContainer: "websites",
         processes: os.cpus().length,
         crawlVersion: "CC-MAIN-2017-13",
-        heuristicThreshold: 3
+        heuristicThreshold: 3,
+        languageCodes: ["en"]
     };
 
     public static run() {
