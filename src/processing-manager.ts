@@ -71,7 +71,7 @@ export class ProcessingManager {
             const workerParams = {
                 terms: terms,
                 heuristicThreshold : ProcessingManager.getParam("heuristicThreshold"),
-                languageCodes: undefined,
+                languageCodes: ProcessingManager.getParam("languageCodes"),
                 caching: false,
                 blobParams: {
                     "blobAccount": ProcessingManager.getParam("blobAccount"),

@@ -23,7 +23,8 @@ export class CLI {
         blobContainer: undefined,
         blobKey: undefined,
         processes: undefined,
-        crawlVersion: undefined
+        crawlVersion: undefined,
+        languageCodes: undefined
     };
 
     /**
@@ -40,7 +41,8 @@ export class CLI {
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
             .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
-            .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g "3"')
+            .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
+            .option('-l, --languages', 'languages to filter for in ISO 639-1, e.g. "[de, en, fr]"')
             .parse(process.argv);
 
 
@@ -109,7 +111,12 @@ export class CLI {
             let threshold = parseInt(this.commander.heuristicThreshold);
             if (threshold) this.parameters.heuristicThreshold = threshold;
         }
-        
+
+        if (this.commander.languages) {
+            let languageCodes = JSON.parse(this.commander.languages);
+            if (languageCodes) this.parameters.languageCodes = languageCodes;
+        }
+
         if (this.commander.crawl) {
             this.parameters.crawlVersion = this.commander.crawl;
         }
