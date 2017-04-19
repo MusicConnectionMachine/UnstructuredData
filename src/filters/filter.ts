@@ -1,6 +1,8 @@
+import {Term} from "../utils/term";
+
 export abstract class Filter {
 
-    constructor(searchTerms? : Set<string>) {
+    constructor(searchTerms? : Array<Term>) {
         this.init(searchTerms);
     }
 
@@ -8,19 +10,19 @@ export abstract class Filter {
      * Replaces constructor and gets called by the super class constructor
      * @param searchTerms           search terms to initialize filter with
      */
-    protected abstract init(searchTerms : Set<string>) : void;
+    protected abstract init(searchTerms : Array<Term>) : void;
 
     /**
-     * @param token                 token to add to the filter
+     * @param term                 term to add to the filter
      */
-    abstract addSearchTerm(token : string) : void;
+    abstract addSearchTerm(term : Term) : void;
 
     /**
-     * @param tokens                Set of tokens to add to the filter
+     * @param terms                Array of tokens to add to the filter
      */
-    public addSearchTerms(tokens : Set<string>) : void {
-        for (let token of tokens){
-            this.addSearchTerm(token);
+    public addSearchTerms(terms : Array<Term>) : void {
+        for (let term of terms){
+            this.addSearchTerm(term);
         }
     }
 
@@ -30,11 +32,4 @@ export abstract class Filter {
      */
     abstract hasMatch(text : string) : boolean;
 
-
-    /**
-     * Returns all searchTerm matches
-     * @param text
-     * @returns                   hash set of matches
-     */
-    abstract getMatches(text : string) : Set<string>;
 }

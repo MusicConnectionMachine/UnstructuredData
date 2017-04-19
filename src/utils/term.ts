@@ -1,14 +1,18 @@
 export class Term {
 
-    public term : string;
+    public value : string;
     public entityId : string;
 
-    constructor(t : string, i : string) {
-        this.term = t;
-        this.entityId = i;
+    constructor(value : string, entityId : string) {
+        this.value = value;
+        this.entityId = entityId;
     }
 
-    public equals(t : Term) : boolean {
-        return t.term == this.term && t.entityId == this.entityId;
+    public equals(term : Term) : boolean {
+        return term.value == this.value && term.entityId == this.entityId;
+    }
+
+    public toLowerCase() : string {
+        return this.value = this.value.toLowerCase();
     }
 }

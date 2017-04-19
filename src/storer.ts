@@ -99,7 +99,7 @@ export class Storer {
 
                 containsObjList.push({
                     occurrences: JSON.stringify({
-                        term: occ.term.term,
+                        term: occ.term.value,
                         positions: occ.positions
                     }),
                     websiteId: website.get('id'),

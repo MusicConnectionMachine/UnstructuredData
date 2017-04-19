@@ -1,4 +1,5 @@
 import { Filter } from "./filter";
+import {Term} from "../utils/term";
 
 export class BloomFilter extends Filter{
     private static bloem = require('bloem');
@@ -10,7 +11,7 @@ export class BloomFilter extends Filter{
      * Replaces constructor and gets called by the super class constructor
      * @param searchTerms           search terms to initialize filter with
      */
-    protected init(searchTerms : Set<string>) : void {
+    protected init(searchTerms : Array<Term>) : void {
         this.filter = new BloomFilter.bloem.ScalingBloem(BloomFilter.ERROR_RATE);
         if(searchTerms){
             for (let term of searchTerms) {
@@ -21,10 +22,10 @@ export class BloomFilter extends Filter{
 
     /**
      * Add term to bloom filter
-     * @param term                token to add to filter
+     * @param term                term to add to filter
      */
-    public addSearchTerm(term : string) : void {
-        let tokens = BloomFilter.tokenizer.tokenize(term);
+    public addSearchTerm(term : Term) : void {
+        let tokens = BloomFilter.tokenizer.tokenize(term.value);
         for (let token of tokens) {
             this.filter.add(new Buffer(token));
         }
@@ -43,23 +44,5 @@ export class BloomFilter extends Filter{
             }
         }
         return false;
-    }
-
-    /**
-     * Returns all searchTerm matches (does NOT match pre and suffixes!)
-     * @param text
-     * @returns                        hash set of matches
-     */
-    public getMatches(text : string) : Set<string> {
-
-        let matches : Set<string> = new Set();
-
-        let tokens = BloomFilter.tokenizer.tokenize(text);
-        for (let token of tokens) {
-            if (this.filter.has(new Buffer(token))) {
-                matches.add(token);
-            }
-        }
-        return matches;
     }
 }
