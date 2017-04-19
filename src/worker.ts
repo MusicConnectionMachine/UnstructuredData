@@ -86,6 +86,7 @@ export class Worker {
         this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
         this.processID = process.pid;
         this.dbParameters = dbParams;
+        this.heuristicThreshold = heuristicThreshold;
     }
 
 
