@@ -22,7 +22,8 @@ export class ProcessingManager {
         blobContainer: "websites",
         processes: os.cpus().length,
         crawlVersion: "CC-MAIN-2017-13",
-        heuristicThreshold: 3
+        heuristicThreshold: 3,
+        languageCodes: ["en"]
     };
 
     public static run() {
@@ -71,7 +72,7 @@ export class ProcessingManager {
             const workerParams = {
                 terms: terms,
                 heuristicThreshold : ProcessingManager.getParam("heuristicThreshold"),
-                languageCodes: undefined,
+                languageCodes: ProcessingManager.getParam("languageCodes"),
                 caching: false,
                 blobParams: {
                     "blobAccount": ProcessingManager.getParam("blobAccount"),
