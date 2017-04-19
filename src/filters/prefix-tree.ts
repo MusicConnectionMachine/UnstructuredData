@@ -1,5 +1,6 @@
 import { IndexFilter } from "./index-filter";
-import {IndexFilterResult} from "../utils/index-filter-result";
+import {Term} from "../utils/term";
+import {Occurrence} from "../utils/occurrence";
 
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different
@@ -22,7 +23,7 @@ export class PrefixTree extends IndexFilter{
      * Replaces constructor and gets called by the super class constructor
      * @param searchTerms           search terms to initialize filter with
      */
-    protected init(searchTerms : Set<string>) : void {
+    protected init(searchTerms : Array<Term>) : void {
         this.root = new PTNode(); // not a leaf! we do not want to match any string!
         if(searchTerms){
             for (let term of searchTerms) {
@@ -35,8 +36,8 @@ export class PrefixTree extends IndexFilter{
      * Add a new term to this tree.
      * @param term
      */
-    public addSearchTerm(term : string) : void {
-        this.root = this.root.addTerm(term);
+    public addSearchTerm(term : Term) : void {
+        this.root = this.root.addTerm(term, term.value);
     }
 
     /**
@@ -48,8 +49,8 @@ export class PrefixTree extends IndexFilter{
 
         for (let position = 0; position < text.length; position++) {
             // try to match each position until one term is found
-            let result = this.root.match(text, position); // tuple [boolean, string, number]
-            if (result[0]) {
+            let [result] = this.root.match(text, position); // tuple [Term, number]
+            if (result) {
                 return true;
             }
         }
@@ -63,22 +64,22 @@ export class PrefixTree extends IndexFilter{
      * @param text
      * @returns                             array of occurrences (indexes don't include match prefixes)
      */
-    public getMatches(text : string) : Array<IndexFilterResult> {
-        let matches : Map<string, Array<number>> = new Map();
+    public getMatches(text : string) : Array<Occurrence> {
+        let matches : Map<string, [string, Array<number>]> = new Map();
 
         for (let position = 0; position < text.length; position++) {
-            let result = this.root.match(text, position); // tuple [boolean, string, number]
-            if (result[0]) {
-                let match : string = result[1];
-                let index : number = result[2];
-                if (matches.has(match)) {
-                    matches.get(match).push(index);
+            let [term, matchPos] = this.root.match(text, position);
+            if (term) {
+                if (matches.has(term.value)) {
+                    let [id, indexes] = matches.get(term.value);
+                    indexes.push(matchPos);
                 } else {
-                    matches.set(match, [index]);
+                    let [id, indexes] = [term.entityId, [matchPos]];
+                    matches.set(term.value, [id, indexes]);
                 }
             }
         }
-        return IndexFilterResult.ifrMapToArray(matches);
+        return Occurrence.occMapToArr(matches);
     }
 
     public toString() : string {
@@ -96,7 +97,7 @@ interface PTElement {
      * Adds a term into the tree structure. Does nothing on leafs.
      * @param term
      */
-    addTerm(term : string) : PTElement;
+    addTerm(term : Term, remainder : string) : PTElement;
 
     /**
      * Try to find any terms contained in the (sub-)tree structure in the search string at specified position.
@@ -104,7 +105,7 @@ interface PTElement {
      * @param searchPos  position (index), position of the first character = 0
      * @returns tuple of boolean (matches?), string (match) and number (match index)
      */
-    match(searchStr : string, searchPos : number) : [boolean, string, number];
+    match(searchStr : string, searchPos : number) : [Term, number];
 
 }
 
@@ -119,13 +120,16 @@ interface PTElement {
  */
 class PTLeaf implements PTElement {
 
-    addTerm(term: string): PTElement {
-        // leafs do no allow adding terms
+    private term : Term;
+
+    addTerm(term: Term): PTElement {
+        // leafs only save entity IDs
+        this.term = term;
         return this;
     }
 
-    match(searchStr : string, searchPos : number): [boolean, string, number] {
-        return [true, '', searchPos];
+    match(searchStr : string, searchPos : number): [Term, number] {
+        return [this.term, searchPos];
     }
 
     public toString() : string {
@@ -141,47 +145,53 @@ class PTLeaf implements PTElement {
  */
 class PTNode implements PTElement {
 
-    addTerm(term: string): PTElement {
-        if (term.length == 0) {
+    public children : {[key : string] : PTElement};
+
+    constructor() {
+        this.children = {};
+    }
+
+    addTerm(term: Term, remainder : string): PTElement {
+        if (remainder.length == 0) {
             // empty string as term -> create a leaf
-            return new PTLeaf();
+            return new PTLeaf().addTerm(term);
         }
 
         // term not empty -> take first char as key; everything else is the remainder
-        let key = term.charAt(0);
-        let remainder = term.substring(1);
+        let key = remainder.charAt(0);
+        remainder = remainder.substring(1);
 
 
-        if (this.hasOwnProperty(key)) {
+        if (this.children[key]) {
             // same key already exists
-            this[key] = this[key].addTerm(remainder);
+            this.children[key].addTerm(term, remainder);
 
         } else {
             // this key is new -> create a new element
             let element : PTElement = new PTNode();
-            element = element.addTerm(remainder); // will create a leaf if remainder == ""
-            this[key] = element;
+            element = element.addTerm(term, remainder); // will create a leaf if remainder == ""
+            this.children[key] = element;
         }
 
         return this;
     }
 
-    match(searchStr : string, searchPos : number): [boolean, string, number] {
+    match(searchStr : string, searchPos : number): [Term, number] {
         let key = searchStr.charAt(searchPos); // no checks for string ending, reason: charAt returns "" if position is invalid anyway
 
-        if (!this.hasOwnProperty(key))  return [false, '', searchPos]; // no such key in this PT node -> no match
+        let childNode = this.children[key]; // continue search in child node
 
-        let childNode = this[key]; // continue search in child node
+        if (!childNode) return [null, searchPos]; // no such key in this PT node -> no match
 
-        let childResult = childNode.match(searchStr, searchPos + 1);
-        return [childResult[0], key + childResult[1], searchPos];
+        let [term] = childNode.match(searchStr, searchPos + 1);
+        return [term, searchPos];
     }
 
 
     public toString() : string {
         let result = "";
-        for (let key in this) {
-            result += key + "(" + this[key].toString() + "); ";
+        for (let key in this.children) {
+            result += key + "(" + this.children[key].toString() + "); ";
         }
 
         return result.substring(0, result.length - 2);

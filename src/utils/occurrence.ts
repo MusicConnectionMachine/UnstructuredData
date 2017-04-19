@@ -12,7 +12,7 @@ export class Occurrence {
     public static occArrayToMap(arr : Array<Occurrence>) : Map<string, [string, Array<number>]> {
         let map : Map<string, [string, Array<number>]> = new Map();
         for (let occ of arr) {
-            map.set(occ.term.term, [occ.term.entityId, occ.positions]);
+            map.set(occ.term.value, [occ.term.entityId, occ.positions]);
         }
         return map;
     }

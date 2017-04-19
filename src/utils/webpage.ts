@@ -100,7 +100,7 @@ export class WebPage {
         // add new occurrences one by one to the map
         for (let occurrence of occurrences) {
 
-            let termStr = occurrence.term.term;
+            let termStr = occurrence.term.value;
 
             // check if term is already present in map
             if (mergedMap.has(termStr)) {

@@ -3,26 +3,18 @@ import {Filter} from "./filters/filter";
 import {WebPage} from "./utils/webpage";
 import {Term} from "./utils/term";
 import {Occurrence} from "./utils/occurrence";
-import {IndexFilterResult} from "./utils/index-filter-result";
 
 
 export class WebPageDigester {
-    private termToIDMap : Map<string, string>;
-    private mainFilter : new (searchTerms? : Set<string>) =>  IndexFilter;
+    private searchTerms : Array<Term>;
     private mainFilterInstance : IndexFilter;
     private preFilterInstance : Filter;
 
     constructor(searchTerms : Array<Term>) {
-        searchTerms.forEach(term => {
-            term.term = term.term.toLowerCase();
-        });
-        this.termToIDMap = new Map();
-
         for (let term of searchTerms) {
-            this.termToIDMap.set(term.term, term.entityId);
+            term.toLowerCase();
         }
-
-
+        this.searchTerms = searchTerms;
     }
 
     /**
@@ -30,9 +22,8 @@ export class WebPageDigester {
      * Be careful which filter to use here as not all filters will give you exact matches!
      * @param filterConstructor                             Class of the filter
      */
-    public setFilter<T extends IndexFilter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester {
-        this.mainFilter = filterConstructor;
-        this.mainFilterInstance = undefined;
+    public setFilter<T extends IndexFilter> (filterConstructor : new (terms? : Array<Term>) => T) : WebPageDigester {
+        this.mainFilterInstance = new filterConstructor(this.searchTerms);
         return this;
     }
 
@@ -42,18 +33,13 @@ export class WebPageDigester {
      * This is very useful if your main filter is slow
      * @param filterConstructor                             Class of the pre-filter
      */
-    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Set<string>) => T) : WebPageDigester {
-        // construct a set from the map
-        let set : Set<string> = WebPageDigester.mapToSet(this.termToIDMap);
-
-        this.preFilterInstance = new filterConstructor(set);
+    public setPreFilter<T extends Filter> (filterConstructor : new (terms? : Array<Term>) => T) : WebPageDigester {
+        this.preFilterInstance = new filterConstructor(this.searchTerms);
         return this;
     }
 
     public removePreFilter() : WebPageDigester {
-        // remove references to both instances as current mainFilterInstance is NOT independent form preFilter
         this.preFilterInstance = undefined;
-        this.mainFilterInstance = undefined;
         return this;
     }
 
@@ -67,7 +53,7 @@ export class WebPageDigester {
      */
     public digest(webPage : WebPage, mergeOccurrences? : boolean) : WebPage {
 
-        if(!this.mainFilter) {
+        if(!this.mainFilterInstance) {
             console.warn("Couldn't apply any filters as filter isn't set! Set a filter with .setFilter()!");
             return webPage;
         }
@@ -76,7 +62,7 @@ export class WebPageDigester {
 
         // use preFilter if present
         if (this.preFilterInstance) {
-            // find all matches, but ignore the match indexes for now
+            // Check for matches, but ignore the match indexes for now
             let matches = this.preFilterInstance.hasMatch(pageContent);
 
             // Stop here if there aren't any matches.
@@ -85,50 +71,15 @@ export class WebPageDigester {
             }
         }
 
-        // create new mainFilterInstance from this.searchTerms if not present
-        if (!this.mainFilterInstance) {
-            // construct a set from the map
-            let set : Set<string> = WebPageDigester.mapToSet(this.termToIDMap);
-            this.mainFilterInstance = new this.mainFilter(set);
-        }
-
-        let matchesIndex : Array<IndexFilterResult>
-            = this.mainFilterInstance.getMatches(pageContent);
-
-        let occs : Array<Occurrence> = [];
-        for (let match of matchesIndex) {
-            let termStr = match.term;
-            let entityID = this.termToIDMap.get(termStr);
-
-            if (!entityID) {
-                console.warn("NO entityID for term " + termStr + "! What is wrong with filters?");
-            }
-            occs.push(new Occurrence(new Term(termStr, entityID), match.positions));
-
-        }
+        let occurrences : Array<Occurrence> = this.mainFilterInstance.getMatches(pageContent);
 
         // check if we have to merge occurrences and update webPage object
         if (mergeOccurrences) {
-            webPage.mergeOccurrences(occs);
+            webPage.mergeOccurrences(occurrences);
         } else {
-            webPage.occurrences = occs
+            webPage.occurrences = occurrences
         }
 
         return webPage;
-    }
-
-    /**
-     * Takes all the keys from the map and returns a set of them.
-     * @param map
-     * @returns {Set<string>}
-     */
-    private static mapToSet(map : Map<string, string>) : Set<string> {
-        let set : Set<string> = new Set();
-
-        for (let term of map.keys()) {
-            // strangely "for (let term in map)"  fails the tests
-            set.add(term);
-        }
-        return set;
     }
 }
