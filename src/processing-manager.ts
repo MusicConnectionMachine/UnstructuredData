@@ -69,6 +69,7 @@ export class ProcessingManager {
 
             const workerParams = {
                 terms: terms,
+                heuristicThreshold : 3,
                 languageCodes: undefined,
                 caching: false,
                 blobParams: {

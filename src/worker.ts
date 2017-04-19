@@ -29,6 +29,7 @@ export class Worker {
                     msg.init.blobParams,
                     msg.init.dbParams,
                     msg.init.terms,
+                    msg.init.heuristicThreshold,
                     msg.init.languageCodes,
                     msg.init.caching
                 );
@@ -61,17 +62,20 @@ export class Worker {
     private languageCodes : Array<string>;
     private processID : number;
     private dbParameters : {[param : string] : string };
+    private heuristicThreshold : number;
 
 
     /**
      * @param blobParams                                    Azure blob storage access data
      * @param dbParams                                      database access data
      * @param terms                                         Array of entities to filter for
+     * @param heuristicThreshold                            threshold for heuristic
      * @param languageCodes                                 (optional) Array of languages to filter for
      * @param caching                                       (optional) enable WEt file caching
      */
     private constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
-                         terms : Array<Term>, languageCodes? : Array<string>, caching? : boolean) {
+                         terms : Array<Term>, heuristicThreshold : number, languageCodes? : Array<string>,
+                         caching? : boolean) {
 
         this.webPageDigester = new WebPageDigester(terms)
             .setPreFilter(BloomFilter)
@@ -149,9 +153,22 @@ export class Worker {
             let webPage = new WebPage(data);
             this.webPageDigester.digest(webPage);
 
-            // do have a match, aka has the page occurrences attached to it?
-            if (webPage.occurrences && webPage.occurrences.length > 0) {
-                onTermMatch(webPage);
+            if (webPage.occurrences) {
+
+                // calculate heuristic
+                let numEntities = webPage.occurrences.length;
+                let numTerms = 0;
+                for (let occurrence of webPage.occurrences) {
+                    numTerms += occurrence.positions.length;
+                }
+                let heuristicScore = Math.trunc(numEntities * numTerms / 3);
+
+                // does the page match our heuristic?
+                if (heuristicScore >= this.heuristicThreshold) {
+                    onHeuristicMatch(webPage);
+                } else {
+                    onWetEntryFinished();
+                }
             } else {
                 onWetEntryFinished();
             }
@@ -161,7 +178,7 @@ export class Worker {
          * Gets called when a web page matches a term. Does language detection if required
          * @param webPage
          */
-        let onTermMatch = (webPage : WebPage) => {
+        let onHeuristicMatch = (webPage : WebPage) => {
 
             // no language codes specified, we can skip language detection
             if (!this.languageCodes || this.languageCodes.length === 0) {
