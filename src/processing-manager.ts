@@ -60,7 +60,13 @@ export class ProcessingManager {
 
             TermLoader.loadFromDB(dbParms, (err : Error, result : Array<Term>) => {
                 if (err) throw err;
-                terms = result;
+
+                // check length of terms
+                for (let term of result) {
+                    if (term.value.length > 2) {
+                        terms.push(term);
+                    }
+                }
                 console.log("[MASTER] successfully loaded terms!");
 
                 spawnProcesses();
