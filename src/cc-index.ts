@@ -1,4 +1,5 @@
 import {Downloader} from "./downloader";
+import {Logger} from "./utils/logger";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.
@@ -84,7 +85,7 @@ export class CCIndex {
                                         ccIndexPageURL? : string) {
 
         let wets : Set<string> = new Set<string>();
-        console.log("start looking up " + lookupURLs.length + " urls");
+        Logger.winston.info("start looking up " + lookupURLs.length + " urls");
 
         // We can't send 100500 requests at the same time, instead we:
         //  - query cc index with one url,
@@ -249,7 +250,11 @@ export class CCIndex {
 
         Downloader.getResponse(query, (err, res) => {
             if (err) {
-                if (callback) callback(err); else console.error(err);
+                if (callback) {
+                    callback(err);
+                } else {
+                    Logger.winston.error(err);
+                }
                 return;
             }
 
@@ -262,9 +267,7 @@ export class CCIndex {
             res.on('end', () => {
                 if (status == 'waiting') {
                     status = 'done';
-                    if (callback) callback(undefined, body); else console.log("response body for " + lookupURL + ":\n" + body);
-                } else {
-                    //console.log("too late for " + lookupURL);
+                    if (callback) callback(undefined, body);
                 }
             });
             res.on('aborted', () => {
@@ -279,7 +282,6 @@ export class CCIndex {
         // test timeout, already implemented in Downloader, this can be removed
         setTimeout(function() {
             if (status == 'waiting') { // we are still waiting
-                //console.log("Timeout! Request for " + lookupURL + " probably failed");
                 status = 'aborted';
                 if (callback) callback(new Error("request aborted after timeout!"));
             }
@@ -307,7 +309,6 @@ export class CCIndex {
             }
 
             if (json.hasOwnProperty("error")) {
-                //console.log("[warning] CC index returned an error: " + json.error);
                 continue;
             }
 
@@ -367,7 +368,7 @@ export class CCIndex {
             let formattedLookupURL = encodeURIComponent(decodeURIComponent(lookupURL.toLowerCase())).toLowerCase();
 
             if (!formattedResponseURL.includes(formattedLookupURL)) {
-                console.log("[warning] CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
+                Logger.winston.warn("CC index response (" + formattedResponseURL +  ") doesn't contain the lookup URL (" + formattedLookupURL + ")!");
                 //continue;
             }
 

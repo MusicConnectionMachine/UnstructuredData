@@ -1,6 +1,6 @@
 import * as cluster from "cluster";
 import * as os from "os";
-import * as winston from "winston";
+import {Logger} from "./utils/logger";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CCPathLoader} from "./utils/cc-path-loader";
@@ -35,9 +35,7 @@ export class ProcessingManager {
         let wetPaths : Array<string>;
         let terms : Array<Term> = [];
 
-        winston.add(winston.transports.File, { filename: './master.log' });
-        winston.remove(winston.transports.Console);
-        winston.info('Master created and running');
+        Logger.winston.info('Master created and running');
 
         let loadWetPaths = () => {
             let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"
@@ -48,7 +46,7 @@ export class ProcessingManager {
                 if (err) throw err;
 
                 wetPaths = response.slice(ProcessingManager.getParam("wetFrom"), ProcessingManager.getParam("wetTo"));
-                winston.info("[MASTER] successfully loaded WET paths!");
+                Logger.winston.info("[MASTER] successfully loaded WET paths!");
 
                 loadTerms();
             });
@@ -72,7 +70,7 @@ export class ProcessingManager {
                         terms.push(term);
                     }
                 }
-                winston.log("[MASTER] successfully loaded terms!");
+                Logger.winston.info("[MASTER] successfully loaded terms!");
 
                 spawnProcesses();
             });
@@ -110,7 +108,7 @@ export class ProcessingManager {
                             worker.send({
                                 work: path
                             });
-                            winston.info('[Worker-' + worker.process.pid + '] was assigned path \'' + path + '\'');
+                            Logger.winston.info('[Worker-' + worker.process.pid + '] was assigned path \'' + path + '\'');
                         } else {
                             worker.send({
                                 finished: true
@@ -124,7 +122,7 @@ export class ProcessingManager {
                     init: workerParams
                 });
 
-                console.info("[MASTER] successfully spawned a worker process!");
+                Logger.winston.info("[MASTER] successfully spawned a worker process!");
             }
         };
 

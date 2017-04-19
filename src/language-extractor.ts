@@ -1,4 +1,5 @@
 import {WebPage} from "./utils/webpage";
+import {Logger} from "./utils/logger";
 
 
 export class LanguageExtractor {
@@ -18,11 +19,15 @@ export class LanguageExtractor {
     public static getPageLanguage(webPage : WebPage, callback : (languageCode : string) => void) {
         const testString = LanguageExtractor.getTestSample(webPage, LanguageExtractor.SAMPLE_SIZE);
 
-        LanguageExtractor.cld.detect(testString, { isHTML: false, tldHint: webPage.getTLD()}, function(err, result) {
+        LanguageExtractor.cld.detect(testString, { isHTML: false, tldHint: webPage.getTLD()}, (err, result) => {
             let langCode;
             if(err) {
                 let francResult = LanguageExtractor.franc(testString);
-                langCode = LanguageExtractor.langs.where("2", francResult)["1"];
+                try {
+                    langCode = LanguageExtractor.langs.where("2", francResult)["1"];
+                } catch (e){
+                    Logger.winston.warn("Language code unknown: " + francResult);
+                }
             } else {
                 langCode = result.languages[0].code;
             }

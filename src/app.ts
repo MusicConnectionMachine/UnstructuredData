@@ -8,6 +8,10 @@
 
 import {ProcessingManager} from "./processing-manager";
 import {Worker} from "./worker";
+import {Logger} from "./utils/logger";
+import * as cluster from "cluster";
+
+Logger.init(cluster.isMaster ? 'Master' : 'Worker-' + process.pid);
 
 // Don't touch this otherwise Felix will kill you :P
 ProcessingManager.run();

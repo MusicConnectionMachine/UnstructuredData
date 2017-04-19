@@ -12,7 +12,8 @@
     "natural": "^0.5.0",
     "node-snowball": "^0.2.0",
     "unzip": "^0.1.11",
-    "warc": "^1.0.0"
+    "warc": "^1.0.0",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
     "@types/chai": "^3.4.35",
