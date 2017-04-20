@@ -20,7 +20,7 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let result = filter.getMatches(text);
             assert.ok(result.length > 0);
         });
-        it("should only have one match .getMatchesIndex()", () => {
+        it("should only have one match .getMatches()", () => {
             let searchTerms = generateTerms(['test', 'some', 'random', 'words']);
             let text = 'There are a not so many words here... Well, let\'s add a few more, just to be sure. ' +
                 'It should only have one match though!';
@@ -29,13 +29,27 @@ function testFilter<T extends IndexFilter> (filterConstructor : new (searchTerms
             let expectedResult = [new Occurrence(searchTerms[3],[24])];
             assert.deepEqual(result, expectedResult);
         });
-        it("should be case sensitive .getMatchesIndex()", () => {
+        it("should be case sensitive .getMatches()", () => {
             let searchTerms = generateTerms(['Not', 'random', 'words', 'WORDS']);
             let text = 'There are a not so many WORDS here';
             filter = new filterConstructor(searchTerms);
             let result = filter.getMatches(text);
             let expectedResult = [new Occurrence(searchTerms[3],[24])];
             assert.deepEqual(result, expectedResult);
+        });
+        it("should only match the shorter term .getMatches()", () => {
+            let searchTerm = generateTerms(["cello", "cello concerto no. 6 in g major"]);
+            let text = "cellos are instruments.";
+            filter = new filterConstructor(searchTerm);
+            let result = filter.getMatches(text);
+            assert.deepEqual(result, [new Occurrence(new Term("cello", "0"), [0])]);
+        });
+        it("should only match the longer term .getMatches()", () => {
+            let searchTerm = generateTerms(["cello", "cello concerto no. 6 in g major"]);
+            let text = "'cello concerto no. 6 in g major' is a music piece.";
+            filter = new filterConstructor(searchTerm);
+            let result = filter.getMatches(text);
+            assert.deepEqual(result, [new Occurrence(new Term("cello concerto no. 6 in g major", "1"), [1])]);
         });
     });
 }
