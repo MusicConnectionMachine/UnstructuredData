@@ -1,2 +1,2 @@
-Folder for wet-manager.js
-Wet files will be stored here.
+Folder for wet-manager.js  
+All WET files will be stored here.
