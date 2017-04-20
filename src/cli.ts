@@ -43,7 +43,7 @@ export class CLI {
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
             .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
-            .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[de, en, fr]"')
+            .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
             .parse(process.argv);
 
