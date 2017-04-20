@@ -159,15 +159,17 @@ export class Worker {
             let webPage = new WebPage(data);
             this.webPageDigester.digest(webPage);
 
-            if (webPage.occurrences && webPage.occurrences.length >= this.heuristicThreshold) {
+            if (webPage.occurrences) {
 
-                // calculate heuristic
-                let numEntities = webPage.occurrences.length;
+                // calculate total number of matches
                 let numTerms = 0;
                 for (let occurrence of webPage.occurrences) {
                     numTerms += occurrence.positions.length;
                 }
-                let heuristicScore = Math.trunc(numEntities * numTerms / 3);
+
+                // a web page has to have at least threshold^2 total matches and threshold entities
+                let heuristicScore =
+                    (webPage.occurrences.length >= this.heuristicThreshold) ? (numTerms / this.heuristicThreshold) : 0;
 
                 // does the page match our heuristic?
                 if (heuristicScore >= this.heuristicThreshold) {
