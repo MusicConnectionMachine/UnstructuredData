@@ -69,6 +69,16 @@ export class PrefixTree extends IndexFilter{
 
         for (let position = 0; position < text.length; position++) {
             let [term, matchPos] = this.root.match(text, position);
+
+            // check if the character right before our match is an ASCII letter
+            // this is a really primitive check for unwanted prefixes...
+            // this fortunately doesn't have to be perfect, at least I hope so :3
+            let charCodeBeforeMatch = text.charCodeAt(matchPos - 1);
+            if ((97 <= charCodeBeforeMatch && charCodeBeforeMatch <= 122)
+                || (65 <= charCodeBeforeMatch && charCodeBeforeMatch <= 90)) {
+                continue;
+            }
+
             if (term) {
                 if (matches.has(term.value)) {
                     let [id, indexes] = matches.get(term.value);
