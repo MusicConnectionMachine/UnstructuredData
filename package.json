@@ -23,7 +23,7 @@
     "typescript": "^2.2.0"
   },
   "scripts": {
-    "postinstall": "git submodule update && cd ./api && yarn install",
+    "postinstall": "git submodule update --init && cd ./api && yarn install",
     "test": "mocha \"out/test/**/*.js\"",
     "compile": "tsc"
   }
