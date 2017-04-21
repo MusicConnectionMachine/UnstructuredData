@@ -20,7 +20,7 @@ function createDummyWebPage() : WebPage {
     return webPage;
 }
 
-describe("WebSiteDigester", () => {
+describe("WebPageDigester", () => {
     it("shouldn't change the results when adding and removing a pre-filter", () => {
         let digester = new WebPageDigester(terms).setFilter(PrefixTree);
         let before = digester.digest(createDummyWebPage());
@@ -58,7 +58,6 @@ describe("WebSiteDigester", () => {
         let t1 = new Term("terms", "id=terms");
         let t2 = new Term("false positive", "id=false positive");
         let t3 = new Term("some", "id=some");
-        let t4 = new Term("less", "id=less");
 
         webPage.occurrences = [new Occurrence(t1, [42]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
 
@@ -66,7 +65,7 @@ describe("WebSiteDigester", () => {
         let result = digester.digest(webPage, true);
 
         let expected = createDummyWebPage();
-        expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10]), new Occurrence(t3, [88]), new Occurrence(t4, [138])];
+        expected.occurrences = [new Occurrence(t1, [42, 93]), new Occurrence(t2, [10]), new Occurrence(t3, [88])];
         assert.deepEqual(result, expected);
     });
     it("shouldn't be case sensitive", () => {
