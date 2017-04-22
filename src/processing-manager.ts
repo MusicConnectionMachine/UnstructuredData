@@ -117,6 +117,9 @@ export class ProcessingManager {
                         }
                     }
                 });
+                worker.on('exit', (code) => {
+                    winston.info('[Worker-' + worker.process.pid + '] exited with code ' + code);
+                });
 
                 // init worker
                 worker.send({
