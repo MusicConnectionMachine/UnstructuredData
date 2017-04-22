@@ -43,7 +43,11 @@ export class Worker {
 
             // receiving WET path
             else if (msg.work && Worker.worker) {
-                Worker.worker.workOn(msg.work, () => {
+                Worker.worker.workOn(msg.work, (err) => {
+                    if (err) {
+                        process.exit(1);
+                        return;
+                    }
                     process.send({
                         needWork: true
                     });
@@ -107,7 +111,7 @@ export class Worker {
      * @param wetPath                                       CC path to WET file
      * @param callback                                      gets called when all pages have been processed
      */
-    private workOn(wetPath : string, callback : () => void) {
+    private workOn(wetPath : string, callback : (err? : Error) => void) {
         let streamFinished = false;
         let pendingPages = 0;
 
@@ -118,6 +122,7 @@ export class Worker {
         let onStorerConnectedToDB = (err) => {
             if (err) {
                 winston.error(err);
+                callback(err);
                 return;
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
