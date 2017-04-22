@@ -158,12 +158,13 @@ export class Storer {
             blobContent += entry.toWARCString();
         }
 
+        let blobName = this.blob.name;
         Unpacker.compressStringToBuffer(blobContent, (err, compressedBlobContent) => {
             if (err) {
                 if (callback) callback(err);
                 return;
             }
-            this.blobService.createBlockBlobFromText(this.container, this.blob.name, compressedBlobContent, (err) => {
+            this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
                 if(callback) {
                     callback(err);
                 }
