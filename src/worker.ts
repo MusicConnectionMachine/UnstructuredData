@@ -122,8 +122,7 @@ export class Worker {
         let onStorerConnectedToDB = (err) => {
             if (err) {
                 winston.error(err);
-                callback(err);
-                return;
+                return setTimeout(this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
         };
