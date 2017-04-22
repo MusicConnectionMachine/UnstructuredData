@@ -45,8 +45,10 @@ export class ProcessingManager {
             CCPathLoader.loadPaths(indexURL, (err: Error, response : Array<string>) => {
                 if (err) throw err;
 
-                wetPaths = response.slice(ProcessingManager.getParam("wetFrom"), ProcessingManager.getParam("wetTo"));
-                winston.info("[MASTER] successfully loaded WET paths!");
+                let from = ProcessingManager.getParam("wetFrom");
+                let to = ProcessingManager.getParam("wetTo");
+                wetPaths = response.slice(from, to);
+                winston.info("[MASTER] successfully loaded WET paths from " + from + " to " + to + "!");
 
                 loadTerms();
             });

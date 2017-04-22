@@ -7,6 +7,7 @@ export class Storer {
     static azure = require('azure');
     static crypto = require('crypto');
     static path = require('path');
+    static uuid = require('uuid/v4');
 
     private container;
     private blobService;
@@ -14,6 +15,8 @@ export class Storer {
     private context;
     //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
     private blobPrefix : string;
+
+    private blob : {name : string, entries : Array<WebPage>};
 
     constructor(blobAccount : string, blobContainer : string, blobKey : string){
 
@@ -138,31 +141,37 @@ export class Storer {
      * @param callback      Optional callback param that will receive the filename as a parameter in case of success
      */
     public storeWebsiteBlob(webPage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
-        let blobName = Storer.hashWebsite(webPage);
-        let blobContent = webPage.toWARCString();
+        if (!this.blob) {
+            this.blob = {
+                name: Storer.uuid(),
+                entries: []
+            };
+        }
+        this.blob.entries.push(webPage);
+        callback(undefined, this.blob.name);
+    }
 
+    public flushBlob(callback? : (err? : Error) => void) : void {
+
+        let blobContent = "";
+        for (let entry of this.blob.entries) {
+            blobContent += entry.toWARCString();
+        }
+
+        let blobName = this.blob.name;
         Unpacker.compressStringToBuffer(blobContent, (err, compressedBlobContent) => {
             if (err) {
                 if (callback) callback(err);
                 return;
             }
-            this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, function(err) {
-                if(err) {
-                    if(callback) callback(err);
-                    return;
-                }
+            this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
                 if(callback) {
-                    callback(null, blobName);
+                    callback(err);
                 }
             });
 
         });
 
-
-    }
-
-    private static hashWebsite(webPage : WebPage) : string {
-        let md5sum = Storer.crypto.createHash('md5');
-        return md5sum.update(webPage.getURI() + webPage.content).digest('hex');
+        this.blob = undefined;
     }
 }
