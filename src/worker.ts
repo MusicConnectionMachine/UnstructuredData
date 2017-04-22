@@ -123,6 +123,7 @@ export class Worker {
             if (err) {
                 winston.error(err);
                 callback(err);
+                return;
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
         };
