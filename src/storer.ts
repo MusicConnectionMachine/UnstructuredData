@@ -53,6 +53,8 @@ export class Storer {
              */
             context.sequelize.sync().then(() => {
                 callback();
+            }, (err) => {
+                callback(err);
             });
         });
     }
