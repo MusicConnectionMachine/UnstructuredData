@@ -1,6 +1,7 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
 import {winston} from "./utils/logging";
+import {Occurrence} from "./utils/occurrence";
 
 export class Storer {
 
@@ -17,6 +18,7 @@ export class Storer {
     private blobPrefix : string;
 
     private blob : {name : string, entries : Array<WebPage>};
+    private websites : Array<{id : any, url : string, blobUrl : string, occurences : Array<Occurrence>}> = [];
 
     constructor(blobAccount : string, blobContainer : string, blobKey : string){
 
@@ -82,52 +84,16 @@ export class Storer {
 
 
     public storeWebsiteMetadata(webPage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
-        let websiteObj = {
+        this.websites.push({
+            id: Storer.uuid(),
             url: webPage.getURI(),
-            blob_url: blobUrl
-        };
-
-        if (!this.context) {
-            winston.error("DB connection is not established! Use connectToDB() after init!");
-            callback(new Error("DB connection is not established!"));
-            return;
-        }
-
-
-        //Create website entry in db
-        this.context.models.websites.create(websiteObj).then(website => {
-
-            let containsObjList = [];
-
-            //Collect all the contains entries that should be created (One for each term)
-            for(let i = 0; i < webPage.occurrences.length; i++) {
-                let occ = webPage.occurrences[i];
-
-                containsObjList.push({
-                    occurrences: JSON.stringify({
-                        term: occ.term.value,
-                        positions: occ.positions
-                    }),
-                    websiteId: website.get('id'),
-                    entityId: occ.term.entityId
-                })
-            }
-
-            //Create all contains entries at once
-            this.context.models.contains.bulkCreate(containsObjList).then(() => {
-                callback(null);
-            }).catch(err => {
-                winston.error(err);
-                //Make sure we don't leave that website hanging
-                return website.destroy();  // TODO: why return here? @Lukas
-            });
-
-        }).catch(err => {
-            if(callback) {
-                callback(err);
-            }
-            return; // TODO: why return here? @Lukas
+            blobUrl: blobUrl,
+            occurences: webPage.occurrences
         });
+
+        if(callback) {
+            callback();
+        }
     }
 
     /**
@@ -166,12 +132,52 @@ export class Storer {
             }
             this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
                 if(callback) {
-                    callback(err);
+                    return callback(err);
                 }
             });
-
         });
 
         this.blob = undefined;
+    }
+
+    public flushDatabase(callback ? : (err? : Error) => void) : void {
+        const websiteInserts = [];
+        const containsInserts = [];
+        this.websites.forEach(website => {
+            let websiteId = Storer.uuid();
+            websiteInserts.push({
+                id: websiteId,
+                url: website.url,
+                blob_url: website.blobUrl
+            });
+            website.occurences.forEach(occ => {
+                containsInserts.push({
+                    occurrences: JSON.stringify({
+                        term: occ.term.value,
+                        positions: occ.positions
+                    }),
+                    websiteId: websiteId,
+                    entityId: occ.term.entityId
+                });
+            });
+        });
+
+        this.context.sequelize.transaction(transaction => {
+            return this.context.models.websites.bulkCreate(websiteInserts,
+                { transaction: transaction} ).then(() => {
+
+                return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
+            })
+        }).then(result => {
+            this.websites = [];
+            if(callback) {
+                callback();
+            }
+        }).catch(err => {
+            this.websites = [];
+            if(callback) {
+                callback(err);
+            }
+        });
     }
 }
