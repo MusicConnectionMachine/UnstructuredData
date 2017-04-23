@@ -78,7 +78,7 @@ export class Worker {
         };
 
         let deleteQueueItem = (item, callback?: (err?) => void, retries? : number) => {
-            queueService.deleteMessage(queueName, item.massageId, item.popReceipt, (err) => {
+            queueService.deleteMessage(queueName, item.messageId, item.popReceipt, (err) => {
                 if (!err) {
                     callback();
                 } else if (retries && retries > 0) {
