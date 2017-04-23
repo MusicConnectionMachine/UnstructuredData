@@ -18,6 +18,7 @@ export class ProcessingManager {
     private static DEFAULTS = {
         dbHost: "localhost",
         dbPort: "5432",
+        dbDatabase: "mcm",
         blobAccount: "wetstorage",
         blobContainer: "websites",
         processes: os.cpus().length,
@@ -37,14 +38,15 @@ export class ProcessingManager {
 
         let loadTerms = () => {
 
-            let dbParms = {
+            let dbParams = {
                 dbHost: ProcessingManager.getParam("dbHost"),
                 dbPort: ProcessingManager.getParam("dbPort"),
                 dbUser: ProcessingManager.getParam("dbUser"),
+                dbDatabase: ProcessingManager.getParam("dbDatabase"),
                 dbPW: ProcessingManager.getParam("dbPW")
             };
 
-            TermLoader.loadFromDB(dbParms, (err : Error, result : Array<Term>) => {
+            TermLoader.loadFromDB(dbParams, (err : Error, result : Array<Term>) => {
                 if (err) throw err;
 
                 // check length of terms
@@ -76,7 +78,8 @@ export class ProcessingManager {
                     "dbHost": ProcessingManager.getParam("dbHost"),
                     "dbPort": ProcessingManager.getParam("dbPort"),
                     "dbUser": ProcessingManager.getParam("dbUser"),
-                    "dbPW": ProcessingManager.getParam("dbPW")
+                    "dbPW": ProcessingManager.getParam("dbPW"),
+                    "dbDatabase": ProcessingManager.getParam("dbDatabase")
                 },
                 queueParams: {
                     "queueAccount": ProcessingManager.getParam("queueAccount"),
@@ -106,7 +109,6 @@ export class ProcessingManager {
 
     private static getParam(param : string) {
         let value = CLI.getInstance().parameters[param];
-
         if(value) {
             return value;
         }

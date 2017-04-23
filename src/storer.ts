@@ -39,14 +39,15 @@ export class Storer {
 
 
     // config.json can be passed as dbParms, quick and dirty :P
-    public connectToDB(dbParms, callback : (err? : Error) => void) : void {
+    public connectToDB(dbParams, callback : (err? : Error) => void) : void {
         // TODO: error handling/generation
 
         let databaseURI = "postgresql://"
-            + dbParms.dbUser + ":"
-            + dbParms.dbPW + "@"
-            + dbParms.dbHost + ":"
-            + dbParms.dbPort + "/mcm";
+            + dbParams.dbUser + ":"
+            + dbParams.dbPW + "@"
+            + dbParams.dbHost + ":"
+            + dbParams.dbPort + "/"
+            + dbParams.dbDatabase;
 
 
         //Connect to database using api's index
