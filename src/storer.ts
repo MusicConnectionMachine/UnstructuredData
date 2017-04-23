@@ -130,8 +130,8 @@ export class Storer {
                 if(callback) {
                     callback(err);
                 }
+                callback();
             });
-
         });
 
         this.blob = undefined;
@@ -166,10 +166,12 @@ export class Storer {
                 return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
             })
         }).then(result => {
+            this.websites = [];
             if(callback) {
                 callback(result);
             }
         }).catch(err => {
+            this.websites = [];
             if(callback) {
                 callback(err);
             }
