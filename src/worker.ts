@@ -1,6 +1,7 @@
 import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
+import * as azure from "azure-storage";
 import {winston} from "./app";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -36,29 +37,87 @@ export class Worker {
                     msg.init.enablePreFilter
                 );
 
-                process.send({
-                    needWork: true
+                let queueService = azure.createQueueService(
+                    msg.init.queueParams.queueAccount,
+                    msg.init.queueParams.queueKey
+                );
+                let queueName = msg.init.queueParams.queueName;
+
+                queueService.createQueueIfNotExists(queueName, (err) => {
+                    if (!err) {
+                        Worker.startProcessing(queueService, queueName);
+                    } else {
+                        winston.error(err);
+                        process.exit(1);
+                    }
                 });
             }
+        });
+    }
 
-            // receiving WET path
-            else if (msg.work && Worker.worker) {
-                Worker.worker.workOn(msg.work, (err) => {
-                    if (err) {
+    private static startProcessing(queueService, queueName : string) {
+        let getQueueItem = (callback?: (err?, item?) => void, retries? : number) => {
+            queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
+                if (!err) {
+                    // check if queue is empty
+                    if (result.length > 0) {
+                        let msg = result[0];
+                        callback(undefined, msg);
+                    } else {
+                        winston.info("Task queue is empty. Exiting");
+                        process.exit(0);
+                    }
+                } else if (retries && retries > 0) {
+                    setTimeout(() => {
+                        getQueueItem(callback, retries - 1);
+                    }, 5000);
+                } else {
+                    callback(err);
+                }
+            });
+        };
+
+        let deleteQueueItem = (item, callback?: (err?) => void, retries? : number) => {
+            queueService.deleteMessage(queueName, item.massageId, item.popReceipt, (err) => {
+                if (!err) {
+                    callback();
+                } else if (retries && retries > 0) {
+                    setTimeout(() => {
+                        deleteQueueItem(item, callback, retries - 1);
+                    }, 5000);
+                } else {
+                    callback(err);
+                }
+            });
+        };
+
+        let doWork = () => {
+            getQueueItem((err, item) => {
+                if (err) {
+                    winston.error(err);
+                    process.exit(1);
+                    return;
+                }
+                Worker.worker.workOn(item.messageText, (err) => {
+                    if (!err) {
+                        deleteQueueItem(item, (err) => {
+                            if (err) {
+                                winston.error(err);
+                                process.exit(1);
+                                return;
+                            }
+                            doWork();
+                        }, 5);
+                    } else {
+                        winston.error(err);
                         process.exit(1);
                         return;
                     }
-                    process.send({
-                        needWork: true
-                    });
                 });
-            }
+            }, 5);
+        };
 
-            // all WET files have been processed
-            else if (msg.finished) {
-                process.exit(0);
-            }
-        });
+        doWork();
     }
 
 

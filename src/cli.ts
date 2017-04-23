@@ -22,6 +22,9 @@ export class CLI {
         blobAccount: undefined,
         blobContainer: undefined,
         blobKey: undefined,
+        queueAccount: undefined,
+        queueName: undefined,
+        queueKey: undefined,
         processes: undefined,
         crawlVersion: undefined,
         languageCodes: undefined,
@@ -45,6 +48,8 @@ export class CLI {
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
             .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
+            .option('-q, --queue-location [account]:[queue]', 'task queue location, e.g. "queueservice:taskqueue"')
+            .option('-s, --queue-key [serviceKey]', 'queue service access key, e.g. "AZURE_KEY_HERE"')
             .parse(process.argv);
 
 
@@ -102,6 +107,20 @@ export class CLI {
 
         if (this.commander.blobKey) {
             this.parameters.blobKey = this.commander.blobKey;
+        }
+
+        if (this.commander.queueLocation) {
+            if (!this.commander.queueLocation.split) {
+                console.warn("invalid --queue-location [account]:[queue]");
+            } else {
+                let splitted = this.commander.queueLocation.split(":", 2);
+                this.parameters.queueAccount = splitted[0];
+                this.parameters.queueName = splitted[1];
+            }
+        }
+
+        if (this.commander.queueKey) {
+            this.parameters.queueKey = this.commander.queueKey;
         }
 
         if (this.commander.processes) {
