@@ -19,12 +19,12 @@ $ node out/app.js -h
     -b, --blob-location [account]:[container]  blob storage location, e.g. "wetstorage:websites"
     -k, --blob-key [storageKey]                blob storage access key, e.g. "AZURE_KEY_HERE"
     -p, --processes [number]                   number of worker threads, e.g. "4"
-    -c, --crawl [version]                      common crawl version, e.g. "CC-MAIN-2017-13"
     -t, --heuristic-threshold [number]         filter strictness, the higher the stricter, e.g. "3"
     -l, --languages [languageCodes]            languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     -e, --enable-pre-filter                    enable bloom filter as pre filter
     -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
     -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
+
 
 ```
 
@@ -42,7 +42,6 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "queueName": "taskqueue",
   "queueKey": "AZURE_KEY_HERE",
   "processes": 4,
-  "crawlVersion": "CC-MAIN-2017-13",
   "heuristicThreshold": 3,
   "languageCodes": [
     "de",

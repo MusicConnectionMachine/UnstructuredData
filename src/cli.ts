@@ -41,7 +41,6 @@ export class CLI {
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
-            .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
             .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
@@ -121,10 +120,6 @@ export class CLI {
         if (this.commander.languages) {
             let languageCodes = JSON.parse(this.commander.languages);
             if (languageCodes) this.parameters.languageCodes = languageCodes;
-        }
-
-        if (this.commander.crawl) {
-            this.parameters.crawlVersion = this.commander.crawl;
         }
 
         if (this.commander.enablePreFilter) {
