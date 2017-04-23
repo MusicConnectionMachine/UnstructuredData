@@ -30,7 +30,9 @@ export class Storer {
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
         this.blobService.createContainerIfNotExists(blobContainer, err => {
-            winston.error(err);
+            if (err) {
+                winston.error(err);
+            }
         });
     }
 
