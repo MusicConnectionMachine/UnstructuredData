@@ -36,15 +36,15 @@ export class ProcessingManager {
 
         let terms : Array<Term> = [];
 
-        let loadTerms = () => {
+        let dbParams = {
+            dbHost: ProcessingManager.getParam("dbHost"),
+            dbPort: ProcessingManager.getParam("dbPort"),
+            dbUser: ProcessingManager.getParam("dbUser"),
+            dbName: ProcessingManager.getParam("dbName"),
+            dbPW: ProcessingManager.getParam("dbPW")
+        };
 
-            let dbParams = {
-                dbHost: ProcessingManager.getParam("dbHost"),
-                dbPort: ProcessingManager.getParam("dbPort"),
-                dbUser: ProcessingManager.getParam("dbUser"),
-                dbDatabase: ProcessingManager.getParam("dbDatabase"),
-                dbPW: ProcessingManager.getParam("dbPW")
-            };
+        let loadTerms = () => {
 
             TermLoader.loadFromDB(dbParams, (err : Error, result : Array<Term>) => {
                 if (err) throw err;
@@ -74,13 +74,7 @@ export class ProcessingManager {
                     "blobContainer": ProcessingManager.getParam("blobContainer"),
                     "blobKey": ProcessingManager.getParam("blobKey")
                 },
-                dbParams: {
-                    "dbHost": ProcessingManager.getParam("dbHost"),
-                    "dbPort": ProcessingManager.getParam("dbPort"),
-                    "dbUser": ProcessingManager.getParam("dbUser"),
-                    "dbPW": ProcessingManager.getParam("dbPW"),
-                    "dbDatabase": ProcessingManager.getParam("dbDatabase")
-                },
+                dbParams: dbParams,
                 queueParams: {
                     "queueAccount": ProcessingManager.getParam("queueAccount"),
                     "queueName": ProcessingManager.getParam("queueName"),
@@ -115,7 +109,8 @@ export class ProcessingManager {
 
         try {
             return require('../config.json')[param] || process.env[param] || ProcessingManager.DEFAULTS[param];
-        } catch(e) {
+        } catch(err) {
+            winston.error("Failed loading config.json", err);
             return process.env[param] || ProcessingManager.DEFAULTS[param];
         }
     }

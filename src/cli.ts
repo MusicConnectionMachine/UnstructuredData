@@ -16,6 +16,7 @@ export class CLI {
         dbPort: undefined,
         dbUser: undefined,
         dbPW: undefined,
+        dbName: undefined,
         heuristicThreshold: undefined,
         blobAccount: undefined,
         blobContainer: undefined,
@@ -38,6 +39,7 @@ export class CLI {
         this.commander
             .option('-d, --db-location [host]:[port]', 'database location, e.g. "127.0.0.1:5432"')
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
+            .option('-n, --db-name [name]', 'database name, e.g. "ProductionDB"')
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
@@ -77,6 +79,10 @@ export class CLI {
                 this.parameters.dbUser = splitted[0];
                 this.parameters.dbPW = splitted[1];
             }
+        }
+
+        if (this.commander.dbName) {
+            this.parameters.dbName = this.commander.dbName;
         }
 
         if (this.commander.blobLocation) {
