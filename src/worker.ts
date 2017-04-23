@@ -23,6 +23,8 @@ export class Worker {
         // check if worker process
         if (!cluster.isWorker) { return; }
 
+        winston.info('Worker created and running');
+
         // add event listeners to communicate with master
         process.on('message', (msg) => {
 
@@ -95,31 +97,27 @@ export class Worker {
                 if (err) {
                     winston.error("Failed getting file from queue", err);
                     process.exit(1);
-                    return;
                 }
                 if (!item) {
                     winston.info("Queue is empty, exiting.");
                     process.exit(0);
-                    return;
                 }
-                winston.info("Will start working on " + item.messageText);
+                winston.info("Will start working on:" + item.messageText);
                 Worker.worker.workOn(item.messageText, (err) => {
                     if (!err) {
-                        winston.info("Finished work on " + item.messageText);
+                        winston.info("Finished work on: " + item.messageText);
                         deleteQueueItem(item, (err) => {
                             if (err) {
-                                winston.error("Failed deleting file from queue");
-                                winston.error(err);
+                                winston.error("Failed deleting file from queue", err);
                                 process.exit(1);
                             } else {
-                                winston.info("Removed " + item.messageText + "from queue");
+                                winston.info("Removed from queue: " + item.messageText);
                                 next();
                             }
                         }, 5);
                     } else {
-                        winston.error("Failed working on " + item.messageText, err);
+                        winston.error("Failed working on: " + item.messageText, err);
                         process.exit(1);
-                        return;
                     }
                 });
             }, 5);

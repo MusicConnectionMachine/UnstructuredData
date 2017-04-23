@@ -31,9 +31,9 @@ export class ProcessingManager {
         // check if master process
         if (!cluster.isMaster) return;
 
-        let terms : Array<Term> = [];
-
         winston.info('Master created and running');
+
+        let terms : Array<Term> = [];
 
         let loadTerms = () => {
 
@@ -53,7 +53,7 @@ export class ProcessingManager {
                         terms.push(term);
                     }
                 }
-                winston.info("[MASTER] successfully loaded terms!");
+                winston.info("Successfully loaded terms!");
 
                 spawnProcesses();
             });
@@ -89,7 +89,7 @@ export class ProcessingManager {
                 let worker = cluster.fork();
 
                 worker.on('exit', (code) => {
-                    winston.info('[Worker-' + worker.process.pid + '] exited with code ' + code);
+                    winston.info('Worker-' + worker.process.pid + ' exited with code ' + code);
                 });
 
                 // init worker
@@ -97,7 +97,7 @@ export class ProcessingManager {
                     init: workerParams
                 });
 
-                winston.info("[MASTER] successfully spawned a worker process!");
+                winston.info("Successfully spawned a worker process!");
             }
         };
 
