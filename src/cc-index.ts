@@ -1,5 +1,5 @@
 import {Downloader} from "./downloader";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.

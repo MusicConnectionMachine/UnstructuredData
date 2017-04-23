@@ -1,6 +1,6 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 
 export class Storer {
 

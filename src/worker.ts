@@ -2,7 +2,7 @@ import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
 import * as azure from "azure";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
 import {Term} from "./utils/term";

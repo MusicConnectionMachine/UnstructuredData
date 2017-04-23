@@ -1,6 +1,6 @@
 import * as cluster from "cluster";
 import * as os from "os";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CLI} from "./cli";
