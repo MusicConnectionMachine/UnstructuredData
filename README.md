@@ -53,4 +53,4 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
 ```
 
 With exception of `languageCodes` all arguments can also be supplied via environment variables.   
-The environment variables have to match those in `config.json`.
+The environment variable names have to match those in `config.json`.
