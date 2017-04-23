@@ -94,21 +94,28 @@ export class Worker {
         let doWork = () => {
             getQueueItem((err, item) => {
                 if (err) {
+                    winston.warn("[WORKER-" + process.pid + "] Failed getting file from queue");
                     winston.error(err);
                     process.exit(1);
                     return;
                 }
+                winston.info("[WORKER-" + process.pid + "] Will start working on " + item.messageText);
                 Worker.worker.workOn(item.messageText, (err) => {
                     if (!err) {
+                        winston.info("[WORKER-" + process.pid + "] Finished work on " + item.messageText);
                         deleteQueueItem(item, (err) => {
                             if (err) {
+                                winston.warn("[WORKER-" + process.pid + "] Failed deleting file from queue");
                                 winston.error(err);
                                 process.exit(1);
                                 return;
+                            } else {
+                                winston.info("[WORKER-" + process.pid + "] Removed " + item.messageText + "from queue");
+                                doWork();
                             }
-                            doWork();
                         }, 5);
                     } else {
+                        winston.warn("[WORKER-" + process.pid + "] Failed working on " + item.messageText);
                         winston.error(err);
                         process.exit(1);
                         return;
@@ -125,7 +132,6 @@ export class Worker {
     private storer : Storer;
     private caching : boolean;
     private languageCodes : Array<string>;
-    private processID : number;
     private dbParameters : {[param : string] : string };
     private heuristicThreshold : number;
 
@@ -152,7 +158,6 @@ export class Worker {
         this.caching = caching || false;
         this.languageCodes = languageCodes;
         this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
-        this.processID = process.pid;
         this.dbParameters = dbParams;
         this.heuristicThreshold = heuristicThreshold;
     }
@@ -193,11 +198,10 @@ export class Worker {
          * @param response
          */
         let onFileStreamReady = (err? : Error, response? : ReadableStream) => {
-            if(err || !response) {
-                // TODO: Proper error handling!
-                winston.warn("WETManager encountered an error!");
-            } else {
-                winston.info("[WORKER-" + this.processID + "] start processing " + wetPath);
+            if(err) {
+                callback(err);
+                return;
+            } else if (response){
 
                 let warcParser = new WARCStream();
                 response.pipe(warcParser)
@@ -210,6 +214,9 @@ export class Worker {
                             });
                         }
                     });
+            } else {
+                callback(new Error("Couldn't load file!"));
+                process.exit(1);
             }
         };
 
