@@ -146,8 +146,16 @@ export class Worker {
                     .on('end', () => {
                         streamFinished = true;
                         if (pendingPages === 0) {
-                            this.storer.flushBlob(() => {
-                                callback();
+                            this.storer.flushBlob(err => {
+                                if(err) {
+                                    return callback(err);
+                                }
+                                this.storer.flushDatabase(err => {
+                                    if(err) {
+                                        return callback(err);
+                                    }
+                                    callback();
+                                })
                             });
                         }
                     });
@@ -223,8 +231,16 @@ export class Worker {
         let onWetEntryFinished = () => {
             pendingPages--;
             if (streamFinished && pendingPages === 0) {
-                this.storer.flushBlob(() => {
-                    callback();
+                this.storer.flushBlob(err => {
+                    if(err) {
+                        return callback(err);
+                    }
+                    this.storer.flushDatabase(err => {
+                        if(err) {
+                            return callback(err);
+                        }
+                        callback();
+                    })
                 });
             }
         };
