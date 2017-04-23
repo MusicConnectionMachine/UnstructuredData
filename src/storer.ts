@@ -47,7 +47,7 @@ export class Storer {
             + dbParams.dbPW + "@"
             + dbParams.dbHost + ":"
             + dbParams.dbPort + "/"
-            + dbParams.dbDatabase;
+            + dbParams.dbName;
 
 
         //Connect to database using api's index

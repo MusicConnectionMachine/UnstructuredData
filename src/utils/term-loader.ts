@@ -49,7 +49,7 @@ export class TermLoader {
             + dbParams.dbPW + "@"
             + dbParams.dbHost + ":"
             + dbParams.dbPort + "/"
-            + dbParams.dbDatabase;
+            + dbParams.dbName;
 
         let entities : Array<Term> = [];
 
