@@ -134,7 +134,6 @@ export class Storer {
                 if(callback) {
                     return callback(err);
                 }
-                callback();
             });
         });
 
