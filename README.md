@@ -34,7 +34,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "dbPort": 5432,
   "dbUser": "USER",
   "dbPW": "PASSWORD",
-  "dbNAme": "ProductionDB",
+  "dbName": "ProductionDB",
   "blobAccount": "wetstorage",
   "blobContainer": "websites",
   "blobKey": "AZURE_KEY_HERE",
