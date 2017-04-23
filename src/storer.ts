@@ -128,7 +128,7 @@ export class Storer {
             }
             this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
                 if(callback) {
-                    callback(err);
+                    return callback(err);
                 }
                 callback();
             });
