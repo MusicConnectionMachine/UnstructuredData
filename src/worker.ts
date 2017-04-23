@@ -1,7 +1,7 @@
 import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
-import * as azure from "azure";
+import * as azure from "azure-storage";
 import {winston} from "./utils/logging";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -108,7 +108,6 @@ export class Worker {
                                 winston.warn("[WORKER-" + process.pid + "] Failed deleting file from queue");
                                 winston.error(err);
                                 process.exit(1);
-                                return;
                             } else {
                                 winston.info("[WORKER-" + process.pid + "] Removed " + item.messageText + "from queue");
                                 doWork();
