@@ -12,8 +12,6 @@ export class CLI {
     private commander = require('commander');
 
     public parameters = {
-        wetFrom: undefined,
-        wetTo: undefined,
         dbHost: undefined,
         dbPort: undefined,
         dbUser: undefined,
@@ -38,7 +36,6 @@ export class CLI {
 
         // init commander
         this.commander
-            .option('-w, --wet-range [start]:[end]', 'the subset of WET files to process, e.g. "0:99"')
             .option('-d, --db-location [host]:[port]', 'database location, e.g. "127.0.0.1:5432"')
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
@@ -61,18 +58,6 @@ export class CLI {
      * Parse command line arguments and store values in CLI.parameters
      */
     private parseCmdOptions() {
-
-        if (this.commander.wetRange) {
-            if (!this.commander.wetRange.split) {
-                console.warn("invalid --wet-range [start]:[end]");
-            } else {
-                let splitted = this.commander.wetRange.split(":", 2);
-                let wetFrom = parseInt(splitted[0]);
-                let wetTo = parseInt(splitted[1]);
-                if (wetFrom) this.parameters.wetFrom = wetFrom;
-                if (wetTo)   this.parameters.wetTo = wetTo;
-            }
-        }
 
         if (this.commander.dbLocation) {
             if (!this.commander.dbLocation.split) {

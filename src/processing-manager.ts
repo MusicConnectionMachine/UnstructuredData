@@ -3,7 +3,6 @@ import * as os from "os";
 import {winston} from "./app";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
-import {CCPathLoader} from "./utils/cc-path-loader";
 import {CLI} from "./cli";
 
 
@@ -32,7 +31,6 @@ export class ProcessingManager {
         // check if master process
         if (!cluster.isMaster) return;
 
-        let wetPaths : Array<string>;
         let terms : Array<Term> = [];
 
         winston.info('Master created and running');

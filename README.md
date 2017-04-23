@@ -14,7 +14,6 @@ $ node out/app.js -h
   Options:
 
     -h, --help                                 output usage information
-    -w, --wet-range [start]:[end]              the subset of WET files to process, e.g. "0:99"
     -d, --db-location [host]:[port]            database location, e.g. "127.0.0.1:5432"
     -a, --db-access [user]:[password]          database access, e.g. "USER:PASSWORD"
     -b, --blob-location [account]:[container]  blob storage location, e.g. "wetstorage:websites"
@@ -24,14 +23,14 @@ $ node out/app.js -h
     -t, --heuristic-threshold [number]         filter strictness, the higher the stricter, e.g. "3"
     -l, --languages [languageCodes]            languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     -e, --enable-pre-filter                    enable bloom filter as pre filter
+    -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
+    -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
 
 ```
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
 ```
 {
-  "wetFrom": 0,
-  "wetTo": 99,
   "dbHost": "127.0.0.1",
   "dbPort": 5432,
   "dbUser": "USER",
@@ -39,6 +38,9 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "blobAccount": "wetstorage",
   "blobContainer": "websites",
   "blobKey": "AZURE_KEY_HERE",
+  "queueAccount": "parsertaskqueue",
+  "queueName": "taskqueue",
+  "queueKey": "AZURE_KEY_HERE",
   "processes": 4,
   "crawlVersion": "CC-MAIN-2017-13",
   "heuristicThreshold": 3,
