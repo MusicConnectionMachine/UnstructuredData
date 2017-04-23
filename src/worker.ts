@@ -2,6 +2,7 @@ import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
 import * as azure from "azure-storage";
+import * as async from "async";
 import {winston} from "./utils/logging";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
@@ -60,12 +61,10 @@ export class Worker {
             queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
                 if (!err) {
                     // check if queue is empty
-                    if (result.length > 0) {
-                        let msg = result[0];
-                        callback(undefined, msg);
+                    if (result && result.length > 0) {
+                        callback(undefined, result[0]);
                     } else {
-                        winston.info("Task queue is empty. Exiting");
-                        process.exit(0);
+                        callback();
                     }
                 } else if (retries && retries > 0) {
                     setTimeout(() => {
@@ -91,31 +90,34 @@ export class Worker {
             });
         };
 
-        let doWork = () => {
+        let doWork = (next) => {
             getQueueItem((err, item) => {
                 if (err) {
-                    winston.warn("[WORKER-" + process.pid + "] Failed getting file from queue");
-                    winston.error(err);
+                    winston.error("Failed getting file from queue", err);
                     process.exit(1);
                     return;
                 }
-                winston.info("[WORKER-" + process.pid + "] Will start working on " + item.messageText);
+                if (!item) {
+                    winston.info("Queue is empty, exiting.");
+                    process.exit(0);
+                    return;
+                }
+                winston.info("Will start working on " + item.messageText);
                 Worker.worker.workOn(item.messageText, (err) => {
                     if (!err) {
-                        winston.info("[WORKER-" + process.pid + "] Finished work on " + item.messageText);
+                        winston.info("Finished work on " + item.messageText);
                         deleteQueueItem(item, (err) => {
                             if (err) {
-                                winston.warn("[WORKER-" + process.pid + "] Failed deleting file from queue");
+                                winston.error("Failed deleting file from queue");
                                 winston.error(err);
                                 process.exit(1);
                             } else {
-                                winston.info("[WORKER-" + process.pid + "] Removed " + item.messageText + "from queue");
-                                doWork();
+                                winston.info("Removed " + item.messageText + "from queue");
+                                next();
                             }
                         }, 5);
                     } else {
-                        winston.warn("[WORKER-" + process.pid + "] Failed working on " + item.messageText);
-                        winston.error(err);
+                        winston.error("Failed working on " + item.messageText, err);
                         process.exit(1);
                         return;
                     }
@@ -123,7 +125,7 @@ export class Worker {
             }, 5);
         };
 
-        doWork();
+        async.forever(doWork);
     }
 
 
@@ -184,7 +186,7 @@ export class Worker {
          */
         let onStorerConnectedToDB = (err) => {
             if (err) {
-                winston.error(err);
+                winston.error("Failed connecting to DB, retrying in 60 seconds.", err);
                 return setTimeout(this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
