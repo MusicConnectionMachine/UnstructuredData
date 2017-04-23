@@ -90,6 +90,10 @@ export class Storer {
             blobUrl: blobUrl,
             occurences: webPage.occurrences
         });
+
+        if(callback) {
+            callback();
+        }
     }
 
     /**
@@ -168,7 +172,7 @@ export class Storer {
         }).then(result => {
             this.websites = [];
             if(callback) {
-                callback(result);
+                callback();
             }
         }).catch(err => {
             this.websites = [];
