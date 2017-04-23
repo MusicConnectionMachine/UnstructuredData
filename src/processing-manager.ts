@@ -18,10 +18,7 @@ export class ProcessingManager {
     private static DEFAULTS = {
         dbHost: "localhost",
         dbPort: "5432",
-        blobAccount: "wetstorage",
-        blobContainer: "websites",
         processes: os.cpus().length,
-        crawlVersion: "CC-MAIN-2017-13",
         heuristicThreshold: 3,
         languageCodes: ["en"]
     };
@@ -35,16 +32,16 @@ export class ProcessingManager {
 
         let terms : Array<Term> = [];
 
+        let dbParams = {
+            dbHost: ProcessingManager.getParam("dbHost"),
+            dbPort: ProcessingManager.getParam("dbPort"),
+            dbUser: ProcessingManager.getParam("dbUser"),
+            dbPW: ProcessingManager.getParam("dbPW")
+        };
+
         let loadTerms = () => {
 
-            let dbParms = {
-                dbHost: ProcessingManager.getParam("dbHost"),
-                dbPort: ProcessingManager.getParam("dbPort"),
-                dbUser: ProcessingManager.getParam("dbUser"),
-                dbPW: ProcessingManager.getParam("dbPW")
-            };
-
-            TermLoader.loadFromDB(dbParms, (err : Error, result : Array<Term>) => {
+            TermLoader.loadFromDB(dbParams, (err : Error, result : Array<Term>) => {
                 if (err) throw err;
 
                 // check length of terms
@@ -72,12 +69,7 @@ export class ProcessingManager {
                     "blobContainer": ProcessingManager.getParam("blobContainer"),
                     "blobKey": ProcessingManager.getParam("blobKey")
                 },
-                dbParams: {
-                    "dbHost": ProcessingManager.getParam("dbHost"),
-                    "dbPort": ProcessingManager.getParam("dbPort"),
-                    "dbUser": ProcessingManager.getParam("dbUser"),
-                    "dbPW": ProcessingManager.getParam("dbPW")
-                },
+                dbParams: dbParams,
                 queueParams: {
                     "queueAccount": ProcessingManager.getParam("queueAccount"),
                     "queueName": ProcessingManager.getParam("queueName"),
