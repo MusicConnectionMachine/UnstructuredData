@@ -1,7 +1,7 @@
 import {Unpacker} from "./unpacker";
 import ReadableStream = NodeJS.ReadableStream;
 import {Downloader} from "./downloader";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 
 /**
  * This class manages all WET files. It allows for opening WET files as a stream of unpacked

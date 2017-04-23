@@ -12,8 +12,6 @@ export class CLI {
     private commander = require('commander');
 
     public parameters = {
-        wetFrom: undefined,
-        wetTo: undefined,
         dbHost: undefined,
         dbPort: undefined,
         dbUser: undefined,
@@ -22,6 +20,9 @@ export class CLI {
         blobAccount: undefined,
         blobContainer: undefined,
         blobKey: undefined,
+        queueAccount: undefined,
+        queueName: undefined,
+        queueKey: undefined,
         processes: undefined,
         crawlVersion: undefined,
         languageCodes: undefined,
@@ -35,16 +36,16 @@ export class CLI {
 
         // init commander
         this.commander
-            .option('-w, --wet-range [start]:[end]', 'the subset of WET files to process, e.g. "0:99"')
             .option('-d, --db-location [host]:[port]', 'database location, e.g. "127.0.0.1:5432"')
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
-            .option('-c, --crawl [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
             .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
+            .option('-q, --queue-location [account]:[queue]', 'task queue location, e.g. "queueservice:taskqueue"')
+            .option('-s, --queue-key [serviceKey]', 'queue service access key, e.g. "AZURE_KEY_HERE"')
             .parse(process.argv);
 
 
@@ -56,18 +57,6 @@ export class CLI {
      * Parse command line arguments and store values in CLI.parameters
      */
     private parseCmdOptions() {
-
-        if (this.commander.wetRange) {
-            if (!this.commander.wetRange.split) {
-                console.warn("invalid --wet-range [start]:[end]");
-            } else {
-                let splitted = this.commander.wetRange.split(":", 2);
-                let wetFrom = parseInt(splitted[0]);
-                let wetTo = parseInt(splitted[1]);
-                if (wetFrom) this.parameters.wetFrom = wetFrom;
-                if (wetTo)   this.parameters.wetTo = wetTo;
-            }
-        }
 
         if (this.commander.dbLocation) {
             if (!this.commander.dbLocation.split) {
@@ -104,6 +93,20 @@ export class CLI {
             this.parameters.blobKey = this.commander.blobKey;
         }
 
+        if (this.commander.queueLocation) {
+            if (!this.commander.queueLocation.split) {
+                console.warn("invalid --queue-location [account]:[queue]");
+            } else {
+                let splitted = this.commander.queueLocation.split(":", 2);
+                this.parameters.queueAccount = splitted[0];
+                this.parameters.queueName = splitted[1];
+            }
+        }
+
+        if (this.commander.queueKey) {
+            this.parameters.queueKey = this.commander.queueKey;
+        }
+
         if (this.commander.processes) {
             let processes = parseInt(this.commander.processes);
             if (processes) this.parameters.processes = processes;
@@ -117,10 +120,6 @@ export class CLI {
         if (this.commander.languages) {
             let languageCodes = JSON.parse(this.commander.languages);
             if (languageCodes) this.parameters.languageCodes = languageCodes;
-        }
-
-        if (this.commander.crawl) {
-            this.parameters.crawlVersion = this.commander.crawl;
         }
 
         if (this.commander.enablePreFilter) {

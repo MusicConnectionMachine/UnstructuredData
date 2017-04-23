@@ -1,6 +1,6 @@
 import {AlreadyExistsError} from './utils/errors';
 import ReadableStream = NodeJS.ReadableStream;
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 
 export class Unpacker {
 

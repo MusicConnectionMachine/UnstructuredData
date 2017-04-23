@@ -8,13 +8,6 @@
 
 import {ProcessingManager} from "./processing-manager";
 import {Worker} from "./worker";
-import * as cluster from "cluster";
-
-// setup logging
-export let winston = require('winston');
-let processName = cluster.isMaster ? 'Master' : 'Worker-' + process.pid;
-winston.add(winston.transports.File, { filename: './logs/' + processName + '.log' });
-winston.remove(winston.transports.Console);
 
 // Don't touch this otherwise Felix will kill you :P
 ProcessingManager.run();

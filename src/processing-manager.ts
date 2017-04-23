@@ -1,9 +1,8 @@
 import * as cluster from "cluster";
 import * as os from "os";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
-import {CCPathLoader} from "./utils/cc-path-loader";
 import {CLI} from "./cli";
 
 
@@ -32,27 +31,9 @@ export class ProcessingManager {
         // check if master process
         if (!cluster.isMaster) return;
 
-        let wetPaths : Array<string>;
-        let terms : Array<Term> = [];
-
         winston.info('Master created and running');
 
-        let loadWetPaths = () => {
-            let indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/"
-                + ProcessingManager.getParam("crawlVersion")
-                + "/wet.paths.gz";
-
-            CCPathLoader.loadPaths(indexURL, (err: Error, response : Array<string>) => {
-                if (err) throw err;
-
-                let from = ProcessingManager.getParam("wetFrom");
-                let to = ProcessingManager.getParam("wetTo");
-                wetPaths = response.slice(from, to);
-                winston.info("[MASTER] successfully loaded WET paths from " + from + " to " + to + "!");
-
-                loadTerms();
-            });
-        };
+        let terms : Array<Term> = [];
 
         let loadTerms = () => {
 
@@ -72,7 +53,7 @@ export class ProcessingManager {
                         terms.push(term);
                     }
                 }
-                winston.info("[MASTER] successfully loaded terms!");
+                winston.info("Successfully loaded terms!");
 
                 spawnProcesses();
             });
@@ -96,31 +77,19 @@ export class ProcessingManager {
                     "dbPort": ProcessingManager.getParam("dbPort"),
                     "dbUser": ProcessingManager.getParam("dbUser"),
                     "dbPW": ProcessingManager.getParam("dbPW")
+                },
+                queueParams: {
+                    "queueAccount": ProcessingManager.getParam("queueAccount"),
+                    "queueName": ProcessingManager.getParam("queueName"),
+                    "queueKey": ProcessingManager.getParam("queueKey")
                 }
             };
             for (let i = 0; i < ProcessingManager.getParam("processes"); i++) {
 
                 let worker = cluster.fork();
 
-                // add listener to assign work
-                worker.on('message', (msg) => {
-
-                    if (msg.needWork) {
-                        if (wetPaths.length > 0) {
-                            let path = wetPaths.pop();
-                            worker.send({
-                                work: path
-                            });
-                            winston.info('[Worker-' + worker.process.pid + '] was assigned path \'' + path + '\'');
-                        } else {
-                            worker.send({
-                                finished: true
-                            });
-                        }
-                    }
-                });
                 worker.on('exit', (code) => {
-                    winston.info('[Worker-' + worker.process.pid + '] exited with code ' + code);
+                    winston.info('Worker-' + worker.process.pid + ' exited with code ' + code);
                 });
 
                 // init worker
@@ -128,13 +97,11 @@ export class ProcessingManager {
                     init: workerParams
                 });
 
-                winston.info("[MASTER] successfully spawned a worker process!");
+                winston.info("Successfully spawned a worker process!");
             }
         };
 
-
-        loadWetPaths();
-
+        loadTerms();
     }
 
     private static getParam(param : string) {

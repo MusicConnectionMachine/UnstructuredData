@@ -1,6 +1,6 @@
 import {WebPage} from "./utils/webpage";
 import {Unpacker} from "./unpacker";
-import {winston} from "./app";
+import {winston} from "./utils/logging";
 import {Occurrence} from "./utils/occurrence";
 
 export class Storer {
@@ -30,7 +30,9 @@ export class Storer {
             '.blob.core.windows.net/' + blobContainer + '/';
         this.container = blobContainer;
         this.blobService.createContainerIfNotExists(blobContainer, err => {
-            winston.error(err);
+            if (err) {
+                winston.error(err);
+            }
         });
     }
 

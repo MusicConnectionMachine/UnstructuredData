@@ -1,7 +1,9 @@
 import ReadableStream = NodeJS.ReadableStream;
 import * as cluster from "cluster";
 import * as WARCStream from "warc";
-import {winston} from "./app";
+import * as azure from "azure-storage";
+import * as async from "async";
+import {winston} from "./utils/logging";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
 import {Term} from "./utils/term";
@@ -21,6 +23,8 @@ export class Worker {
         // check if worker process
         if (!cluster.isWorker) { return; }
 
+        winston.info('Worker created and running');
+
         // add event listeners to communicate with master
         process.on('message', (msg) => {
 
@@ -36,29 +40,90 @@ export class Worker {
                     msg.init.enablePreFilter
                 );
 
-                process.send({
-                    needWork: true
-                });
-            }
+                let queueService = azure.createQueueService(
+                    msg.init.queueParams.queueAccount,
+                    msg.init.queueParams.queueKey
+                );
+                let queueName = msg.init.queueParams.queueName;
 
-            // receiving WET path
-            else if (msg.work && Worker.worker) {
-                Worker.worker.workOn(msg.work, (err) => {
-                    if (err) {
+                queueService.createQueueIfNotExists(queueName, (err) => {
+                    if (!err) {
+                        Worker.startProcessing(queueService, queueName);
+                    } else {
+                        winston.error(err);
                         process.exit(1);
-                        return;
                     }
-                    process.send({
-                        needWork: true
-                    });
                 });
-            }
-
-            // all WET files have been processed
-            else if (msg.finished) {
-                process.exit(0);
             }
         });
+    }
+
+    private static startProcessing(queueService, queueName : string) {
+        let getQueueItem = (callback?: (err?, item?) => void, retries? : number) => {
+            queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
+                if (!err) {
+                    // check if queue is empty
+                    if (result && result.length > 0) {
+                        callback(undefined, result[0]);
+                    } else {
+                        callback();
+                    }
+                } else if (retries && retries > 0) {
+                    setTimeout(() => {
+                        getQueueItem(callback, retries - 1);
+                    }, 5000);
+                } else {
+                    callback(err);
+                }
+            });
+        };
+
+        let deleteQueueItem = (item, callback?: (err?) => void, retries? : number) => {
+            queueService.deleteMessage(queueName, item.messageId, item.popReceipt, (err) => {
+                if (!err) {
+                    callback();
+                } else if (retries && retries > 0) {
+                    setTimeout(() => {
+                        deleteQueueItem(item, callback, retries - 1);
+                    }, 5000);
+                } else {
+                    callback(err);
+                }
+            });
+        };
+
+        let doWork = (next) => {
+            getQueueItem((err, item) => {
+                if (err) {
+                    winston.error("Failed getting file from queue", err);
+                    process.exit(1);
+                }
+                if (!item) {
+                    winston.info("Queue is empty, exiting.");
+                    process.exit(0);
+                }
+                winston.info("Will start working on:" + item.messageText);
+                Worker.worker.workOn(item.messageText, (err) => {
+                    if (!err) {
+                        winston.info("Finished work on: " + item.messageText);
+                        deleteQueueItem(item, (err) => {
+                            if (err) {
+                                winston.error("Failed deleting file from queue", err);
+                                process.exit(1);
+                            } else {
+                                winston.info("Removed from queue: " + item.messageText);
+                                next();
+                            }
+                        }, 5);
+                    } else {
+                        winston.error("Failed working on: " + item.messageText, err);
+                        process.exit(1);
+                    }
+                });
+            }, 5);
+        };
+
+        async.forever(doWork);
     }
 
 
@@ -66,7 +131,6 @@ export class Worker {
     private storer : Storer;
     private caching : boolean;
     private languageCodes : Array<string>;
-    private processID : number;
     private dbParameters : {[param : string] : string };
     private heuristicThreshold : number;
 
@@ -93,7 +157,6 @@ export class Worker {
         this.caching = caching || false;
         this.languageCodes = languageCodes;
         this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
-        this.processID = process.pid;
         this.dbParameters = dbParams;
         this.heuristicThreshold = heuristicThreshold;
     }
@@ -121,7 +184,7 @@ export class Worker {
          */
         let onStorerConnectedToDB = (err) => {
             if (err) {
-                winston.error(err);
+                winston.error("Failed connecting to DB, retrying in 60 seconds.", err);
                 return setTimeout(this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
@@ -134,11 +197,10 @@ export class Worker {
          * @param response
          */
         let onFileStreamReady = (err? : Error, response? : ReadableStream) => {
-            if(err || !response) {
-                // TODO: Proper error handling!
-                winston.warn("WETManager encountered an error!");
-            } else {
-                winston.info("[WORKER-" + this.processID + "] start processing " + wetPath);
+            if(err) {
+                callback(err);
+                return;
+            } else if (response){
 
                 let warcParser = new WARCStream();
                 response.pipe(warcParser)
@@ -146,19 +208,12 @@ export class Worker {
                     .on('end', () => {
                         streamFinished = true;
                         if (pendingPages === 0) {
-                            this.storer.flushBlob(err => {
-                                if(err) {
-                                    return callback(err);
-                                }
-                                this.storer.flushDatabase(err => {
-                                    if(err) {
-                                        return callback(err);
-                                    }
-                                    callback();
-                                })
-                            });
+                            onFileFinished();
                         }
                     });
+            } else {
+                callback(new Error("Couldn't load file!"));
+                process.exit(1);
             }
         };
 
@@ -231,18 +286,22 @@ export class Worker {
         let onWetEntryFinished = () => {
             pendingPages--;
             if (streamFinished && pendingPages === 0) {
-                this.storer.flushBlob(err => {
+                onFileFinished();
+            }
+        };
+
+        let onFileFinished = () => {
+            this.storer.flushBlob(err => {
+                if(err) {
+                    return callback(err);
+                }
+                this.storer.flushDatabase(err => {
                     if(err) {
                         return callback(err);
                     }
-                    this.storer.flushDatabase(err => {
-                        if(err) {
-                            return callback(err);
-                        }
-                        callback();
-                    })
-                });
-            }
+                    callback();
+                })
+            });
         };
 
         // start processing chain
