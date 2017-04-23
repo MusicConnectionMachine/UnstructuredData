@@ -102,7 +102,7 @@ export class Worker {
                     winston.info("Queue is empty, exiting.");
                     process.exit(0);
                 }
-                winston.info("Will start working on:" + item.messageText);
+                winston.info("Will start working on: " + item.messageText);
                 Worker.worker.workOn(item.messageText, (err) => {
                     if (!err) {
                         winston.info("Finished work on: " + item.messageText);
