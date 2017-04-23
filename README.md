@@ -16,6 +16,7 @@ $ node out/app.js -h
     -h, --help                                 output usage information
     -d, --db-location [host]:[port]            database location, e.g. "127.0.0.1:5432"
     -a, --db-access [user]:[password]          database access, e.g. "USER:PASSWORD"
+    -n, --db-name [name]                       database name, e.g. "ProductionDB"
     -b, --blob-location [account]:[container]  blob storage location, e.g. "wetstorage:websites"
     -k, --blob-key [storageKey]                blob storage access key, e.g. "AZURE_KEY_HERE"
     -p, --processes [number]                   number of worker threads, e.g. "4"
@@ -24,8 +25,6 @@ $ node out/app.js -h
     -e, --enable-pre-filter                    enable bloom filter as pre filter
     -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
     -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
-
-
 ```
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
@@ -35,6 +34,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "dbPort": 5432,
   "dbUser": "USER",
   "dbPW": "PASSWORD",
+  "dbNAme": "ProductionDB",
   "blobAccount": "wetstorage",
   "blobContainer": "websites",
   "blobKey": "AZURE_KEY_HERE",
@@ -51,3 +51,6 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "enablePreFilter": false,
 }
 ```
+
+With exception of `languageCodes` all arguments can also be supplied via environment variables.   
+The environment variables have to match those in `config.json`.
