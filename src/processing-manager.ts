@@ -1,5 +1,7 @@
 import * as cluster from "cluster";
 import * as os from "os";
+import * as readline from "readline";
+import * as fs from "fs";
 import {winston} from "./utils/logging";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
@@ -35,6 +37,7 @@ export class ProcessingManager {
         winston.info('Master created and running');
 
         let terms : Array<Term> = [];
+        let termBlacklist : Set<string> = new Set();
 
         let dbParams = {
             dbHost: ProcessingManager.getParam("dbHost"),
@@ -44,14 +47,31 @@ export class ProcessingManager {
             dbPW: ProcessingManager.getParam("dbPW")
         };
 
+        let loadBlacklist = () => {
+            if (fs.existsSync("./term-blacklist.txt")) {
+                let lineReader = readline.createInterface({input: fs.createReadStream("./term-blacklist.txt")});
+                lineReader.on('line', (line) => {
+                    termBlacklist.add(line);
+                });
+                lineReader.on('close', () => {
+                    loadTerms();
+                });
+            } else {
+                loadTerms();
+            }
+        };
+
         let loadTerms = () => {
 
             TermLoader.loadFromDB(dbParams, (err : Error, result : Array<Term>) => {
-                if (err) throw err;
+                if (err) {
+                    winston.error(err);
+                    process.exit(1);
+                }
 
                 // check length of terms
                 for (let term of result) {
-                    if (term.value !== null && term.value.length > 2) {
+                    if (term.value !== null && termBlacklist.has(term.value) && term.value.length > 2) {
                         terms.push(term);
                     }
                 }
@@ -98,7 +118,7 @@ export class ProcessingManager {
             }
         };
 
-        loadTerms();
+        loadBlacklist();
     }
 
     private static getParam(param : string) {
