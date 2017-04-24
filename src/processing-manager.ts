@@ -71,7 +71,7 @@ export class ProcessingManager {
 
                 // check length of terms
                 for (let term of result) {
-                    if (term.value !== null && termBlacklist.has(term.value) && term.value.length > 2) {
+                    if (term.value !== null && !termBlacklist.has(term.value) && term.value.length > 2) {
                         terms.push(term);
                     }
                 }
