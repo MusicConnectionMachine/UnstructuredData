@@ -4,6 +4,7 @@ import * as WARCStream from "warc";
 import * as azure from "azure-storage";
 import * as async from "async";
 import {winston} from "./utils/logging";
+import {params} from "./utils/params";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
 import {Term} from "./utils/term";
@@ -14,14 +15,16 @@ import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker {
+export class WorkerProcess {
 
-    private static worker : Worker;
+    private static worker: Worker;
 
     public static run() {
 
         // check if worker process
-        if (!cluster.isWorker) { return; }
+        if (!cluster.isWorker) {
+            return;
+        }
 
         winston.info('Worker created and running');
 
@@ -30,7 +33,7 @@ export class Worker {
 
             // receiving worker parameters from master
             if (msg.init) {
-                Worker.worker = new Worker(
+                WorkerProcess.worker = new Worker(
                     msg.init.blobParams,
                     msg.init.dbParams,
                     msg.init.terms,
@@ -48,7 +51,7 @@ export class Worker {
 
                 queueService.createQueueIfNotExists(queueName, (err) => {
                     if (!err) {
-                        Worker.startProcessing(queueService, queueName);
+                        WorkerProcess.startProcessing(queueService, queueName);
                     } else {
                         winston.error(err);
                         process.exit(1);
@@ -58,8 +61,8 @@ export class Worker {
         });
     }
 
-    private static startProcessing(queueService, queueName : string) {
-        let getQueueItem = (callback?: (err?, item?) => void, retries? : number) => {
+    private static startProcessing(queueService, queueName: string) {
+        let getQueueItem = (callback?: (err?, item?) => void, retries?: number) => {
             queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
                 if (!err) {
                     // check if queue is empty
@@ -78,7 +81,7 @@ export class Worker {
             });
         };
 
-        let deleteQueueItem = (item, callback?: (err?) => void, retries? : number) => {
+        let deleteQueueItem = (item, callback?: (err?) => void, retries?: number) => {
             queueService.deleteMessage(queueName, item.messageId, item.popReceipt, (err) => {
                 if (!err) {
                     callback();
@@ -103,7 +106,7 @@ export class Worker {
                     process.exit(0);
                 }
                 winston.info("Will start working on: " + item.messageText);
-                Worker.worker.workOn(item.messageText, (err) => {
+                WorkerProcess.worker.workOn(item.messageText, (err) => {
                     if (!err) {
                         winston.info("Finished work on: " + item.messageText);
                         deleteQueueItem(item, (err) => {
@@ -125,7 +128,9 @@ export class Worker {
 
         async.forever(doWork);
     }
+}
 
+class Worker {
 
     private webPageDigester : WebPageDigester;
     private storer : Storer;
@@ -144,7 +149,7 @@ export class Worker {
      * @param caching                                       (optional) enable WET file caching
      * @param enablePreFilter                               (optional) enable pre filter
      */
-    private constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
+    public constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
                          terms : Array<Term>, heuristicThreshold : number, languageCodes? : Array<string>,
                          caching? : boolean, enablePreFilter? : boolean) {
 
@@ -174,7 +179,7 @@ export class Worker {
      * @param wetPath                                       CC path to WET file
      * @param callback                                      gets called when all pages have been processed
      */
-    private workOn(wetPath : string, callback : (err? : Error) => void) {
+    public workOn(wetPath : string, callback : (err? : Error) => void) {
         let streamFinished = false;
         let pendingPages = 0;
 

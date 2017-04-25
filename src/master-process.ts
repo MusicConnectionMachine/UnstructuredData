@@ -1,11 +1,11 @@
 import * as cluster from "cluster";
 import * as os from "os";
-import * as readline from "readline";
+import * as readLine from "readline";
 import * as fs from "fs";
 import {winston} from "./utils/logging";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
-import {CLI} from "./cli";
+import {CLI} from "./utils/cli";
 
 
 /**
@@ -14,7 +14,7 @@ import {CLI} from "./cli";
  * 2. fetches terms,
  * 3. processes files in forked processes
  */
-export class ProcessingManager {
+export class MasterProcess {
 
 
     private static DEFAULTS = {
@@ -36,20 +36,29 @@ export class ProcessingManager {
 
         winston.info('Master created and running');
 
+        MasterProcess.workQueue();
+    }
+
+    private static monitorQueue() {}
+
+    private static populateQueue() {}
+
+    private static workQueue() {
+
         let terms : Array<Term> = [];
         let termBlacklist : Set<string> = new Set();
 
         let dbParams = {
-            dbHost: ProcessingManager.getParam("dbHost"),
-            dbPort: ProcessingManager.getParam("dbPort"),
-            dbUser: ProcessingManager.getParam("dbUser"),
-            dbName: ProcessingManager.getParam("dbName"),
-            dbPW: ProcessingManager.getParam("dbPW")
+            dbHost: MasterProcess.getParam("dbHost"),
+            dbPort: MasterProcess.getParam("dbPort"),
+            dbUser: MasterProcess.getParam("dbUser"),
+            dbName: MasterProcess.getParam("dbName"),
+            dbPW: MasterProcess.getParam("dbPW")
         };
 
         let loadBlacklist = () => {
             if (fs.existsSync("./term-blacklist.txt")) {
-                let lineReader = readline.createInterface({input: fs.createReadStream("./term-blacklist.txt")});
+                let lineReader = readLine.createInterface({input: fs.createReadStream("./term-blacklist.txt")});
                 lineReader.on('line', (line) => {
                     termBlacklist.add(line);
                 });
@@ -85,23 +94,23 @@ export class ProcessingManager {
 
             const workerParams = {
                 terms: terms,
-                enablePreFilter: ProcessingManager.getParam("enablePreFilter"),
-                heuristicThreshold : ProcessingManager.getParam("heuristicThreshold"),
-                languageCodes: ProcessingManager.getParam("languageCodes"),
+                enablePreFilter: MasterProcess.getParam("enablePreFilter"),
+                heuristicThreshold : MasterProcess.getParam("heuristicThreshold"),
+                languageCodes: MasterProcess.getParam("languageCodes"),
                 caching: false,
                 blobParams: {
-                    "blobAccount": ProcessingManager.getParam("blobAccount"),
-                    "blobContainer": ProcessingManager.getParam("blobContainer"),
-                    "blobKey": ProcessingManager.getParam("blobKey")
+                    "blobAccount": MasterProcess.getParam("blobAccount"),
+                    "blobContainer": MasterProcess.getParam("blobContainer"),
+                    "blobKey": MasterProcess.getParam("blobKey")
                 },
                 dbParams: dbParams,
                 queueParams: {
-                    "queueAccount": ProcessingManager.getParam("queueAccount"),
-                    "queueName": ProcessingManager.getParam("queueName"),
-                    "queueKey": ProcessingManager.getParam("queueKey")
+                    "queueAccount": MasterProcess.getParam("queueAccount"),
+                    "queueName": MasterProcess.getParam("queueName"),
+                    "queueKey": MasterProcess.getParam("queueKey")
                 }
             };
-            for (let i = 0; i < ProcessingManager.getParam("processes"); i++) {
+            for (let i = 0; i < MasterProcess.getParam("processes"); i++) {
 
                 let worker = cluster.fork();
 
@@ -128,10 +137,10 @@ export class ProcessingManager {
         }
 
         try {
-            return require('../config.json')[param] || process.env[param] || ProcessingManager.DEFAULTS[param];
+            return require('../config.json')[param] || process.env[param] || MasterProcess.DEFAULTS[param];
         } catch(err) {
             winston.error("Failed loading config.json", err);
-            return process.env[param] || ProcessingManager.DEFAULTS[param];
+            return process.env[param] || MasterProcess.DEFAULTS[param];
         }
     }
 

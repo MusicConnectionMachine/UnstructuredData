@@ -11,24 +11,8 @@ export class CLI {
 
     private commander = require('commander');
 
-    public parameters = {
-        dbHost: undefined,
-        dbPort: undefined,
-        dbUser: undefined,
-        dbPW: undefined,
-        dbName: undefined,
-        heuristicThreshold: undefined,
-        blobAccount: undefined,
-        blobContainer: undefined,
-        blobKey: undefined,
-        queueAccount: undefined,
-        queueName: undefined,
-        queueKey: undefined,
-        processes: undefined,
-        crawlVersion: undefined,
-        languageCodes: undefined,
-        enablePreFilter: undefined
-    };
+    public flags = {};
+    public parameters = {};
 
     /**
      * Init the commander module, parse env variables, config file and command line args.
@@ -65,9 +49,9 @@ export class CLI {
                 console.warn("invalid --db-location [host]:[port]");
             } else {
                 let splitted = this.commander.dbLocation.split(":", 2);
-                this.parameters.dbHost = splitted[0];
+                this.parameters["dbHost"] = splitted[0];
                 let dbPort = parseInt(splitted[1]);
-                if (dbPort) this.parameters.dbPort = dbPort;
+                if (dbPort) this.parameters["dbPort"] = dbPort;
             }
         }
 
@@ -76,13 +60,13 @@ export class CLI {
                 console.warn("invalid --db-access [user]:[password]");
             } else {
                 let splitted = this.commander.dbAccess.split(":", 2);
-                this.parameters.dbUser = splitted[0];
-                this.parameters.dbPW = splitted[1];
+                this.parameters["dbUser"] = splitted[0];
+                this.parameters["dbPW"] = splitted[1];
             }
         }
 
         if (this.commander.dbName) {
-            this.parameters.dbName = this.commander.dbName;
+            this.parameters["dbName"] = this.commander.dbName;
         }
 
         if (this.commander.blobLocation) {
@@ -90,13 +74,13 @@ export class CLI {
                 console.warn("invalid --blob-location [account]:[container]");
             } else {
                 let splitted = this.commander.blobLocation.split(":", 2);
-                this.parameters.blobAccount = splitted[0];
-                this.parameters.blobContainer = splitted[1];
+                this.parameters["blobAccount"] = splitted[0];
+                this.parameters["blobContainer"] = splitted[1];
             }
         }
 
         if (this.commander.blobKey) {
-            this.parameters.blobKey = this.commander.blobKey;
+            this.parameters["blobKey"] = this.commander.blobKey;
         }
 
         if (this.commander.queueLocation) {
@@ -104,32 +88,32 @@ export class CLI {
                 console.warn("invalid --queue-location [account]:[queue]");
             } else {
                 let splitted = this.commander.queueLocation.split(":", 2);
-                this.parameters.queueAccount = splitted[0];
-                this.parameters.queueName = splitted[1];
+                this.parameters["queueAccount"] = splitted[0];
+                this.parameters["queueName"] = splitted[1];
             }
         }
 
         if (this.commander.queueKey) {
-            this.parameters.queueKey = this.commander.queueKey;
+            this.parameters["queueKey"] = this.commander.queueKey;
         }
 
         if (this.commander.processes) {
             let processes = parseInt(this.commander.processes);
-            if (processes) this.parameters.processes = processes;
+            if (processes) this.parameters["processes"] = processes;
         }
 
         if (this.commander.heuristicThreshold) {
             let threshold = parseInt(this.commander.heuristicThreshold);
-            if (threshold) this.parameters.heuristicThreshold = threshold;
+            if (threshold) this.parameters["heuristicThreshold"] = threshold;
         }
 
         if (this.commander.languages) {
             let languageCodes = JSON.parse(this.commander.languages);
-            if (languageCodes) this.parameters.languageCodes = languageCodes;
+            if (languageCodes) this.parameters["languageCodes"] = languageCodes;
         }
 
         if (this.commander.enablePreFilter) {
-            this.parameters.enablePreFilter = this.commander.enablePreFilter;
+            this.parameters["enablePreFilter"] = this.commander.enablePreFilter;
         }
     }
 }
