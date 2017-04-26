@@ -1,8 +1,8 @@
 # Group 2 - Unstructured Data [![Join the chat at https://gitter.im/MusicConnectionMachine/UnstructuredData](https://badges.gitter.im/MusicConnectionMachine/UnstructuredData.svg)](https://gitter.im/MusicConnectionMachine/UnstructuredData?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/488966f28a0c448cac974baa104b74cc)](https://www.codacy.com/app/kordianbruck/UnstructuredData?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MusicConnectionMachine/UnstructuredData&amp;utm_campaign=Badge_Grade)
 This project aims to filter for entities in unstructured data using data from the [Common Crawl](http://commoncrawl.org/).
 - This project pulls it's entities from a PostgreSQL database,
-- Pull data from the Common Crawl and simultaneously filter for entities,
-- Save the found entities back in the DB and upload relevant pages into an [Azure](https://azure.microsoft.com) blob storage container
+- Pulls data from the Common Crawl and simultaneously filters for entities,
+- And then saves the found entities back in the DB and uploads relevant pages into an [Azure](https://azure.microsoft.com) blob storage container.
 
 This project allows for distributed computing as all task are being handled by an Azure task queue.
 
