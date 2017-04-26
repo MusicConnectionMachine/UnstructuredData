@@ -38,6 +38,8 @@ $ Usage: app [options]
 
 ```
 
+### Operating modes
+
 An operating mode has to be selected via the options `-P`, `-M` and `-A`. 
 - Option    `-P`/`--Process` will spawn multiple worker processes and will start processing queue items.
   - `-p`/`--processes` can be used to set the number of worker processes. Defaults to the number of logical CPU cores.
