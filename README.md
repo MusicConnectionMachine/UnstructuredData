@@ -41,28 +41,28 @@ $ Usage: app [options]
 ### Operating modes
 
 An operating mode has to be selected via the options `-P`, `-M` and `-A`. 
-- Option    `-P`/`--Process` will spawn multiple worker processes and will start processing queue items.
-  - `-p`/`--processes` can be used to set the number of worker processes.    
+- Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
+  - `-p`, `--processes` can be used to set the number of worker processes.    
   Defaults to the number of logical CPU cores.
-  - `-t`/`--heuristic-threshold` sets the filter strictness, the higher the stricter.    
+  - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
   Defaults to 3.
-  - `-l`/`--languages` can be used to restrict the results to only a few languages. 
+  - `-l`, `--languages` can be used to restrict the results to only a few languages. 
   This expects a JSON formatted list of ISO 639-1 language codes. 
   An empty `[]` list will result in all languages being accepted.   
-  Defaults to `["en"]`.
-  - `-e`/`--enable-pre-filter` will enable pre filtering which might improve performance in some cases.
-- Option `-M`/`--Minitor` will constantly monitor the queue size.
-- Option `-A`/`--Add` will add new items to the queue. 
-  - `-r`/`--wet-range` can be used to only add a subset of all WEt files to the queue.
-  - `c`/`--crawl-version` can be used to select which Common Crawl version should be used.   
+  Defaults to English.
+  - `-e`, `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.
+- Option `-M`, `--Minitor` will constantly monitor the queue size.
+- Option `-A`, `--Add` will add new items to the queue. 
+  - `-r`, `--wet-range` can be used to only add a subset of all WEt files to the queue.
+  - `c`, `--crawl-version` can be used to select which Common Crawl version should be used.   
   Defaults to `CC-MAIN-2017-13`.
 
-The following arguments will only be used when using mode `-P`/`--Process`:
-- `-d`/`--db-location`
-- `-a`/`--db-access`
-- `-n`/`--db-name`
-- `-b`/`--blob-location`
-- `-k`/`--blob-key`
+The following arguments will only be used when using mode `-P`, `--Process`:
+- `-d`, `--db-location`
+- `-a`, `--db-access`
+- `-n`, `--db-name`
+- `-b`, `--blob-location`
+- `-k`, `--blob-key`
 
 
 
