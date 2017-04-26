@@ -1,5 +1,4 @@
 import {CLI} from "./cli";
-import {winston} from "./logging";
 import * as os from "os";
 
 
@@ -74,7 +73,6 @@ export class ParamLoader {
         try {
             return require("../../config.json");
         } catch (err) {
-            winston.error("Failed loading config", err);
             return {};
         }
     }
