@@ -60,7 +60,7 @@ The following arguments will only be used when using mode `-P`/`--Process`:
 
 
 
-#Config file
+# Config file
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
 ```
@@ -93,7 +93,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
 
 
 
-#Environment variables
+# Environment variables
 
 All arguments can also be supplied via environment variables. 
 The environment variable names have to match those in `config.json` with an added `MCM_`, e.g.:   
