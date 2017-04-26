@@ -50,7 +50,7 @@ export class MasterProcess {
 
         let checkProgress = (cb?: () => void) => {
            queueService.getQueueMetadata(queueName, (err, result) => {
-               if (!err) {
+               if (!err && queueSize !== result.approximateMessageCount) {
                    queueSize = result.approximateMessageCount;
                    winston.info("Current approximate queue size: " + queueSize);
                }
