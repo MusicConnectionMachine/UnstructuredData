@@ -40,22 +40,24 @@ $ Usage: app [options]
 
 ### Operating modes
 
-An operating mode has to be selected via the options `-P`, `-M` and `-A`. 
-- Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
-  - `-p`, `--processes` can be used to set the number of worker processes.    
-  Defaults to the number of logical CPU cores.
-  - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
-  Defaults to 3.
-  - `-l`, `--languages` can be used to restrict the results to only a few languages. 
-  This expects a JSON formatted list of ISO 639-1 language codes. 
-  An empty `[]` list will result in all languages being accepted.   
-  Defaults to English.
-  - `-e`, `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.
-- Option `-M`, `--Minitor` will constantly monitor the queue size.
+**At least** one operating mode has to be selected via the options `-A`, `-P` and `-M`: 
 - Option `-A`, `--Add` will add new items to the queue. 
-  - `-r`, `--wet-range` can be used to only add a subset of all WEt files to the queue.
-  - `c`, `--crawl-version` can be used to select which Common Crawl version should be used.   
-  Defaults to `CC-MAIN-2017-13`.
+  - `-c`, `--crawl-version` can be used to select which Common Crawl version should be used.   
+    Defaults to `CC-MAIN-2017-13`.
+  - `-r`, `--wet-range` can be used to only add a subset of all WET files to the queue.
+    By default all WET files will be added to the queue.
+- Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
+  - `-e`, `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.   
+    Defaults to false.
+  - `-l`, `--languages` can be used to restrict the results to only a few languages.   
+    This expects a JSON formatted list of ISO 639-1 language codes.   
+    An empty list `[]` will result in all languages being accepted.   
+    Defaults to English.
+  - `-p`, `--processes` can be used to set the number of worker processes.    
+    Defaults to the number of logical CPU cores.
+  - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
+    Defaults to 3.      
+- Option `-M`, `--Monitor` will constantly monitor the queue size.  
 
 The following arguments will only be used when using mode `-P`, `--Process`:
 - `-d`, `--db-location`
