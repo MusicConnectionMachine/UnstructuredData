@@ -5,7 +5,6 @@ Navigate to the project root and run `yarn install`. [Yarn](https://yarnpkg.com/
 Once that's finished run `npm run compile` to compile everything to Javascript.
 
 ## Usage
-Via command line interface:
 ```
 $ Usage: app [options]
 
@@ -31,6 +30,28 @@ $ Usage: app [options]
     -f, --file-only-logging                    disable console logging
 
 ```
+
+An operating mode has to be selected via the options `-P`, `-M` and `-A`. 
+- Option `-P`/`--Process` will spawn multiple worker processes and will start processing queue items.
+  - `-p`/`--processes` can be used to set the number of worker processes. Defaults to the number of logical CPU cores.
+  - `-t`/`--heuristic-threshold` sets the filter strictness, the higher the stricter. Defaults to 3.
+  - `-l`/`--languages` can be used to restrict the results to only a few languages. 
+  This expects a JSON formatted list of ISO 639-1 language codes. 
+  An empty `[]` list will result in all languages being accepted. Defaults to `["en"]`.
+  - `-e`/`--enable-pre-filter` will enable pre filtering which might improve performance in some cases.
+- Option `-M`/`--Minitor` will constantly monitor the queue size.
+- Option `-A`/`--Add` will add new items to the queue. 
+  - `-r`/`--wet-range` can be used to only add a subset of all WEt files to the queue.
+  - `c`/`--crawl-version` can be used to select which Common Crawl version should be used. Defaults to `CC-MAIN-2017-13`.
+
+The following arguments will only be used when using mode `-P`/`--Process`:
+- `-d`/`--db-location`
+- `-a`/`--db-access`
+- `-n`/`--db-name`
+- `-b`/`--blob-location`
+- `-k`/`--blob-key`
+
+#Config file
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
 ```
@@ -60,6 +81,8 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "fileOnlyLogging": false
 }
 ```
+
+#Environment variables
 
 All arguments can also be supplied via environment variables. 
 The environment variable names have to match those in `config.json` with an added `MCM_`, e.g.:   
