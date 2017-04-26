@@ -3,15 +3,15 @@ import {winston} from "./logging";
 import * as os from "os";
 
 
-class ParameterLoader {
+export class ParamLoader {
 
-    private static instance : ParameterLoader;
+    private static instance : ParamLoader;
 
-    public static getInstance() : ParameterLoader{
-        if (!ParameterLoader.instance) {
-            ParameterLoader.instance = new ParameterLoader();
+    public static getInstance() : ParamLoader{
+        if (!ParamLoader.instance) {
+            ParamLoader.instance = new ParamLoader();
         }
-        return ParameterLoader.instance;
+        return ParamLoader.instance;
     }
 
     public all;
@@ -32,13 +32,13 @@ class ParameterLoader {
 
     private constructor() {
         this.CLI = CLI.getInstance().parameters;
-        this.config = ParameterLoader.loadConfig();
-        this.env = ParameterLoader.parseEnvVars();
+        this.config = ParamLoader.loadConfig();
+        this.env = ParamLoader.parseEnvVars();
         this.all = Object.assign({}, this.DEFAULT, this.env, this.config, this.CLI);
-        ParameterLoader.groupParams(this.CLI);
-        ParameterLoader.groupParams(this.config);
-        ParameterLoader.groupParams(this.env);
-        ParameterLoader.groupParams(this.all);
+        ParamLoader.groupParams(this.CLI);
+        ParamLoader.groupParams(this.config);
+        ParamLoader.groupParams(this.env);
+        ParamLoader.groupParams(this.all);
     }
 
     private static groupParams(object : Object) {
@@ -59,11 +59,12 @@ class ParameterLoader {
     private static parseEnvVars() : Object {
         let params = {};
         for (let param in process.env) {
-            if (!process.env.hasOwnProperty(param)) continue;
+            if (!process.env.hasOwnProperty(param) || param.slice(0, 4) !== "MCM_") continue;
+            let parsedName = param.substring(4);
             try {
-                params[param] = JSON.parse(process.env[param]);
+                params[parsedName] = JSON.parse(process.env[param]);
             } catch (err) {
-                params[param] = process.env[param];
+                params[parsedName] = process.env[param];
             }
         }
         return params;
@@ -79,6 +80,4 @@ class ParameterLoader {
     }
 }
 
-export let params = ParameterLoader.getInstance();
-
-console.log(params.config);
+export let params = ParamLoader.getInstance();

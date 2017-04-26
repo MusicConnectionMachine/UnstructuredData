@@ -1,11 +1,11 @@
 import * as cluster from "cluster";
-import * as os from "os";
 import * as readLine from "readline";
 import * as fs from "fs";
 import {winston} from "./utils/logging";
 import {TermLoader} from "./utils/term-loader";
 import {Term} from "./utils/term";
 import {CLI} from "./utils/cli";
+import {params} from "./utils/param-loader";
 
 
 /**
@@ -16,25 +16,16 @@ import {CLI} from "./utils/cli";
  */
 export class MasterProcess {
 
-
-    private static DEFAULTS = {
-        dbHost: "localhost",
-        dbPort: "5432",
-        dbDatabase: "mcm",
-        blobAccount: "wetstorage",
-        blobContainer: "websites",
-        processes: os.cpus().length,
-        crawlVersion: "CC-MAIN-2017-13",
-        heuristicThreshold: 3,
-        languageCodes: ["en"]
-    };
-
     public static run() {
 
         // check if master process
         if (!cluster.isMaster) return;
 
-        winston.info('Master created and running');
+        winston.info('Master process created and running');
+
+        let flags = CLI.getInstance().flags;
+
+        // TODO
 
         MasterProcess.workQueue();
     }
@@ -47,14 +38,6 @@ export class MasterProcess {
 
         let terms : Array<Term> = [];
         let termBlacklist : Set<string> = new Set();
-
-        let dbParams = {
-            dbHost: MasterProcess.getParam("dbHost"),
-            dbPort: MasterProcess.getParam("dbPort"),
-            dbUser: MasterProcess.getParam("dbUser"),
-            dbName: MasterProcess.getParam("dbName"),
-            dbPW: MasterProcess.getParam("dbPW")
-        };
 
         let loadBlacklist = () => {
             if (fs.existsSync("./term-blacklist.txt")) {
@@ -72,7 +55,7 @@ export class MasterProcess {
 
         let loadTerms = () => {
 
-            TermLoader.loadFromDB(dbParams, (err : Error, result : Array<Term>) => {
+            TermLoader.loadFromDB(params.all.dbParams, (err : Error, result : Array<Term>) => {
                 if (err) {
                     winston.error(err);
                     process.exit(1);
@@ -84,7 +67,7 @@ export class MasterProcess {
                         terms.push(term);
                     }
                 }
-                winston.info("Successfully loaded terms!");
+                winston.info("Successfully loaded " + terms.length + " terms!");
 
                 spawnProcesses();
             });
@@ -92,25 +75,7 @@ export class MasterProcess {
 
         let spawnProcesses = () => {
 
-            const workerParams = {
-                terms: terms,
-                enablePreFilter: MasterProcess.getParam("enablePreFilter"),
-                heuristicThreshold : MasterProcess.getParam("heuristicThreshold"),
-                languageCodes: MasterProcess.getParam("languageCodes"),
-                caching: false,
-                blobParams: {
-                    "blobAccount": MasterProcess.getParam("blobAccount"),
-                    "blobContainer": MasterProcess.getParam("blobContainer"),
-                    "blobKey": MasterProcess.getParam("blobKey")
-                },
-                dbParams: dbParams,
-                queueParams: {
-                    "queueAccount": MasterProcess.getParam("queueAccount"),
-                    "queueName": MasterProcess.getParam("queueName"),
-                    "queueKey": MasterProcess.getParam("queueKey")
-                }
-            };
-            for (let i = 0; i < MasterProcess.getParam("processes"); i++) {
+            for (let i = 0; i < params.all.processes; i++) {
 
                 let worker = cluster.fork();
 
@@ -120,29 +85,14 @@ export class MasterProcess {
 
                 // init worker
                 worker.send({
-                    init: workerParams
+                    terms: terms
                 });
 
-                winston.info("Successfully spawned a worker process!");
+                winston.info("Successfully spawned worker process " + worker.process.pid + "!");
             }
         };
 
         loadBlacklist();
     }
-
-    private static getParam(param : string) {
-        let value = CLI.getInstance().parameters[param];
-        if(value) {
-            return value;
-        }
-
-        try {
-            return require('../config.json')[param] || process.env[param] || MasterProcess.DEFAULTS[param];
-        } catch(err) {
-            winston.error("Failed loading config.json", err);
-            return process.env[param] || MasterProcess.DEFAULTS[param];
-        }
-    }
-
 }
 

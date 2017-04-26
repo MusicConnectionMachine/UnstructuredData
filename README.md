@@ -52,5 +52,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
 }
 ```
 
-With exception of `languageCodes` all arguments can also be supplied via environment variables.   
-The environment variable names have to match those in `config.json`.
+All arguments can also be supplied via environment variables. 
+The environment variable names have to match those in `config.json` with an added `MCM_`, e.g.:   
+`MCM_dbHost`, `MCM_dbPort`, `MCM_dbUser`, ...
+

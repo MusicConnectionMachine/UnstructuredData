@@ -4,7 +4,7 @@ import * as WARCStream from "warc";
 import * as azure from "azure-storage";
 import * as async from "async";
 import {winston} from "./utils/logging";
-import {params} from "./utils/params";
+import {params} from "./utils/param-loader";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
 import {Term} from "./utils/term";
@@ -26,28 +26,31 @@ export class WorkerProcess {
             return;
         }
 
-        winston.info('Worker created and running');
+        winston.info('Worker process created and running');
 
         // add event listeners to communicate with master
         process.on('message', (msg) => {
 
             // receiving worker parameters from master
-            if (msg.init) {
+            if (msg.terms) {
+
+                winston.info("Received " + msg.terms.length + " terms!");
+
                 WorkerProcess.worker = new Worker(
-                    msg.init.blobParams,
-                    msg.init.dbParams,
-                    msg.init.terms,
-                    msg.init.heuristicThreshold,
-                    msg.init.languageCodes,
-                    msg.init.caching,
-                    msg.init.enablePreFilter
+                    params.all.blobParams,
+                    params.all.dbParams,
+                    msg.terms,
+                    params.all.heuristicThreshold,
+                    params.all.languageCodes,
+                    params.all.caching,
+                    params.all.enablePreFilter
                 );
 
                 let queueService = azure.createQueueService(
-                    msg.init.queueParams.queueAccount,
-                    msg.init.queueParams.queueKey
+                    params.all.queueParams.queueAccount,
+                    params.all.queueParams.queueKey
                 );
-                let queueName = msg.init.queueParams.queueName;
+                let queueName = params.all.queueParams.queueName;
 
                 queueService.createQueueIfNotExists(queueName, (err) => {
                     if (!err) {
