@@ -137,8 +137,10 @@ export class CLI {
             if (split.length < 2) {
                 console.warn("invalid --wet-range [from]:[to]");
             } else {
-                this.parameters["wetFrom"] = split[0];
-                this.parameters["wetTo"] = split[1];
+                let wetFrom = parseInt(split[0]);
+                if (wetFrom) this.parameters["wetFrom"] = wetFrom;
+                let wetTo = parseInt(split[1]);
+                if (wetTo) this.parameters["wetTo"] = wetTo;
             }
         }
 

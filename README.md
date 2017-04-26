@@ -7,24 +7,29 @@ Once that's finished run `npm run compile` to compile everything to Javascript.
 ## Usage
 Via command line interface:
 ```
-$ node out/app.js -h
+$ Usage: app [options]
 
-> Usage: app [options]
-
-  Options:
+> Options:
 
     -h, --help                                 output usage information
+    -P, --Process                              process queue items
+    -A, --Add                                  add items to the queue
+    -M, --Monitor                              monitor queue size
     -d, --db-location [host]:[port]            database location, e.g. "127.0.0.1:5432"
     -a, --db-access [user]:[password]          database access, e.g. "USER:PASSWORD"
     -n, --db-name [name]                       database name, e.g. "ProductionDB"
     -b, --blob-location [account]:[container]  blob storage location, e.g. "wetstorage:websites"
     -k, --blob-key [storageKey]                blob storage access key, e.g. "AZURE_KEY_HERE"
+    -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
+    -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
     -p, --processes [number]                   number of worker threads, e.g. "4"
     -t, --heuristic-threshold [number]         filter strictness, the higher the stricter, e.g. "3"
     -l, --languages [languageCodes]            languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     -e, --enable-pre-filter                    enable bloom filter as pre filter
-    -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
-    -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
+    -c, --crawl-version [version]              common crawl version, e.g. "CC-MAIN-2017-13"
+    -r, --wet-range [from]:[to]                select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)
+    -f, --file-only-logging                    disable console logging
+
 ```
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
@@ -49,6 +54,10 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
     "fr"
   ],
   "enablePreFilter": false,
+  "crawlVersion": "CC-MAIN-2017-13",
+  "wetFrom": 0,
+  "wetTo": 420,
+  "fileOnlyLogging": false
 }
 ```
 
