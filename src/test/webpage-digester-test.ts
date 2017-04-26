@@ -1,10 +1,10 @@
 import "mocha";
 import {WebPageDigester} from "../webpage-digester";
 import {PrefixTree} from "../filters/prefix-tree";
-import {WebPage} from "../utils/webpage";
+import {WebPage} from "../classes/webpage";
 import {BloomFilter} from "../filters/bloom-filter";
-import {Occurrence} from "../utils/occurrence";
-import {Term} from "../utils/term";
+import {Occurrence} from "../classes/occurrence";
+import {Term} from "../classes/term";
 let assert = require("chai").assert;
 
 let termStr = ["some", "more", "less", "random", "terms"];

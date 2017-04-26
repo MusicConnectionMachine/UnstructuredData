@@ -1,7 +1,7 @@
 import "mocha";
-import {WebPage} from "../../utils/webpage";
-import {Occurrence} from "../../utils/occurrence";
-import {Term} from "../../utils/term";
+import {WebPage} from "../../classes/webpage";
+import {Occurrence} from "../../classes/occurrence";
+import {Term} from "../../classes/term";
 let assert = require("chai").assert;
 
 function generateDummyWARC(url : string) {

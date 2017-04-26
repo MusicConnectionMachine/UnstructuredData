@@ -21,17 +21,23 @@ export class CLI {
 
         // init commander
         this.commander
+            .option('-P, --Process', 'process queue items')
+            .option('-A, --Add', 'add items to the queue')
+            .option('-M, --Monitor', 'monitor queue size')
             .option('-d, --db-location [host]:[port]', 'database location, e.g. "127.0.0.1:5432"')
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-n, --db-name [name]', 'database name, e.g. "ProductionDB"')
             .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
             .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
+            .option('-q, --queue-location [account]:[queue]', 'task queue location, e.g. "queueservice:taskqueue"')
+            .option('-s, --queue-key [serviceKey]', 'queue service access key, e.g. "AZURE_KEY_HERE"')
             .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
             .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
-            .option('-q, --queue-location [account]:[queue]', 'task queue location, e.g. "queueservice:taskqueue"')
-            .option('-s, --queue-key [serviceKey]', 'queue service access key, e.g. "AZURE_KEY_HERE"')
+            .option('-c, --crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
+            .option('-r, --wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)')
+            .option('-f, --file-only-logging', 'disable console logging')
             .parse(process.argv);
 
 
@@ -44,24 +50,30 @@ export class CLI {
      */
     private parseCmdOptions() {
 
+        this.flags = {
+            process: this.commander.Process,
+            monitor: this.commander.Monitor,
+            add: this.commander.Add
+        };
+
         if (this.commander.dbLocation) {
-            if (!this.commander.dbLocation.split) {
+            let split = this.commander.dbLocation.split(":", 2);
+            if (split.length < 2) {
                 console.warn("invalid --db-location [host]:[port]");
             } else {
-                let splitted = this.commander.dbLocation.split(":", 2);
-                this.parameters["dbHost"] = splitted[0];
-                let dbPort = parseInt(splitted[1]);
+                this.parameters["dbHost"] = split[0];
+                let dbPort = parseInt(split[1]);
                 if (dbPort) this.parameters["dbPort"] = dbPort;
             }
         }
 
         if (this.commander.dbAccess) {
-            if (!this.commander.dbAccess.split) {
+            let split = this.commander.dbAccess.split(":", 2);
+            if (split.length < 2) {
                 console.warn("invalid --db-access [user]:[password]");
             } else {
-                let splitted = this.commander.dbAccess.split(":", 2);
-                this.parameters["dbUser"] = splitted[0];
-                this.parameters["dbPW"] = splitted[1];
+                this.parameters["dbUser"] = split[0];
+                this.parameters["dbPW"] = split[1];
             }
         }
 
@@ -70,12 +82,12 @@ export class CLI {
         }
 
         if (this.commander.blobLocation) {
-            if (!this.commander.blobLocation.split) {
+            let split = this.commander.blobLocation.split(":", 2);
+            if (split.length < 2) {
                 console.warn("invalid --blob-location [account]:[container]");
             } else {
-                let splitted = this.commander.blobLocation.split(":", 2);
-                this.parameters["blobAccount"] = splitted[0];
-                this.parameters["blobContainer"] = splitted[1];
+                this.parameters["blobAccount"] = split[0];
+                this.parameters["blobContainer"] = split[1];
             }
         }
 
@@ -84,12 +96,12 @@ export class CLI {
         }
 
         if (this.commander.queueLocation) {
-            if (!this.commander.queueLocation.split) {
+            let split = this.commander.queueLocation.split(":", 2);
+            if (split.length < 2) {
                 console.warn("invalid --queue-location [account]:[queue]");
             } else {
-                let splitted = this.commander.queueLocation.split(":", 2);
-                this.parameters["queueAccount"] = splitted[0];
-                this.parameters["queueName"] = splitted[1];
+                this.parameters["queueAccount"] = split[0];
+                this.parameters["queueName"] = split[1];
             }
         }
 
@@ -114,6 +126,24 @@ export class CLI {
 
         if (this.commander.enablePreFilter) {
             this.parameters["enablePreFilter"] = this.commander.enablePreFilter;
+        }
+
+        if (this.commander.crawlVersion) {
+            this.parameters["crawlVersion"] = this.commander.crawlVersion;
+        }
+
+        if (this.commander.wetRange) {
+            let split = this.commander.wetRanage.split(":", 2);
+            if (split.length < 2) {
+                console.warn("invalid --wet-range [from]:[to]");
+            } else {
+                this.parameters["wetFrom"] = split[0];
+                this.parameters["wetTo"] = split[1];
+            }
+        }
+
+        if (this.commander.fileOnlyLogging) {
+            this.parameters["fileOnlyLogging"] = this.commander.fileOnlyLogging;
         }
     }
 }

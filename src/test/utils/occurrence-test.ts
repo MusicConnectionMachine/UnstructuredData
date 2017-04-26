@@ -1,6 +1,6 @@
 import "mocha";
-import {Occurrence} from "../../utils/occurrence";
-import {Term} from "../../utils/term";
+import {Occurrence} from "../../classes/occurrence";
+import {Term} from "../../classes/term";
 let assert = require("chai").assert;
 
 describe("Occurrence", () => {

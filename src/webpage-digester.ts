@@ -1,8 +1,8 @@
 import {IndexFilter} from "./filters/index-filter";
 import {Filter} from "./filters/filter";
-import {WebPage} from "./utils/webpage";
-import {Term} from "./utils/term";
-import {Occurrence} from "./utils/occurrence";
+import {WebPage} from "./classes/webpage";
+import {Term} from "./classes/term";
+import {Occurrence} from "./classes/occurrence";
 import {winston} from "./utils/logging";
 
 

@@ -7,10 +7,10 @@ import {winston} from "./utils/logging";
 import {params} from "./utils/param-loader";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
-import {Term} from "./utils/term";
+import {Term} from "./classes/term";
 import {LanguageExtractor} from "./language-extractor";
 import {Storer} from "./storer";
-import {WebPage} from "./utils/webpage";
+import {WebPage} from "./classes/webpage";
 import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 

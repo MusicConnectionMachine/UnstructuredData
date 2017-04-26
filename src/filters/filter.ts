@@ -1,4 +1,4 @@
-import {Term} from "../utils/term";
+import {Term} from "../classes/term";
 
 export abstract class Filter {
 

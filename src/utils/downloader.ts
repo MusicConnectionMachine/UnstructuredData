@@ -1,4 +1,4 @@
-import {AlreadyExistsError, UnsupportedProtocolError,RequestTimeoutError} from './utils/errors';
+import {AlreadyExistsError, UnsupportedProtocolError,RequestTimeoutError} from '../classes/errors';
 import {IncomingMessage} from "http";
 
 
