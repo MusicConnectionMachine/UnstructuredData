@@ -39,7 +39,7 @@ $ Usage: app [options]
 ```
 
 An operating mode has to be selected via the options `-P`, `-M` and `-A`. 
-- Option `-P`/`--Process` will spawn multiple worker processes and will start processing queue items.
+- Option    `-P`/`--Process` will spawn multiple worker processes and will start processing queue items.
   - `-p`/`--processes` can be used to set the number of worker processes. Defaults to the number of logical CPU cores.
   - `-t`/`--heuristic-threshold` sets the filter strictness, the higher the stricter. Defaults to 3.
   - `-l`/`--languages` can be used to restrict the results to only a few languages. 
@@ -60,7 +60,7 @@ The following arguments will only be used when using mode `-P`/`--Process`:
 
 
 
-# Config file
+### Config file
 
 Alternatively to supplying all the arguments via the CLI they can be set via the `config.json` file:
 ```
@@ -93,7 +93,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
 
 
 
-# Environment variables
+### Environment variables
 
 All arguments can also be supplied via environment variables. 
 The environment variable names have to match those in `config.json` with an added `MCM_`, e.g.:   
