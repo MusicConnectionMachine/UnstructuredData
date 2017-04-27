@@ -46,25 +46,19 @@ export class WorkerProcess {
                     params.all.enablePreFilter
                 );
 
-                let queueService = azure.createQueueService(
-                    params.all.queueParams.queueAccount,
-                    params.all.queueParams.queueKey
-                );
-                let queueName = params.all.queueParams.queueName;
-
-                queueService.createQueueIfNotExists(queueName, (err) => {
-                    if (!err) {
-                        WorkerProcess.startProcessing(queueService, queueName);
-                    } else {
-                        winston.error(err);
-                        process.exit(1);
-                    }
-                });
+                WorkerProcess.startProcessing();
             }
         });
     }
 
-    private static startProcessing(queueService, queueName: string) {
+    private static startProcessing() {
+
+        let queueService = azure.createQueueService(
+            params.all.queueParams.queueAccount,
+            params.all.queueParams.queueKey
+        );
+        let queueName = params.all.queueParams.queueName;
+
         let getQueueItem = (callback?: (err?, item?) => void, retries?: number) => {
             queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
                 if (!err) {
