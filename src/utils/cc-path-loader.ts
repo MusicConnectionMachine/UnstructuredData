@@ -1,9 +1,19 @@
-import {Downloader} from "../downloader";
-import {Unpacker} from "../unpacker";
+import {Downloader} from "./downloader";
+import {Unpacker} from "./unpacker";
 
 export class CCPathLoader {
 
     private static defaultURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-04/wet.paths.gz";
+    private indexURL : string;
+
+
+    constructor (crawlVersion: string) {
+        this.indexURL = "https://commoncrawl.s3.amazonaws.com/crawl-data/" + crawlVersion + "/wet.paths.gz";
+    }
+
+    public loadPaths(callback? : (err? : Error, paths? : Array<string>) => void) {
+        CCPathLoader.loadPaths(this.indexURL, callback);
+    }
 
     public static loadPaths(indexURL? : string, callback? : (err? : Error, paths? : Array<string>) => void) {
         Downloader.getResponse(indexURL || CCPathLoader.defaultURL, (err, response) => {

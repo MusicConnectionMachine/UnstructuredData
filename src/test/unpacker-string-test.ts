@@ -1,5 +1,5 @@
 import "mocha";
-import {Unpacker} from "../unpacker";
+import {Unpacker} from "../utils/unpacker";
 let assert = require("chai").assert;
 
 describe("Unpacker: string async", () => {

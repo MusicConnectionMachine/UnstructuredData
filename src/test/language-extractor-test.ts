@@ -1,6 +1,6 @@
 import "mocha";
 import {LanguageExtractor} from "../language-extractor";
-import {WebPage} from "../utils/webpage";
+import {WebPage} from "../classes/webpage";
 let assert = require("chai").assert;
 
 function createDummyWebPage() : WebPage {

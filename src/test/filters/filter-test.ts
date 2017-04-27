@@ -2,7 +2,7 @@ import "mocha";
 import { Filter } from "../../filters/filter";
 import { BloomFilter } from "../../filters/bloom-filter";
 import { PrefixTree } from "../../filters/prefix-tree";
-import {Term} from "../../utils/term";
+import {Term} from "../../classes/term";
 let assert = require("chai").assert;
 
 

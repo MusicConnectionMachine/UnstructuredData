@@ -1,6 +1,6 @@
 import { IndexFilter } from "./index-filter";
-import {Term} from "../utils/term";
-import {Occurrence} from "../utils/occurrence";
+import {Term} from "../classes/term";
+import {Occurrence} from "../classes/occurrence";
 
 /**
  * This is an implementation of a trie/prefix tree. It is used to efficiently search for a large number of different

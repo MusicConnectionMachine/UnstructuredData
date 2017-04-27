@@ -1,7 +1,7 @@
-import {WebPage} from "./utils/webpage";
-import {Unpacker} from "./unpacker";
+import {WebPage} from "./classes/webpage";
+import {Unpacker} from "./utils/unpacker";
 import {winston} from "./utils/logging";
-import {Occurrence} from "./utils/occurrence";
+import {Occurrence} from "./classes/occurrence";
 
 export class Storer {
 

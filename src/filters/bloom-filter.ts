@@ -1,5 +1,5 @@
 import { Filter } from "./filter";
-import {Term} from "../utils/term";
+import {Term} from "../classes/term";
 
 export class BloomFilter extends Filter{
     private static bloem = require('bloem');

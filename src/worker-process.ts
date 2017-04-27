@@ -4,62 +4,62 @@ import * as WARCStream from "warc";
 import * as azure from "azure-storage";
 import * as async from "async";
 import {winston} from "./utils/logging";
+import {params} from "./utils/param-loader";
 import {WetManager} from "./wet-manager";
 import {WebPageDigester} from "./webpage-digester";
-import {Term} from "./utils/term";
+import {Term} from "./classes/term";
 import {LanguageExtractor} from "./language-extractor";
 import {Storer} from "./storer";
-import {WebPage} from "./utils/webpage";
+import {WebPage} from "./classes/webpage";
 import {BloomFilter} from "./filters/bloom-filter";
 import {PrefixTree} from "./filters/prefix-tree";
 
 
-export class Worker {
+export class WorkerProcess {
 
-    private static worker : Worker;
+    private static worker: Worker;
 
     public static run() {
 
         // check if worker process
-        if (!cluster.isWorker) { return; }
+        if (!cluster.isWorker) {
+            return;
+        }
 
-        winston.info('Worker created and running');
+        winston.info('Worker process created and running');
 
         // add event listeners to communicate with master
         process.on('message', (msg) => {
 
             // receiving worker parameters from master
-            if (msg.init) {
-                Worker.worker = new Worker(
-                    msg.init.blobParams,
-                    msg.init.dbParams,
-                    msg.init.terms,
-                    msg.init.heuristicThreshold,
-                    msg.init.languageCodes,
-                    msg.init.caching,
-                    msg.init.enablePreFilter
+            if (msg.terms) {
+
+                winston.info("Received " + msg.terms.length + " terms!");
+
+                WorkerProcess.worker = new Worker(
+                    params.all.blobParams,
+                    params.all.dbParams,
+                    msg.terms,
+                    params.all.heuristicThreshold,
+                    params.all.languageCodes,
+                    params.all.caching,
+                    params.all.enablePreFilter
                 );
 
-                let queueService = azure.createQueueService(
-                    msg.init.queueParams.queueAccount,
-                    msg.init.queueParams.queueKey
-                );
-                let queueName = msg.init.queueParams.queueName;
-
-                queueService.createQueueIfNotExists(queueName, (err) => {
-                    if (!err) {
-                        Worker.startProcessing(queueService, queueName);
-                    } else {
-                        winston.error(err);
-                        process.exit(1);
-                    }
-                });
+                WorkerProcess.startProcessing();
             }
         });
     }
 
-    private static startProcessing(queueService, queueName : string) {
-        let getQueueItem = (callback?: (err?, item?) => void, retries? : number) => {
+    private static startProcessing() {
+
+        let queueService = azure.createQueueService(
+            params.all.queueParams.queueAccount,
+            params.all.queueParams.queueKey
+        );
+        let queueName = params.all.queueParams.queueName;
+
+        let getQueueItem = (callback?: (err?, item?) => void, retries?: number) => {
             queueService.getMessages(queueName, {visibilityTimeout: 30 * 60}, (err, result) => {
                 if (!err) {
                     // check if queue is empty
@@ -78,7 +78,7 @@ export class Worker {
             });
         };
 
-        let deleteQueueItem = (item, callback?: (err?) => void, retries? : number) => {
+        let deleteQueueItem = (item, callback?: (err?) => void, retries?: number) => {
             queueService.deleteMessage(queueName, item.messageId, item.popReceipt, (err) => {
                 if (!err) {
                     callback();
@@ -103,7 +103,7 @@ export class Worker {
                     process.exit(0);
                 }
                 winston.info("Will start working on: " + item.messageText);
-                Worker.worker.workOn(item.messageText, (err) => {
+                WorkerProcess.worker.workOn(item.messageText, (err) => {
                     if (!err) {
                         winston.info("Finished work on: " + item.messageText);
                         deleteQueueItem(item, (err) => {
@@ -125,7 +125,9 @@ export class Worker {
 
         async.forever(doWork);
     }
+}
 
+class Worker {
 
     private webPageDigester : WebPageDigester;
     private storer : Storer;
@@ -144,7 +146,7 @@ export class Worker {
      * @param caching                                       (optional) enable WET file caching
      * @param enablePreFilter                               (optional) enable pre filter
      */
-    private constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
+    public constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
                          terms : Array<Term>, heuristicThreshold : number, languageCodes? : Array<string>,
                          caching? : boolean, enablePreFilter? : boolean) {
 
@@ -174,7 +176,7 @@ export class Worker {
      * @param wetPath                                       CC path to WET file
      * @param callback                                      gets called when all pages have been processed
      */
-    private workOn(wetPath : string, callback : (err? : Error) => void) {
+    public workOn(wetPath : string, callback : (err? : Error) => void) {
         let streamFinished = false;
         let pendingPages = 0;
 
@@ -237,11 +239,8 @@ export class Worker {
                 }
 
                 // a web page has to have at least threshold^2 total matches and threshold entities
-                let heuristicScore =
-                    (webPage.occurrences.length >= this.heuristicThreshold) ? (numTerms / this.heuristicThreshold) : 0;
-
-                // does the page match our heuristic?
-                if (heuristicScore >= this.heuristicThreshold) {
+                let heuristicScore = (webPage.occurrences.length >= this.heuristicThreshold) ? numTerms : 0;
+                if (heuristicScore >= this.heuristicThreshold * this.heuristicThreshold) {
                     onHeuristicMatch(webPage);
                 } else {
                     onWetEntryFinished();

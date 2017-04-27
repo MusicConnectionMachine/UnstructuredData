@@ -6,9 +6,9 @@
 // node out/app.js -w 0:99 -d localhost:1234 -a db:pwd -b acc:container -k blob-key -t 1 -c crawl
 // node out/app.js -h
 
-import {ProcessingManager} from "./processing-manager";
-import {Worker} from "./worker";
+import {MasterProcess} from "./master-process";
+import {WorkerProcess} from "./worker-process";
 
 // Don't touch this otherwise Felix will kill you :P
-ProcessingManager.run();
-Worker.run();
+MasterProcess.run();
+WorkerProcess.run();

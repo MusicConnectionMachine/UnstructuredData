@@ -1,5 +1,5 @@
 import { Filter } from "./filter";
-import {Occurrence} from "../utils/occurrence";
+import {Occurrence} from "../classes/occurrence";
 
 export abstract class IndexFilter extends Filter {
 

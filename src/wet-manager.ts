@@ -1,6 +1,6 @@
-import {Unpacker} from "./unpacker";
+import {Unpacker} from "./utils/unpacker";
 import ReadableStream = NodeJS.ReadableStream;
-import {Downloader} from "./downloader";
+import {Downloader} from "./utils/downloader";
 import {winston} from "./utils/logging";
 
 /**

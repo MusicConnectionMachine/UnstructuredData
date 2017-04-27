@@ -1,4 +1,4 @@
-import {WebPage} from "./utils/webpage";
+import {WebPage} from "./classes/webpage";
 import {winston} from "./utils/logging";
 
 

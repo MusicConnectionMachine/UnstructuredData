@@ -1,8 +1,8 @@
 import "mocha";
 import { IndexFilter } from "../../filters/index-filter";
 import { PrefixTree } from "../../filters/prefix-tree";
-import {Term} from "../../utils/term";
-import {Occurrence} from "../../utils/occurrence";
+import {Term} from "../../classes/term";
+import {Occurrence} from "../../classes/occurrence";
 let assert = require("chai").assert;
 
 

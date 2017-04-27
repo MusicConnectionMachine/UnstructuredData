@@ -1,4 +1,4 @@
-import {Term} from "./term";
+import {Term} from "../classes/term";
 export class TermLoader {
 
     static fs = require('fs');
