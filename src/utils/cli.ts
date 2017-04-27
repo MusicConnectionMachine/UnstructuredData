@@ -62,8 +62,7 @@ export class CLI {
                 console.warn("invalid --db-location [host]:[port]");
             } else {
                 this.parameters["dbHost"] = split[0];
-                let dbPort = parseInt(split[1]);
-                if (dbPort) this.parameters["dbPort"] = dbPort;
+                this.parameters["dbPort"] = split[1];
             }
         }
 
