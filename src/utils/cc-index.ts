@@ -1,5 +1,6 @@
 import {Downloader} from "./downloader";
 import {winston} from "./logging";
+import * as fs from"fs";
 
 /**
  * Objects of this class represent responses from the CommonCrawl index.
@@ -23,8 +24,6 @@ export class CCIndexResponse {
  * This class allows interaction with the CommonCrawl index to search for specific URLs.
  */
 export class CCIndex {
-
-    static fs = require('fs');
 
     public defaultCCIndex : string;
 
@@ -189,8 +188,8 @@ export class CCIndex {
                 console.log(">> resolved " + wetPaths.length + " new path(s)");
 
                 // read old if exists
-                if (CCIndex.fs.existsSync(outputFile)) {
-                    let oldWets = JSON.parse(CCIndex.fs.readFileSync(outputFile));
+                if (fs.existsSync(outputFile)) {
+                    let oldWets = JSON.parse(fs.readFileSync(outputFile).toString("utf8"));
                     for (let oldWet of oldWets) allWets.add(oldWet);
 
                     console.log(">> found " + oldWets.length + " old path(s), merging with new ones");
@@ -199,7 +198,7 @@ export class CCIndex {
                 // save result
                 let allWetsArray = Array.from(allWets);
                 console.log(">> writing " + allWetsArray.length + " path(s) to " + outputFile);
-                let ws = CCIndex.fs.createWriteStream(outputFile);
+                let ws = fs.createWriteStream(outputFile);
                 ws.write(JSON.stringify(allWetsArray));
                 ws.end();
                 ws.on('close', () => {

@@ -38,6 +38,7 @@ export class CLI {
             .option('--enable-pre-filter', 'enable bloom filter as pre filter')
             .option('--crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
             .option('--wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)')
+            .option('--wet-caching', 'cache downloaded WET files')
             .option('-f, --file-only-logging', 'disable console logging')
             .parse(process.argv);
 
@@ -143,6 +144,10 @@ export class CLI {
                 let wetTo = parseInt(split[1]);
                 if (wetTo) this.parameters["wetTo"] = wetTo;
             }
+        }
+
+        if (this.commander.wetCaching) {
+            this.parameters["caching"] = this.commander.wetCaching;
         }
 
         if (this.commander.fileOnlyLogging) {

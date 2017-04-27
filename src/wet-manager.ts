@@ -2,6 +2,9 @@ import {Unpacker} from "./utils/unpacker";
 import ReadableStream = NodeJS.ReadableStream;
 import {Downloader} from "./utils/downloader";
 import {winston} from "./utils/logging";
+import * as fs from "fs";
+import * as url from "url";
+import * as path from "path";
 
 /**
  * This class manages all WET files. It allows for opening WET files as a stream of unpacked
@@ -11,13 +14,7 @@ import {winston} from "./utils/logging";
  */
 export class WetManager {
 
-    static fs = require('fs');
-    static url = require('url');
-    static path = require('path');
-    static http = require('http');
-    static https = require('https');
-
-    private static wetFolder = './wet/';
+    private static wetFolder = path.join(__dirname, '../cache/wet/');
     private static basePath = 'https://commoncrawl.s3.amazonaws.com/';
 
     /**
@@ -52,10 +49,10 @@ export class WetManager {
         });
     }
 
-    private static openWithCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
-        let parsedUrl = WetManager.url.parse(url);
+    private static openWithCaching(wetUrl : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
+        let parsedUrl = url.parse(wetUrl);
 
-        let dirArray = WetManager.path.dirname(parsedUrl.path).split('/');
+        let dirArray = path.dirname(parsedUrl.path).split('/');
         //Segment, aka subfolder in our wet directory
         let segment;
         if (dirArray.length > 2) {
@@ -65,44 +62,44 @@ export class WetManager {
         }
 
         //filename in folder
-        let localFilename = WetManager.path.basename(parsedUrl.path);
+        let localFilename = path.basename(parsedUrl.path);
         //complete file path on drive
-        let filepath = WetManager.path.join(
-            WetManager.path.normalize(WetManager.wetFolder),
+        let filepath = path.join(
+            path.normalize(WetManager.wetFolder),
             segment,
             localFilename
         );
 
-        WetManager.fs.exists(filepath, function (exists) {
+        fs.exists(filepath, function (exists) {
             if (exists) {
                 //Read existing file from file system as decompressed stream for callback
-                let fileReadStream = WetManager.fs.createReadStream(filepath);
+                let fileReadStream = fs.createReadStream(filepath);
                 callback(null, Unpacker.decompressGZipStream(fileReadStream));
 
             } else {
-                let dirPath = WetManager.path.join(
-                    WetManager.path.normalize(WetManager.wetFolder),
+                let dirPath = path.join(
+                    path.normalize(WetManager.wetFolder),
                     segment
                 );
 
                 //Create segment directory if not exists
-                if (!WetManager.fs.existsSync(dirPath)) {
-                    WetManager.fs.mkdirSync(dirPath);
+                if (!fs.existsSync(dirPath)) {
+                    fs.mkdirSync(dirPath);
                 }
 
                 //Download file, store compressed on disk and execute callback with decompressed stream
-                Downloader.getResponse(url, function (err, resp) {
+                Downloader.getResponse(wetUrl, function (err, resp) {
                     if (err) {
                         callback(err);
                         return;
                     }
-                    let outputFile = WetManager.fs.createWriteStream(filepath);
+                    let outputFile = fs.createWriteStream(filepath);
                     resp.pipe(outputFile);
                     let decompressed = Unpacker.decompressGZipStream(resp);
                     decompressed.on('error', err => {
                         winston.error(err);
                         outputFile.close();
-                        WetManager.fs.unlinkSync(filepath);
+                        fs.unlinkSync(filepath);
                     }).on('end', () => {
                         outputFile.close();
                     });
