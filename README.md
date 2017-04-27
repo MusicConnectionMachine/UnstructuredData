@@ -35,6 +35,7 @@ $ Usage: app [options]
     --enable-pre-filter                       enable bloom filter as pre filter
     --crawl-version [version]                 common crawl version, e.g. "CC-MAIN-2017-13"
     --wet-range [from]:[to]                   select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)
+    --wet-caching                             cache downloaded WET files (EXPERIMENTAL)
     -f, --file-only-logging                   disable console logging
 ```
 
@@ -56,10 +57,11 @@ $ Usage: app [options]
   - `--processes` can be used to set the number of worker processes.    
     Defaults to the number of logical CPU cores.
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
-    Defaults to 3.      
+    Defaults to 3.   
+  - `--wet-caching` can be used to save the downloaded and processed WET files to disk. (EXPERIMENTAL)
 - Option `-M`, `--Monitor` will constantly monitor the queue size.  
 - Option `--Delete-queue` will permanently delete the queue.   
-This mode can't be combined any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
+This mode can't be combined with any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
 
 The following arguments will only be used when using mode `-P`, `--Process`:
 - `-d`, `--db-location`
