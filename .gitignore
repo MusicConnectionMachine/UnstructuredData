@@ -43,6 +43,9 @@ jspm_packages
 
 #Ignore transpiled files
 out
+src/*.js
+src/filters/*.js
+src/utils/*.js
 
 #wet files
 *.wet.gz
