@@ -132,7 +132,7 @@ export class CLI {
         }
 
         if (this.commander.wetRange) {
-            let split = this.commander.wetRanage.split(":", 2);
+            let split = this.commander.wetRange.split(":", 2);
             if (split.length < 2) {
                 console.warn("invalid --wet-range [from]:[to]");
             } else {
