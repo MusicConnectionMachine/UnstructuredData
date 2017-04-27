@@ -13,6 +13,13 @@ import {CCPathLoader} from "./utils/cc-path-loader";
 
 export class MasterProcess {
 
+    private static queueService = azure.createQueueService(
+        params.all.queueParams.queueAccount,
+        params.all.queueParams.queueKey
+    );
+    private static queueName = params.all.queueParams.queueName;
+
+
     public static run() {
 
         // check if master process
@@ -40,29 +47,17 @@ export class MasterProcess {
     }
 
     private static deleteQueue(callback? : () => void) {
-        let queueService = azure.createQueueService(
-            params.all.queueParams.queueAccount,
-            params.all.queueParams.queueKey
-        );
-        let queueName = params.all.queueParams.queueName;
-
-        queueService.deleteQueueIfExists(queueName, (err) => {
+        MasterProcess.queueService.deleteQueueIfExists(MasterProcess.queueName, (err) => {
             if (err) winston.error(err);
             callback();
         });
     }
 
     private static monitorQueue() {
-        let queueService = azure.createQueueService(
-            params.all.queueParams.queueAccount,
-            params.all.queueParams.queueKey
-        );
-        let queueName = params.all.queueParams.queueName;
-
         let queueSize : number;
 
         let checkProgress = (cb?: (err?: Error) => void, retries?: number) => {
-           queueService.getQueueMetadata(queueName, (err, result) => {
+           MasterProcess.queueService.getQueueMetadata(MasterProcess.queueName, (err, result) => {
                if (!err) {
                    if (queueSize !== result.approximateMessageCount) {
                        queueSize = result.approximateMessageCount;
@@ -90,11 +85,6 @@ export class MasterProcess {
     private static populateQueue(callback? : () => void) {
 
         let paths : Array<string>;
-        let queueService = azure.createQueueService(
-            params.all.queueParams.queueAccount,
-            params.all.queueParams.queueKey
-        );
-        let queueName = params.all.queueParams.queueName;
 
         let onQueueReady = () => {
             new CCPathLoader(params.all.crawlVersion).loadPaths((err, result) => {
@@ -125,7 +115,7 @@ export class MasterProcess {
         };
 
         let pushPath = (path: string, callback?: (err?: Error) => void, retries?: number) => {
-            queueService.createMessage(queueName, path, (err) => {
+            MasterProcess.queueService.createMessage(MasterProcess.queueName, path, (err) => {
                 if (err && retries) {
                     pushPath(path, callback, retries - 1);
                 } else {
@@ -134,7 +124,7 @@ export class MasterProcess {
             });
         };
 
-        queueService.createQueueIfNotExists(queueName, (err) => {
+        MasterProcess.queueService.createQueueIfNotExists(MasterProcess.queueName, (err) => {
             if (!err) {
                 onQueueReady();
             } else {
