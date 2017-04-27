@@ -40,13 +40,12 @@ $ Usage: app [options]
 
 ### Operating modes
 
-**At least** one operating mode has to be selected via the options `--Add`, `--Delete-queue`, `--Process` and `--Monitor`: 
+**At least** one operating mode has to be selected via the options `--Add`, `--Process`, `--Monitor` and `--Delete-queue`: 
 - Option `-A`, `--Add` will add new items to the queue. 
   - `--crawl-version` can be used to select which Common Crawl version should be used.   
     Defaults to `CC-MAIN-2017-13`.
   - `--wet-range` can be used to only add a subset of all WET files to the queue.
     By default all WET files will be added to the queue.
-- Option `--Delete-queue` will permanently delete the queue.
 - Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
   - `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.   
     Defaults to false.
@@ -59,6 +58,8 @@ $ Usage: app [options]
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
     Defaults to 3.      
 - Option `-M`, `--Monitor` will constantly monitor the queue size.  
+- Option `--Delete-queue` will permanently delete the queue.   
+This mode can't be combined any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
 
 The following arguments will only be used when using mode `-P`, `--Process`:
 - `-d`, `--db-location`

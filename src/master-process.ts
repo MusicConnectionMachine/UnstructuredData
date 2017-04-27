@@ -22,13 +22,6 @@ export class MasterProcess {
 
         let flags = CLI.getInstance().flags;
 
-        let afterDelete = () => {
-            if (flags["add"]) {
-                MasterProcess.populateQueue(afterAdd);
-            } else {
-                afterAdd();
-            }
-        };
 
         let afterAdd = () => {
             if (flags["monitor"]) MasterProcess.monitorQueue();
@@ -36,9 +29,13 @@ export class MasterProcess {
         };
 
         if (flags["deleteQueue"]) {
-            MasterProcess.deleteQueue(afterDelete);
+            MasterProcess.deleteQueue(() => {
+                process.exit(0);
+            });
+        } else if (flags["add"]){
+            MasterProcess.populateQueue(afterAdd);
         } else {
-            afterDelete();
+            afterAdd();
         }
     }
 
