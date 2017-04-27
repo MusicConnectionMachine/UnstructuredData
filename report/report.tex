@@ -244,28 +244,46 @@ On a single VM we have one master process and $m$ worker processes.
 The master loads terms from the DB, spawns the workers and assigns tasks to them. 
 Each worker processes a single WET file at a time and informs the master once it is finished. 
 
-TODO: shell scripts to spawn multiple VMs
+During the last seminar week shell scripts to spawn multiple VMs were added. A global queue is used to pass messages to all VMs.
 
 
 \section*{Internal task distribution}
+All team members worked on their parts of the presentation. 
+Detailed code statistics are available in the git repository. 
+
+
+\paragraph{Felix Schorer} mainly worked on filters, downloader, web page digester, master-worker processes and CLI. 
+He also helped to define the swagger schema in the API sub-project. 
+Most tests and refactoring were done by him.
+
+\paragraph{Lukas Streit} mainly worked on storer, WET manager, term loader, database interaction, deployment scripts and blob storage. 
+He also worked on the API sub-project.
+
+\paragraph{Nikita Basargin} mainly worked on filters, unpacker, CC-index, CLI, first test runs and provided sample data to information extraction groups. 
+He attended all meetings except the last week's hackathon.
+
+\paragraph{Anshul Sharma} mainly worked on language extractor and some other minor issues.
 
 
 
 
 \section*{Timeline}
-TODO
+\paragraph{First steps}
+After the inspiring kick-off event we started to inform ourselves how to get access to the CC data. 
+Some basic functionality like downloading, unpacking and WET file parsing was implemented.
 
-\subsection*{First steps}
-TODO
+\paragraph{Presentations}
+In the middle of the project we had to switch to another topic: RESTful APIs.
+Presentation and the workshop preparation took some time. 
+Introduction to Azure after the presentations was very helpful.
 
-\subsection*{Presentations}
-TODO
+\paragraph{Implementation}
+After the presentations the main implementation phase started.
+Some ideas like TF-IDF had to be dropped due the large amount of data.
 
-\subsection*{Implementation}
-TODO
 
-\subsection*{Final steps}
-TODO
+\paragraph{Final steps}
+Scaling to mutiple VMs was implemented during the final week. Also, continuous improvements and refactoring took place.
 
 
 \section*{Problems and feedback}
