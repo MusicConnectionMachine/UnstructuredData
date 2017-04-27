@@ -17,43 +17,44 @@ $ Usage: app [options]
 
 > Options:
 
-    -h, --help                                 output usage information
-    -P, --Process                              process queue items
-    -A, --Add                                  add items to the queue
-    -M, --Monitor                              monitor queue size
-    -d, --db-location [host]:[port]            database location, e.g. "127.0.0.1:5432"
-    -a, --db-access [user]:[password]          database access, e.g. "USER:PASSWORD"
-    -n, --db-name [name]                       database name, e.g. "ProductionDB"
-    -b, --blob-location [account]:[container]  blob storage location, e.g. "wetstorage:websites"
-    -k, --blob-key [storageKey]                blob storage access key, e.g. "AZURE_KEY_HERE"
-    -q, --queue-location [account]:[queue]     task queue location, e.g. "queueservice:taskqueue"
-    -s, --queue-key [serviceKey]               queue service access key, e.g. "AZURE_KEY_HERE"
-    -p, --processes [number]                   number of worker threads, e.g. "4"
-    -t, --heuristic-threshold [number]         filter strictness, the higher the stricter, e.g. "3"
-    -l, --languages [languageCodes]            languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
-    -e, --enable-pre-filter                    enable bloom filter as pre filter
-    -c, --crawl-version [version]              common crawl version, e.g. "CC-MAIN-2017-13"
-    -r, --wet-range [from]:[to]                select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)
-    -f, --file-only-logging                    disable console logging
-
+    -h, --help                                output usage information
+    -P, --Process                             process queue items
+    -A, --Add                                 add items to the queue
+    -M, --Monitor                             monitor queue size
+    --Delete-queue                            delete queue
+    -d, --db-location [host]:[port]           database location, e.g. "127.0.0.1:5432"
+    -a, --db-access [user]:[password]         database access, e.g. "USER:PASSWORD"
+    -n, --db-name [name]                      database name, e.g. "ProductionDB"
+    -b, --blob-access [account]:[accessKey]   blob storage credentials, e.g. "wetstorage:AZURE_KEY_HERE"
+    -c, --blob-container [containerName]      blob storage container name, e.g. "websites"
+    -q, --queue-access [account]:[accessKey]  task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"
+    -s, --queue-name [queueName]              queue name, e.g. "taskqueue"
+    --processes [number]                      number of worker threads, e.g. "4"
+    -t, --heuristic-threshold [number]        filter strictness, the higher the stricter, e.g. "3"
+    --languages [languageCodes]               languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
+    --enable-pre-filter                       enable bloom filter as pre filter
+    --crawl-version [version]                 common crawl version, e.g. "CC-MAIN-2017-13"
+    --wet-range [from]:[to]                   select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)
+    -f, --file-only-logging                   disable console logging
 ```
 
 ### Operating modes
 
-**At least** one operating mode has to be selected via the options `-A`, `-P` and `-M`: 
+**At least** one operating mode has to be selected via the options `--Add`, `--Delete-queue`, `--Process` and `--Monitor`: 
 - Option `-A`, `--Add` will add new items to the queue. 
-  - `-c`, `--crawl-version` can be used to select which Common Crawl version should be used.   
+  - `--crawl-version` can be used to select which Common Crawl version should be used.   
     Defaults to `CC-MAIN-2017-13`.
-  - `-r`, `--wet-range` can be used to only add a subset of all WET files to the queue.
+  - `--wet-range` can be used to only add a subset of all WET files to the queue.
     By default all WET files will be added to the queue.
+- Option `--Delete-queue` will permanently delete the queue.
 - Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
-  - `-e`, `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.   
+  - `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.   
     Defaults to false.
-  - `-l`, `--languages` can be used to restrict the results to only a few languages.   
+  - `--languages` can be used to restrict the results to only a few languages.   
     This expects a JSON formatted list of ISO 639-1 language codes.   
     An empty list `[]` will result in all languages being accepted.   
     Defaults to English.
-  - `-p`, `--processes` can be used to set the number of worker processes.    
+  - `--processes` can be used to set the number of worker processes.    
     Defaults to the number of logical CPU cores.
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
     Defaults to 3.      
@@ -63,8 +64,8 @@ The following arguments will only be used when using mode `-P`, `--Process`:
 - `-d`, `--db-location`
 - `-a`, `--db-access`
 - `-n`, `--db-name`
-- `-b`, `--blob-location`
-- `-k`, `--blob-key`
+- `-b`, `--blob-access`
+- `-c`, `--blob-container`
 
 
 

@@ -22,57 +22,84 @@ export class MasterProcess {
 
         let flags = CLI.getInstance().flags;
 
-        if (flags["add"]) {
-            MasterProcess.populateQueue(() => {
-                if (flags["monitor"]) MasterProcess.monitorQueue();
-                if (flags["process"]) MasterProcess.processQueue();
-            });
-        } else {
+        let afterDelete = () => {
+            if (flags["add"]) {
+                MasterProcess.populateQueue(afterAdd);
+            } else {
+                afterAdd();
+            }
+        };
+
+        let afterAdd = () => {
             if (flags["monitor"]) MasterProcess.monitorQueue();
             if (flags["process"]) MasterProcess.processQueue();
+        };
+
+        if (flags["deleteQueue"]) {
+            MasterProcess.deleteQueue(afterDelete);
+        } else {
+            afterDelete();
         }
     }
 
-    private static monitorQueue() {
+    private static deleteQueue(callback? : () => void) {
+        let queueService = azure.createQueueService(
+            params.all.queueParams.queueAccount,
+            params.all.queueParams.queueKey
+        );
+        let queueName = params.all.queueParams.queueName;
 
-        let queueService;
-        let queueName : string;
+        queueService.deleteQueueIfExists(queueName, (err) => {
+            if (err) winston.error(err);
+            callback();
+        });
+    }
+
+    private static monitorQueue() {
+        let queueService = azure.createQueueService(
+            params.all.queueParams.queueAccount,
+            params.all.queueParams.queueKey
+        );
+        let queueName = params.all.queueParams.queueName;
+
         let queueSize : number;
 
-        let onQueueReady = (service, name) => {
-            queueService = service;
-            queueName = name;
-
-            // while queue size is bigger than 0 check progress every second
-            async.doWhilst((cb) => {
-                checkProgress(() => {
-                    setTimeout(cb, 1000);
-                });
-            }, () => {return queueSize > 0});
-        };
-
-        let checkProgress = (cb?: () => void) => {
+        let checkProgress = (cb?: (err?: Error) => void, retries?: number) => {
            queueService.getQueueMetadata(queueName, (err, result) => {
-               if (!err && queueSize !== result.approximateMessageCount) {
-                   queueSize = result.approximateMessageCount;
-                   winston.info("Current approximate queue size: " + queueSize);
+               if (!err) {
+                   if (queueSize !== result.approximateMessageCount) {
+                       queueSize = result.approximateMessageCount;
+                       winston.info("Current approximate queue size: " + queueSize);
+                   }
+                   if (cb) cb();
+               } else if (retries) {
+                   checkProgress(cb, retries - 1);
+               } else {
+                   winston.error("Couldn't fetch queue size!", err);
+                   if (cb) cb(err);
                }
-               if (cb) cb();
            });
         };
 
-        MasterProcess.connectToQueue(onQueueReady);
+        // while queue size is bigger than 0 check progress every second
+        async.doWhilst((cb) => {
+            checkProgress(() => {
+                setTimeout(cb, 1000);
+            }, 5);
+        }, () => {return queueSize > 0});
+
     }
 
     private static populateQueue(callback? : () => void) {
 
         let paths : Array<string>;
-        let queueService;
-        let queueName : string;
+        let queueService = azure.createQueueService(
+            params.all.queueParams.queueAccount,
+            params.all.queueParams.queueKey
+        );
+        let queueName = params.all.queueParams.queueName;
 
-        let onQueueReady = (service, name) => {
-            queueService = service;
-            queueName = name;
+        let onQueueReady = () => {
             new CCPathLoader(params.all.crawlVersion).loadPaths((err, result) => {
                 if (!err && result) {
                     paths = result.slice(params.all.wetFrom, params.all.wetTo);
@@ -110,7 +137,13 @@ export class MasterProcess {
             });
         };
 
-        MasterProcess.connectToQueue(onQueueReady);
+        queueService.createQueueIfNotExists(queueName, (err) => {
+            if (!err) {
+                onQueueReady();
+            } else {
+                winston.error(err);
+            }
+        });
     }
 
     private static processQueue() {
@@ -172,22 +205,6 @@ export class MasterProcess {
         };
 
         loadBlacklist();
-    }
-
-    private static connectToQueue(callback?: (queueService?, queueName? : string) => void) {
-        let queueService = azure.createQueueService(
-            params.all.queueParams.queueAccount,
-            params.all.queueParams.queueKey
-        );
-        let queueName = params.all.queueParams.queueName;
-
-        queueService.createQueueIfNotExists(queueName, (err) => {
-            if (!err) {
-                callback(queueService, queueName);
-            } else {
-                winston.error(err);
-            }
-        });
     }
 }
 

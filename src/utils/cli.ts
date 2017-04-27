@@ -24,19 +24,20 @@ export class CLI {
             .option('-P, --Process', 'process queue items')
             .option('-A, --Add', 'add items to the queue')
             .option('-M, --Monitor', 'monitor queue size')
+            .option('--Delete-queue', 'delete queue')
             .option('-d, --db-location [host]:[port]', 'database location, e.g. "127.0.0.1:5432"')
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-n, --db-name [name]', 'database name, e.g. "ProductionDB"')
-            .option('-b, --blob-location [account]:[container]', 'blob storage location, e.g. "wetstorage:websites"')
-            .option('-k, --blob-key [storageKey]', 'blob storage access key, e.g. "AZURE_KEY_HERE"')
-            .option('-q, --queue-location [account]:[queue]', 'task queue location, e.g. "queueservice:taskqueue"')
-            .option('-s, --queue-key [serviceKey]', 'queue service access key, e.g. "AZURE_KEY_HERE"')
-            .option('-p, --processes [number]', 'number of worker threads, e.g. "4"')
+            .option('-b, --blob-access [account]:[accessKey]', 'blob storage credentials, e.g. "wetstorage:AZURE_KEY_HERE"')
+            .option('-c, --blob-container [containerName]', 'blob storage container name, e.g. "websites"')
+            .option('-q, --queue-access [account]:[accessKey]', 'task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"')
+            .option('-s, --queue-name [queueName]', 'task queue name, e.g. "taskqueue"')
+            .option('--processes [number]', 'number of worker threads, e.g. "4"')
             .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
-            .option('-l, --languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
-            .option('-e, --enable-pre-filter', 'enable bloom filter as pre filter')
-            .option('-c, --crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
-            .option('-r, --wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)')
+            .option('--languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
+            .option('--enable-pre-filter', 'enable bloom filter as pre filter')
+            .option('--crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
+            .option('--wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)')
             .option('-f, --file-only-logging', 'disable console logging')
             .parse(process.argv);
 
@@ -53,7 +54,8 @@ export class CLI {
         this.flags = {
             process: this.commander.Process,
             monitor: this.commander.Monitor,
-            add: this.commander.Add
+            add: this.commander.Add,
+            deleteQueue: this.commander.DeleteQueue
         };
 
         if (this.commander.dbLocation) {
@@ -80,32 +82,32 @@ export class CLI {
             this.parameters["dbName"] = this.commander.dbName;
         }
 
-        if (this.commander.blobLocation) {
-            let split = this.commander.blobLocation.split(":", 2);
+        if (this.commander.blobAccess) {
+            let split = this.commander.blobAccess.split(":", 2);
             if (split.length < 2) {
-                console.warn("invalid --blob-location [account]:[container]");
+                console.warn("invalid --blob-access [account]:[accessKey]");
             } else {
                 this.parameters["blobAccount"] = split[0];
-                this.parameters["blobContainer"] = split[1];
+                this.parameters["blobKey"] = split[1];
             }
         }
 
-        if (this.commander.blobKey) {
-            this.parameters["blobKey"] = this.commander.blobKey;
+        if (this.commander.blobContainer) {
+            this.parameters["blobContainer"] = this.commander.blobContainer;
         }
 
-        if (this.commander.queueLocation) {
-            let split = this.commander.queueLocation.split(":", 2);
+        if (this.commander.queueAccess) {
+            let split = this.commander.queueAccess.split(":", 2);
             if (split.length < 2) {
-                console.warn("invalid --queue-location [account]:[queue]");
+                console.warn("invalid --queue-access [account]:[accessKey]");
             } else {
                 this.parameters["queueAccount"] = split[0];
-                this.parameters["queueName"] = split[1];
+                this.parameters["queueKey"] = split[1];
             }
         }
 
-        if (this.commander.queueKey) {
-            this.parameters["queueKey"] = this.commander.queueKey;
+        if (this.commander.queueName) {
+            this.parameters["queueName"] = this.commander.queueName;
         }
 
         if (this.commander.processes) {
