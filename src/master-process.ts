@@ -72,7 +72,7 @@ export class MasterProcess {
             queueName = name;
             new CCPathLoader(params.all.crawlVersion).loadPaths((err, result) => {
                 if (!err && result) {
-                    paths = result;
+                    paths = result.slice(params.all.wetFrom, params.all.wetTo);
                     winston.info("Successfully loaded " + paths.length + " paths.");
                     onPathsLoaded();
                 } else {

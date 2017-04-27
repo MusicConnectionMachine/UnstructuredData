@@ -245,11 +245,8 @@ class Worker {
                 }
 
                 // a web page has to have at least threshold^2 total matches and threshold entities
-                let heuristicScore =
-                    (webPage.occurrences.length >= this.heuristicThreshold) ? (numTerms / this.heuristicThreshold) : 0;
-
-                // does the page match our heuristic?
-                if (heuristicScore >= this.heuristicThreshold) {
+                let heuristicScore = (webPage.occurrences.length >= this.heuristicThreshold) ? numTerms : 0;
+                if (heuristicScore >= this.heuristicThreshold * this.heuristicThreshold) {
                     onHeuristicMatch(webPage);
                 } else {
                     onWetEntryFinished();
