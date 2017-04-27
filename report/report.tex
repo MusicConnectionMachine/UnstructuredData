@@ -197,6 +197,7 @@ Some members actively worked on the interfaces and the new \emph{API} sub-projec
 Some teams were merged.
 
 
+%-----------------------------------------------
 \section*{Unstructured data}
 Our team was responsible for data aggregation on unstructured sources. 
 Data from \emph{CommonCrawl} (CC) was used. 
@@ -214,6 +215,7 @@ The group working on structured data sources provides us with a list of relevant
 These terms are used for the filtering.
 
 
+%-----------------------------------------------
 \section*{Data processing pipeline}
 This section explains the basics of the data processing pipeline. 
 In order to keep is simple, we assume that only one machine is doing the processing. 
@@ -237,6 +239,7 @@ If a web page passes the filtering step, the whole content is stored inside a bl
 The metadata (link to the blob, what and how many terms were found) are saved inside the database.
 
 
+%-----------------------------------------------
 \section*{Parallel processing}
 Each WET file is independent from others. 
 This allows very high parallelism. 
@@ -247,10 +250,10 @@ Each worker processes a single WET file at a time and informs the master once it
 During the last seminar week shell scripts to spawn multiple VMs were added. A global queue is used to pass messages to all VMs.
 
 
+%-----------------------------------------------
 \section*{Internal task distribution}
 All team members worked on their parts of the presentation. 
 Detailed code statistics are available in the git repository. 
-
 
 \paragraph{Felix Schorer} mainly worked on filters, downloader, web page digester, master-worker processes and CLI. 
 He also helped to define the swagger schema in the API sub-project. 
@@ -266,7 +269,7 @@ He attended all meetings except the last week's hackathon.
 
 
 
-
+%-----------------------------------------------
 \section*{Timeline}
 \paragraph{First steps}
 After the inspiring kick-off event we started to inform ourselves how to get access to the CC data. 
@@ -281,18 +284,33 @@ Introduction to Azure after the presentations was very helpful.
 After the presentations the main implementation phase started.
 Some ideas like TF-IDF had to be dropped due the large amount of data.
 
-
 \paragraph{Final steps}
 Scaling to mutiple VMs was implemented during the final week. Also, continuous improvements and refactoring took place.
 
 
+%-----------------------------------------------
 \section*{Problems and feedback}
-TODO
+\paragraph{Late introduction of API} 
+For a very long time interfaces were not defined. 
+This slowed down some groups. 
+For the next project it might be helpful to have a group entirely responsible for interfaces and communication only.
 
+\paragraph{Competition} 
+At the beginning of the seminar there was a lot of competition not only between groups but also inside of those. 
+Competition sometimes can be motivating. 
+However, it also can have the opposite effect if a group or member can't keep up with others.
+
+\paragraph{Meetings}
+Team meetings showed to be productive. 
+For the next seminar we could have more of them.
 
 
 \section*{Conclusion}
-TODO
+The seminar was quite challenging and required a lot of new things to be learned.
+Fortunately, a lot of work has led to an impressive result. 
+We are able to process huge amounts of data from CommonCrawl using the computational power of many VMs.
+There are still a few things that can be improved and I'm happy to see that some team members continue to work on them even after the end of the seminar. 
+A special thanks to all JST mentors who supported us during the seminar and made everything possible.
 
 
 
