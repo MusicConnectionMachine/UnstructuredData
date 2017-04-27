@@ -22,12 +22,15 @@ export class MasterProcess {
 
         let flags = CLI.getInstance().flags;
 
-        if (flags["monitor"]) MasterProcess.monitorQueue();
         if (flags["add"]) {
             MasterProcess.populateQueue(() => {
+                if (flags["monitor"]) MasterProcess.monitorQueue();
                 if (flags["process"]) MasterProcess.processQueue();
             });
-        } else if (flags["process"]) MasterProcess.processQueue();
+        } else {
+            if (flags["monitor"]) MasterProcess.monitorQueue();
+            if (flags["process"]) MasterProcess.processQueue();
+        }
     }
 
     private static monitorQueue() {
