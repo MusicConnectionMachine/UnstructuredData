@@ -129,7 +129,7 @@ export class MasterProcess {
             if (!err) {
                 onQueueReady();
             } else {
-                winston.error(err);
+                winston.error("Couldn't create queue!", err);
             }
         });
     }
