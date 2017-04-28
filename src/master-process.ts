@@ -156,10 +156,10 @@ export class MasterProcess {
 
         let loadTerms = () => {
 
-            TermLoader.loadFromDB(params.all.dbParams, (err : Error, result : Array<Term>) => {
+            let onTermsLoaded = (err : Error, result : Array<Term>) => {
                 if (err) {
-                    winston.error(err);
-                    process.exit(1);
+                    winston.error("Failed to load the terms, retrying in 60 seconds. ", err);
+                    return setTimeout(() => TermLoader.loadFromDB(params.all.dbParams, onTermsLoaded), 60000);
                 }
 
                 // check length of terms
@@ -171,7 +171,9 @@ export class MasterProcess {
                 winston.info("Successfully loaded " + terms.length + " terms!");
 
                 spawnProcesses();
-            });
+            };
+
+            TermLoader.loadFromDB(params.all.dbParams, onTermsLoaded);
         };
 
         let spawnProcesses = () => {
