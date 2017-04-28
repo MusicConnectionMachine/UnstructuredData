@@ -117,7 +117,7 @@ export class MasterProcess {
 
         let pushPath = (path: string, callback?: (err?: Error) => void, retries?: number) => {
             MasterProcess.queueService.createMessage(MasterProcess.queueName, path, (err) => {
-                if (err && retries) {
+                if (err && retries > 0) {
                     setTimeout(() => pushPath(path, callback, retries - 1), 60000);
                 } else {
                     callback(err);
