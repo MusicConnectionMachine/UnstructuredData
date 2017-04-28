@@ -66,7 +66,7 @@ export class MasterProcess {
                    }
                    if (cb) cb();
                } else if (retries > 0) {
-                   setTimeout(() => checkProgress(cb, retries - 1), 60000);
+                   setTimeout(() => checkProgress(cb, retries - 1), 10000);
                } else {
                    winston.error("Couldn't fetch queue size!", err);
                    if (cb) cb(err);
