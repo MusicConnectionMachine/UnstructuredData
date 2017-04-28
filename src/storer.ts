@@ -2,13 +2,10 @@ import {WebPage} from "./classes/webpage";
 import {Unpacker} from "./utils/unpacker";
 import {winston} from "./utils/logging";
 import {Occurrence} from "./classes/occurrence";
+import * as azure from "azure";
+import * as uuid from "uuid/v4";
 
 export class Storer {
-
-    static azure = require('azure');
-    static crypto = require('crypto');
-    static path = require('path');
-    static uuid = require('uuid/v4');
 
     private container;
     private blobService;
@@ -22,7 +19,7 @@ export class Storer {
 
     constructor(blobAccount : string, blobContainer : string, blobKey : string){
 
-        this.blobService = Storer.azure.createBlobService(
+        this.blobService = azure.createBlobService(
             blobAccount,
             blobKey
         );
@@ -88,7 +85,7 @@ export class Storer {
 
     public storeWebsiteMetadata(webPage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
         this.websites.push({
-            id: Storer.uuid(),
+            id: uuid(),
             url: webPage.getURI(),
             blobUrl: blobUrl,
             occurences: webPage.occurrences
@@ -112,7 +109,7 @@ export class Storer {
     public storeWebsiteBlob(webPage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
         if (!this.blob) {
             this.blob = {
-                name: Storer.uuid(),
+                name: uuid(),
                 entries: []
             };
         }
@@ -147,7 +144,7 @@ export class Storer {
         const websiteInserts = [];
         const containsInserts = [];
         this.websites.forEach(website => {
-            let websiteId = Storer.uuid();
+            let websiteId = uuid();
             websiteInserts.push({
                 id: websiteId,
                 url: website.url,
@@ -171,7 +168,7 @@ export class Storer {
 
                 return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
             })
-        }).then(result => {
+        }).then(() => {
             this.websites = [];
             if(callback) {
                 callback();

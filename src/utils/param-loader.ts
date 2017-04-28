@@ -26,6 +26,7 @@ export class ParamLoader {
         processes: os.cpus().length,
         crawlVersion: "CC-MAIN-2017-13",
         heuristicThreshold: 3,
+        heuristicLimit: Infinity,
         languageCodes: ["en"]
     };
 

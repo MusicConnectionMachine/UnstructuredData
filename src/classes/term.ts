@@ -7,9 +7,4 @@ export class Term {
         this.value = value;
         this.entityId = entityId;
     }
-
-    public equals(term : Term) : boolean {
-        return term.value == this.value && term.entityId == this.entityId;
-    }
-
 }

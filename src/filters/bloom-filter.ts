@@ -1,9 +1,10 @@
 import { Filter } from "./filter";
 import {Term} from "../classes/term";
+import * as bloem from "bloem";
+import * as natural from "natural";
 
 export class BloomFilter extends Filter{
-    private static bloem = require('bloem');
-    private static tokenizer = new (require('natural')).WordTokenizer();
+    private static tokenizer = new natural.WordTokenizer();
     private static ERROR_RATE = 0.1;
     private filter;
 
@@ -12,7 +13,7 @@ export class BloomFilter extends Filter{
      * @param searchTerms           search terms to initialize filter with
      */
     protected init(searchTerms : Array<Term>) : void {
-        this.filter = new BloomFilter.bloem.ScalingBloem(BloomFilter.ERROR_RATE);
+        this.filter = new bloem.ScalingBloem(BloomFilter.ERROR_RATE);
         if(searchTerms){
             for (let term of searchTerms) {
                 this.addSearchTerm(term);

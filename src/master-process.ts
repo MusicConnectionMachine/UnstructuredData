@@ -9,6 +9,7 @@ import {Term} from "./classes/term";
 import {CLI} from "./utils/cli";
 import {params} from "./utils/param-loader";
 import {CCPathLoader} from "./utils/cc-path-loader";
+import * as path from "path";
 
 
 export class MasterProcess {
@@ -139,8 +140,9 @@ export class MasterProcess {
         let termBlacklist : Set<string> = new Set();
 
         let loadBlacklist = () => {
-            if (fs.existsSync("./term-blacklist.txt")) {
-                let lineReader = readLine.createInterface({input: fs.createReadStream("./term-blacklist.txt")});
+            let blacklistPath = path.join(__dirname, "../term-blacklist.txt");
+            if (fs.existsSync(blacklistPath)) {
+                let lineReader = readLine.createInterface({input: fs.createReadStream(blacklistPath)});
                 lineReader.on('line', (line) => {
                     termBlacklist.add(line);
                 });

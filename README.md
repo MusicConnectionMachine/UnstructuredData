@@ -28,14 +28,17 @@ $ Usage: app [options]
     -b, --blob-access [account]:[accessKey]   blob storage credentials, e.g. "wetstorage:AZURE_KEY_HERE"
     -c, --blob-container [containerName]      blob storage container name, e.g. "websites"
     -q, --queue-access [account]:[accessKey]  task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"
-    -s, --queue-name [queueName]              queue name, e.g. "taskqueue"
+    -s, --queue-name [queueName]              task queue name, e.g. "taskqueue"
     --processes [number]                      number of worker threads, e.g. "4"
-    -t, --heuristic-threshold [number]        filter strictness, the higher the stricter, e.g. "3"
+    -t, --heuristic [threshold]:[limit]       filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)
     --languages [languageCodes]               languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     --enable-pre-filter                       enable bloom filter as pre filter
     --crawl-version [version]                 common crawl version, e.g. "CC-MAIN-2017-13"
-    --wet-range [from]:[to]                   select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)
+    --wet-range [from]:[to]                   select a subset of WET files from CC, e.g. "0:420" (inclusive:exclusive)
+    --wet-caching                             cache downloaded WET files (EXPERIMENTAL)
     -f, --file-only-logging                   disable console logging
+
+
 ```
 
 ### Operating modes
@@ -56,10 +59,11 @@ $ Usage: app [options]
   - `--processes` can be used to set the number of worker processes.    
     Defaults to the number of logical CPU cores.
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
-    Defaults to 3.      
+    Threshold defaults to 3, limit to infinity.   
+  - `--wet-caching` can be used to save the downloaded and processed WET files to disk. (EXPERIMENTAL)
 - Option `-M`, `--Monitor` will constantly monitor the queue size.  
 - Option `--Delete-queue` will permanently delete the queue.   
-This mode can't be combined any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
+This mode can't be combined with any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
 
 The following arguments will only be used when using mode `-P`, `--Process`:
 - `-d`, `--db-location`
@@ -88,6 +92,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "queueKey": "AZURE_KEY_HERE",
   "processes": 4,
   "heuristicThreshold": 3,
+  "heuristicLimit": 7,
   "languageCodes": [
     "de",
     "en",

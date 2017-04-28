@@ -1,12 +1,11 @@
 import {WebPage} from "./classes/webpage";
 import {winston} from "./utils/logging";
+import * as cld from "cld";
+import * as franc from "franc";
+import * as langs from "langs";
 
 
 export class LanguageExtractor {
-
-    private static cld = require('cld');
-    private static franc = require('franc');
-    private static langs = require('langs');
 
     private static SAMPLE_SIZE = 900;
 
@@ -19,12 +18,12 @@ export class LanguageExtractor {
     public static getPageLanguage(webPage : WebPage, callback : (languageCode : string) => void) {
         const testString = LanguageExtractor.getTestSample(webPage, LanguageExtractor.SAMPLE_SIZE);
 
-        LanguageExtractor.cld.detect(testString, { isHTML: false, tldHint: webPage.getTLD()}, (err, result) => {
+        cld.detect(testString, { isHTML: false, tldHint: webPage.getTLD()}, (err, result) => {
             let langCode;
             if(err) {
-                let francResult = LanguageExtractor.franc(testString);
+                let francResult = franc(testString);
                 try {
-                    langCode = LanguageExtractor.langs.where("2", francResult)["1"];
+                    langCode = langs.where("2", francResult)["1"];
                 } catch (e){
                     winston.warn("Language code unknown: " + francResult);
                 }
@@ -47,7 +46,7 @@ export class LanguageExtractor {
 
         // check language codes
         for (let languageCode of languageCodes) {
-            if (!LanguageExtractor.langs.has(1, languageCode)) {
+            if (!langs.has(1, languageCode)) {
                 callback(new SyntaxError("Language code '" + languageCode + "' not in ISO 639-1!"), undefined);
                 return;
             }
