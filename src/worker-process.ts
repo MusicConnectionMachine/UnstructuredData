@@ -42,6 +42,7 @@ export class WorkerProcess {
                     msg.terms,
                     params.all.heuristicThreshold,
                     params.all.heuristicLimit,
+                    params.all.avgLineLength,
                     params.all.languageCodes,
                     params.all.caching,
                     params.all.enablePreFilter
@@ -137,6 +138,7 @@ class Worker {
     private dbParameters : {[param : string] : string };
     private heuristicThreshold : number;
     private heuristicLimit : number;
+    private avgLineLength : number;
 
 
     /**
@@ -145,13 +147,15 @@ class Worker {
      * @param terms                                         Array of entities to filter for
      * @param heuristicThreshold                            threshold for heuristic
      * @param heuristicLimit                                limit for heuristic
+     * @param avgLineLength                                 shrink web page content to avg line length
      * @param languageCodes                                 (optional) Array of languages to filter for
      * @param caching                                       (optional) enable WET file caching
      * @param enablePreFilter                               (optional) enable pre filter
      */
     public constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
                         terms : Array<Term>, heuristicThreshold : number, heuristicLimit : number,
-                        languageCodes? : Array<string>, caching? : boolean, enablePreFilter? : boolean) {
+                        avgLineLength : number, languageCodes? : Array<string>, caching? : boolean,
+                        enablePreFilter? : boolean) {
 
         this.webPageDigester = new WebPageDigester(terms).setFilter(PrefixTree);
 
@@ -165,6 +169,7 @@ class Worker {
         this.dbParameters = dbParams;
         this.heuristicThreshold = heuristicThreshold;
         this.heuristicLimit = heuristicLimit;
+        this.avgLineLength = avgLineLength;
     }
 
 
@@ -232,7 +237,7 @@ class Worker {
             pendingPages++;
 
             let webPage = new WebPage(data);
-            this.webPageDigester.digest(webPage.shrinkContent(params.all.avgLineLength));
+            this.webPageDigester.digest(webPage.shrinkContent(this.avgLineLength));
 
             if (webPage.occurrences) {
 
