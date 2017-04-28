@@ -120,4 +120,52 @@ export class WebPage {
         // convert map back to an array of Occurrences
         this.occurrences = Occurrence.occMapToArr(mergedMap);
     }
+
+    /**
+     * Shrinks down the content of a page until all lines have the average length
+     * @param threshold                             threshold for average line length
+     * @return {WebPage}
+     */
+    public shrinkContent(threshold : number) {
+        let split = this.content.split("\n");
+
+        // save line numbers and text
+        let lines : Array<Object> = [];
+        for (let entry of split.entries()) {
+            lines.push(entry);
+        }
+
+        // sort by line length
+        lines.sort((a, b) => {
+            if (a[1].length > b[1].length) return -1;
+            if (a[1].length < b[1].length) return 1;
+            return 0;
+        });
+
+        // remove shortest lines until threshold is reached
+        let shortest = 0;
+        let total = this.content.length;
+        while (lines.length > 0 && (total / lines.length < threshold || shortest === lines[lines.length - 1][1].length)){
+            total -= (shortest = lines.pop()[1].length);
+        }
+
+        // sort by original index
+        lines.sort((a , b) => {
+            if (a[0] > b[0]) return 1;
+            if (a[0] < b[0]) return -1;
+            return 0;
+        });
+
+        // reassemble string
+        let result = "";
+        if (lines.length > 0) {
+            result += lines[0][1];
+            for (let i = 1; i < lines.length; i++){
+                result += "\n" + lines[i][1];
+            }
+        }
+
+        this.content = result;
+        return this;
+    }
 }

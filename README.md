@@ -13,9 +13,9 @@ Once that's finished run `npm run compile` to compile everything to Javascript.
 
 ## Usage
 ```
-$ Usage: app [options]
+  Usage: app [options]
 
-> Options:
+  Options:
 
     -h, --help                                output usage information
     -P, --Process                             process queue items
@@ -31,14 +31,13 @@ $ Usage: app [options]
     -s, --queue-name [queueName]              task queue name, e.g. "taskqueue"
     --processes [number]                      number of worker threads, e.g. "4"
     -t, --heuristic [threshold]:[limit]       filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)
+    -l, --avg-line-length [length]            remove short lines from content before filtering, e.g. "100"
     --languages [languageCodes]               languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     --enable-pre-filter                       enable bloom filter as pre filter
     --crawl-version [version]                 common crawl version, e.g. "CC-MAIN-2017-13"
     --wet-range [from]:[to]                   select a subset of WET files from CC, e.g. "0:420" (inclusive:exclusive)
     --wet-caching                             cache downloaded WET files (EXPERIMENTAL)
     -f, --file-only-logging                   disable console logging
-
-
 ```
 
 ### Operating modes
@@ -50,12 +49,14 @@ $ Usage: app [options]
   - `--wet-range` can be used to only add a subset of all WET files to the queue.
     By default all WET files will be added to the queue.
 - Option `-P`, `--Process` will spawn multiple worker processes and will start processing queue items.
+  - `-l`, `--avg-line-length` will shrink web page content down to its main text based on average line length.
+    Defaults to 40.
   - `--enable-pre-filter` will enable pre filtering which might improve performance in some cases.   
     Defaults to false.
   - `--languages` can be used to restrict the results to only a few languages.   
     This expects a JSON formatted list of ISO 639-1 language codes.   
     An empty list `[]` will result in all languages being accepted.   
-    Defaults to English.
+    Defaults to English. 
   - `--processes` can be used to set the number of worker processes.    
     Defaults to the number of logical CPU cores.
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    

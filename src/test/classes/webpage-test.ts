@@ -11,7 +11,7 @@ function generateDummyWARC(url : string) {
             "WARC-Type": "conversion",
             "WARC-Target-URI": url
         },
-        content: new Buffer("Some sample text, yay!")
+        content: new Buffer("Some sample text, yay!\nA word.\nNow with more a lot more lines!\nAnother")
     };
 }
 
@@ -20,7 +20,7 @@ describe("WebPage", () => {
         let expected = "WARC/1.0" +
             "\nWARC-Type: conversion" +
             "\nWARC-Target-URI: https://host.com/a/path.html" +
-            "\n\nSome sample text, yay!" +
+            "\n\nSome sample text, yay!\nA word.\nNow with more a lot more lines!\nAnother" +
             "\n\n";
         assert.strictEqual(new WebPage(generateDummyWARC("https://host.com/a/path.html")).toWARCString(), expected);
     });
@@ -50,5 +50,9 @@ describe("WebPage", () => {
         let t1 = new Term("terms", "id1");
         webPage.mergeOccurrences([new Occurrence(t1, [42, 69])]);
         assert.deepEqual(webPage.occurrences, [new Occurrence(t1, [42, 69])]);
+    });
+    it("should shrink the content down", () => {
+        let webPage = new WebPage(generateDummyWARC(""));
+        assert.strictEqual(webPage.shrinkContent(20).content, "Some sample text, yay!\nNow with more a lot more lines!");
     });
 });

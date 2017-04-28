@@ -27,6 +27,7 @@ export class ParamLoader {
         crawlVersion: "CC-MAIN-2017-13",
         heuristicThreshold: 3,
         heuristicLimit: Infinity,
+        avgLineLength: 40,
         languageCodes: ["en"]
     };
 

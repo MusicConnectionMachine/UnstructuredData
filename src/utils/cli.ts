@@ -34,6 +34,7 @@ export class CLI {
             .option('-s, --queue-name [queueName]', 'task queue name, e.g. "taskqueue"')
             .option('--processes [number]', 'number of worker threads, e.g. "4"')
             .option('-t, --heuristic [threshold]:[limit]', 'filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)')
+            .option('-l, --avg-line-length [length]', 'remove short lines from content before filtering, e.g. "100"')
             .option('--languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('--enable-pre-filter', 'enable bloom filter as pre filter')
             .option('--crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
@@ -122,6 +123,11 @@ export class CLI {
             if (threshold) this.parameters["heuristicThreshold"] = threshold;
             let limit = parseFloat(split[1]);
             if (limit) this.parameters["heuristicLimit"] = limit;
+        }
+
+        if (this.commander.avgLineLength) {
+            let length = parseFloat(this.commander.avgLineLength);
+            if (length) this.parameters["avgLineLength"] = length;
         }
 
         if (this.commander.languages) {

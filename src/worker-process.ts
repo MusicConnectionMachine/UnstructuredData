@@ -232,7 +232,7 @@ class Worker {
             pendingPages++;
 
             let webPage = new WebPage(data);
-            this.webPageDigester.digest(webPage);
+            this.webPageDigester.digest(webPage.shrinkContent(params.all.avgLineLength));
 
             if (webPage.occurrences) {
 
