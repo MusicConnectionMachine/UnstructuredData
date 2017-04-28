@@ -72,7 +72,7 @@ export class WorkerProcess {
                 } else if (retries && retries > 0) {
                     setTimeout(() => {
                         getQueueItem(callback, retries - 1);
-                    }, 5000);
+                    }, 60000);
                 } else {
                     callback(err);
                 }
@@ -86,7 +86,7 @@ export class WorkerProcess {
                 } else if (retries && retries > 0) {
                     setTimeout(() => {
                         deleteQueueItem(item, callback, retries - 1);
-                    }, 5000);
+                    }, 60000);
                 } else {
                     callback(err);
                 }
@@ -115,13 +115,13 @@ export class WorkerProcess {
                                 winston.info("Removed from queue: " + item.messageText);
                                 next();
                             }
-                        }, 5);
+                        }, 60);
                     } else {
                         winston.error("Failed working on: " + item.messageText, err);
                         process.exit(1);
                     }
                 });
-            }, 5);
+            }, 60);
         };
 
         async.forever(doWork);
@@ -307,8 +307,8 @@ class Worker {
                         return callback(err);
                     }
                     callback();
-                })
-            });
+                }, 60)
+            }, 60);
         };
 
         // start processing chain
