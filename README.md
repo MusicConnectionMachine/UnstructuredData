@@ -94,6 +94,7 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "processes": 4,
   "heuristicThreshold": 3,
   "heuristicLimit": 7,
+  "avgLineLength": 100,
   "languageCodes": [
     "de",
     "en",
