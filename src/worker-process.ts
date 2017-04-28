@@ -41,6 +41,7 @@ export class WorkerProcess {
                     params.all.dbParams,
                     msg.terms,
                     params.all.heuristicThreshold,
+                    params.all.heuristicLimit,
                     params.all.languageCodes,
                     params.all.caching,
                     params.all.enablePreFilter
@@ -135,6 +136,7 @@ class Worker {
     private languageCodes : Array<string>;
     private dbParameters : {[param : string] : string };
     private heuristicThreshold : number;
+    private heuristicLimit : number;
 
 
     /**
@@ -142,13 +144,14 @@ class Worker {
      * @param dbParams                                      database access data
      * @param terms                                         Array of entities to filter for
      * @param heuristicThreshold                            threshold for heuristic
+     * @param heuristicLimit                                limit for heuristic
      * @param languageCodes                                 (optional) Array of languages to filter for
      * @param caching                                       (optional) enable WET file caching
      * @param enablePreFilter                               (optional) enable pre filter
      */
     public constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
-                         terms : Array<Term>, heuristicThreshold : number, languageCodes? : Array<string>,
-                         caching? : boolean, enablePreFilter? : boolean) {
+                        terms : Array<Term>, heuristicThreshold : number, heuristicLimit : number,
+                        languageCodes? : Array<string>, caching? : boolean, enablePreFilter? : boolean) {
 
         this.webPageDigester = new WebPageDigester(terms).setFilter(PrefixTree);
 
@@ -161,6 +164,7 @@ class Worker {
         this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
         this.dbParameters = dbParams;
         this.heuristicThreshold = heuristicThreshold;
+        this.heuristicLimit = heuristicLimit;
     }
 
 
@@ -237,10 +241,14 @@ class Worker {
                 for (let occurrence of webPage.occurrences) {
                     numTerms += occurrence.positions.length;
                 }
-
                 // a web page has to have at least threshold^2 total matches and threshold entities
-                let heuristicScore = (webPage.occurrences.length >= this.heuristicThreshold) ? numTerms : 0;
-                if (heuristicScore >= this.heuristicThreshold * this.heuristicThreshold) {
+                let thresholdSquared = this.heuristicThreshold * this.heuristicThreshold;
+                let limitSquared = this.heuristicLimit * this.heuristicLimit;
+                let heuristicScore =
+                    (this.heuristicThreshold <= webPage.occurrences.length
+                    && webPage.occurrences.length < this.heuristicLimit) ? numTerms : 0;
+
+                if (thresholdSquared <= heuristicScore && heuristicScore < limitSquared) {
                     onHeuristicMatch(webPage);
                 } else {
                     onWetEntryFinished();

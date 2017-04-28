@@ -33,11 +33,11 @@ export class CLI {
             .option('-q, --queue-access [account]:[accessKey]', 'task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"')
             .option('-s, --queue-name [queueName]', 'task queue name, e.g. "taskqueue"')
             .option('--processes [number]', 'number of worker threads, e.g. "4"')
-            .option('-t, --heuristic-threshold [number]', 'filter strictness, the higher the stricter, e.g. "3"')
+            .option('-t, --heuristic [threshold]:[limit]', 'filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)')
             .option('--languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('--enable-pre-filter', 'enable bloom filter as pre filter')
             .option('--crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
-            .option('--wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. 0:420 (inclusive:exclusive)')
+            .option('--wet-range [from]:[to]', 'select a subset of WET files from CC, e.g. "0:420" (inclusive:exclusive)')
             .option('--wet-caching', 'cache downloaded WET files (EXPERIMENTAL)')
             .option('-f, --file-only-logging', 'disable console logging')
             .parse(process.argv);
@@ -116,9 +116,12 @@ export class CLI {
             if (processes) this.parameters["processes"] = processes;
         }
 
-        if (this.commander.heuristicThreshold) {
-            let threshold = parseInt(this.commander.heuristicThreshold);
+        if (this.commander.heuristic) {
+            let split = this.commander.heuristic.split(":", 2);
+            let threshold = parseFloat(split[0]);
             if (threshold) this.parameters["heuristicThreshold"] = threshold;
+            let limit = parseFloat(split[1]);
+            if (limit) this.parameters["heuristicLimit"] = limit;
         }
 
         if (this.commander.languages) {
