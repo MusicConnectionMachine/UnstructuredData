@@ -191,7 +191,7 @@ class Worker {
         let onStorerConnectedToDB = (err) => {
             if (err) {
                 winston.error("Failed connecting to DB, retrying in 60 seconds.", err);
-                return setTimeout(this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
+                return setTimeout(() => this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
             }
             WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
         };
