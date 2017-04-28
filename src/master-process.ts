@@ -65,8 +65,8 @@ export class MasterProcess {
                        winston.info("Current approximate queue size: " + queueSize);
                    }
                    if (cb) cb();
-               } else if (retries) {
-                   checkProgress(cb, retries - 1);
+               } else if (retries > 0) {
+                   setTimeout(() => checkProgress(cb, retries - 1), 60000);
                } else {
                    winston.error("Couldn't fetch queue size!", err);
                    if (cb) cb(err);
@@ -118,7 +118,7 @@ export class MasterProcess {
         let pushPath = (path: string, callback?: (err?: Error) => void, retries?: number) => {
             MasterProcess.queueService.createMessage(MasterProcess.queueName, path, (err) => {
                 if (err && retries) {
-                    pushPath(path, callback, retries - 1);
+                    setTimeout(() => pushPath(path, callback, retries - 1), 60000);
                 } else {
                     callback(err);
                 }

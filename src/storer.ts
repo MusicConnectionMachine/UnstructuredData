@@ -117,7 +117,7 @@ export class Storer {
         callback(undefined, this.blob.name);
     }
 
-    public flushBlob(callback? : (err? : Error) => void) : void {
+    public flushBlob(callback? : (err? : Error) => void, retries? : number) : void {
 
         let blobContent = "";
         for (let entry of this.blob.entries) {
@@ -131,16 +131,19 @@ export class Storer {
                 return;
             }
             this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
-                if(callback) {
-                    return callback(err);
+                if (!err) {
+                    this.blob = undefined;
+                    if (callback) callback();
+                } else if (retries > 0) {
+                    setTimeout(() => this.flushBlob(callback, retries - 1), 60000);
+                } else {
+                    if (callback) callback(err);
                 }
             });
         });
-
-        this.blob = undefined;
     }
 
-    public flushDatabase(callback ? : (err? : Error) => void) : void {
+    public flushDatabase(callback ? : (err? : Error) => void, retries? : number) : void {
         const websiteInserts = [];
         const containsInserts = [];
         this.websites.forEach(website => {
@@ -174,9 +177,10 @@ export class Storer {
                 callback();
             }
         }).catch(err => {
-            this.websites = [];
-            if(callback) {
-                callback(err);
+            if (retries > 0) {
+                setTimeout(() => this.flushDatabase(callback, retries - 1), 60000);
+            } else {
+                if (callback) callback(err);
             }
         });
     }
