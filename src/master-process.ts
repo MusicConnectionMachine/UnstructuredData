@@ -144,7 +144,7 @@ export class MasterProcess {
             if (fs.existsSync(blacklistPath)) {
                 let lineReader = readLine.createInterface({input: fs.createReadStream(blacklistPath)});
                 lineReader.on('line', (line) => {
-                    termBlacklist.add(line);
+                    termBlacklist.add(line.toLowerCase());
                 });
                 lineReader.on('close', () => {
                     loadTerms();
@@ -164,7 +164,7 @@ export class MasterProcess {
 
                 // check length of terms
                 for (let term of result) {
-                    if (term.value !== null && !termBlacklist.has(term.value) && term.value.length > 2) {
+                    if (term.value !== null && !termBlacklist.has(term.value.toLowerCase()) && term.value.length > 2) {
                         terms.push(term);
                     }
                 }
