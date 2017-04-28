@@ -142,10 +142,13 @@ export class WebPage {
             return 0;
         });
 
-        // remove shortest line until threshold is reached
+        // remove shortest lines until threshold is reached
         let textLength = this.content.length;
         while(lines.length > 0 && textLength / lines.length < threshold) {
-            textLength -= lines.pop()[1].length;
+            let shortestLength = lines[lines.length - 1][1].length;
+            while (shortestLength === lines[lines.length - 1][1].length) {
+                textLength -= lines.pop()[1].length;
+            }
         }
 
         // sort by original index

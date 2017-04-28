@@ -53,6 +53,6 @@ describe("WebPage", () => {
     });
     it("should shrink the content down", () => {
         let webPage = new WebPage(generateDummyWARC(""));
-        assert.strictEqual(webPage.shrinkContent(25).content, "Some sample text, yay!\nNow with more a lot more lines!");
+        assert.strictEqual(webPage.shrinkContent(20).content, "Some sample text, yay!\nNow with more a lot more lines!");
     });
 });
