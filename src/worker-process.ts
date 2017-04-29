@@ -135,7 +135,6 @@ class Worker {
     private storer : Storer;
     private caching : boolean;
     private languageCodes : Array<string>;
-    private dbParameters : {[param : string] : string };
     private heuristicThreshold : number;
     private heuristicLimit : number;
     private avgLineLength : number;
@@ -165,8 +164,7 @@ class Worker {
 
         this.caching = caching || false;
         this.languageCodes = languageCodes;
-        this.storer = new Storer(blobParams["blobAccount"], blobParams["blobContainer"], blobParams["blobKey"]);
-        this.dbParameters = dbParams;
+        this.storer = new Storer(blobParams, dbParams);
         this.heuristicThreshold = heuristicThreshold;
         this.heuristicLimit = heuristicLimit;
         this.avgLineLength = avgLineLength;
@@ -185,21 +183,10 @@ class Worker {
      * @param wetPath                                       CC path to WET file
      * @param callback                                      gets called when all pages have been processed
      */
-    public workOn(wetPath : string, callback : (err? : Error) => void) {
+    public workOn(wetPath : string, callback? : (err? : Error) => void) {
         let streamFinished = false;
         let pendingPages = 0;
 
-        /**
-         * Let's connect to DB before we load the first WET.
-         * @param err     not used right now
-         */
-        let onStorerConnectedToDB = (err) => {
-            if (err) {
-                winston.error("Failed connecting to DB, retrying in 60 seconds.", err);
-                return setTimeout(() => this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB), 60000);
-            }
-            WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
-        };
 
         /**
          * Gets called once the unpacked WET stream starts and pipes stream to WARC parser
@@ -289,7 +276,8 @@ class Worker {
          * @param webPage
          */
         let onPageMatch = (webPage : WebPage) => {
-            this.storer.storeWebsite(webPage, onWetEntryFinished);
+            this.storer.storeWebsite(webPage);
+            onWetEntryFinished();
         };
 
         /**
@@ -303,20 +291,12 @@ class Worker {
         };
 
         let onFileFinished = () => {
-            this.storer.flushBlob(err => {
-                if(err) {
-                    return callback(err);
-                }
-                this.storer.flushDatabase(err => {
-                    if(err) {
-                        return callback(err);
-                    }
-                    callback();
-                }, 60)
-            }, 60);
+            this.storer.flush((err) => {
+                if (callback) callback(err);
+            });
         };
 
         // start processing chain
-        this.storer.connectToDB(this.dbParameters, onStorerConnectedToDB);
+        WetManager.loadWetAsStream(wetPath, onFileStreamReady, this.caching);
     }
 }

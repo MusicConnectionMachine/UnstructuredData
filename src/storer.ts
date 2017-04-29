@@ -9,15 +9,20 @@ export class Storer {
 
     private container;
     private blobService;
+    private dbConnectionString : string;
     // this guy has to be initialized with connectToDB()!
     private context;
     //This could be left out but it makes it easier for the other groups to access the blobs if we store them with fqdn
     private blobPrefix : string;
 
     private blob : {name : string, entries : Array<WebPage>};
-    private websites : Array<{id : any, url : string, blobUrl : string, occurences : Array<Occurrence>}> = [];
+    private websites : Array<{id : any, url : string, blobUrl : string, occurrences : Array<Occurrence>}> = [];
 
-    constructor(blobAccount : string, blobContainer : string, blobKey : string){
+    constructor(blobParams : {[param : string] : string }, dbParams : {[param : string] : string}){
+
+        let blobAccount = blobParams["blobAccount"];
+        let blobContainer = blobParams["blobContainer"];
+        let blobKey = blobParams["blobKey"];
 
         this.blobService = azure.createBlobService(
             blobAccount,
@@ -31,24 +36,20 @@ export class Storer {
                 winston.error(err);
             }
         });
+
+        this.dbConnectionString = "postgresql://"
+            + dbParams["dbUser"] + ":"
+            + dbParams["dbPW"] + "@"
+            + dbParams["dbHost"] + ":"
+            + dbParams["dbPort"] + "/"
+            + dbParams["dbName"];
     }
 
 
-
-    // config.json can be passed as dbParms, quick and dirty :P
-    public connectToDB(dbParams, callback : (err? : Error) => void) : void {
-        // TODO: error handling/generation
-
-        let databaseURI = "postgresql://"
-            + dbParams.dbUser + ":"
-            + dbParams.dbPW + "@"
-            + dbParams.dbHost + ":"
-            + dbParams.dbPort + "/"
-            + dbParams.dbName;
-
+    private connectToDB(callback : (err? : Error) => void) : void {
 
         //Connect to database using api's index
-        require('../api/database').connect(databaseURI, context => {
+        require('../api/database').connect(this.dbConnectionString, context => {
             //Store context
             this.context = context;
             /*
@@ -59,7 +60,8 @@ export class Storer {
             context.sequelize.sync().then(() => {
                 callback();
             }, (err) => {
-                callback(err);
+                winston.error(err);
+                setTimeout(() => this.connectToDB(callback), 6000);
             });
         });
     }
@@ -67,46 +69,40 @@ export class Storer {
 
     /**
      * Stores the website in the Azure blob and in the DB.
+     * This doesn't actually save to the DB and blob storage immediately.
+     * It will collect data until you call .flush()
      * @param webPage
-     * @param callback
      */
-    public storeWebsite(webPage : WebPage, callback? : (err? : Error) => void ) : void {
-        this.storeWebsiteBlob(webPage, (err, blobName) => {
-            if(err) {
-                if(callback) {
-                    callback(err);
-                }
-                return;
-            }
-            return this.storeWebsiteMetadata(webPage, this.blobPrefix + blobName, callback); // TODO: why return here? @Lukas
-        });
+    public storeWebsite(webPage : WebPage) : void {
+        this.storeWebsiteBlob(webPage).storeWebsiteMetadata(webPage);
     }
 
 
-    public storeWebsiteMetadata(webPage : WebPage, blobUrl : string, callback? : (err? : Error) => void) : void{
+    /**
+     * This doesn't actually save to the DB immediately. It will collect data until you call .flushDatabase()
+     * @param webPage
+     */
+    private storeWebsiteMetadata(webPage : WebPage) {
         this.websites.push({
             id: uuid(),
             url: webPage.getURI(),
-            blobUrl: blobUrl,
-            occurences: webPage.occurrences
+            blobUrl: this.blob ? this.blobPrefix + this.blob.name : null,
+            occurrences: webPage.occurrences
         });
 
-        if(callback) {
-            callback();
-        }
+        return this;
     }
 
     /**
+     * This doesn't actually save to the blob storage immediately. It will collect data until you call .flushBlob()
      * Use "storeWebsite()" if you want to store the website in the blob and the DB.
-     * This function is only for Azure. Made this public to be able to test it from outside.
+     * This function is only for Azure.
      *
-     * Stores given website as a blob in the azure blob storage. The filename will be an md5 hash
-     * of website uri + content.
+     * Stores given website as a blob in the azure blob storage. The filename will be an UUID
      *
      * @param webPage       WebPage object to be stored
-     * @param callback      Optional callback param that will receive the filename as a parameter in case of success
      */
-    public storeWebsiteBlob(webPage : WebPage, callback? : (err? : Error, blobName? : string) => void) : void {
+    private storeWebsiteBlob(webPage : WebPage) {
         if (!this.blob) {
             this.blob = {
                 name: uuid(),
@@ -114,10 +110,26 @@ export class Storer {
             };
         }
         this.blob.entries.push(webPage);
-        callback(undefined, this.blob.name);
+        return this;
     }
 
-    public flushBlob(callback? : (err? : Error) => void, retries? : number) : void {
+
+    public flush(callback? : (err? : Error) => void, retries? : number) : void {
+        this.flushBlob(err => {
+            if(err) {
+                return callback(err);
+            }
+            this.flushDatabase(err => {
+                if(err) {
+                    return callback(err);
+                }
+                callback();
+            }, retries)
+        }, retries);
+    }
+
+
+    private flushBlob(callback? : (err? : Error) => void, retries? : number) : void {
 
         let blobContent = "";
         for (let entry of this.blob.entries) {
@@ -143,7 +155,15 @@ export class Storer {
         });
     }
 
-    public flushDatabase(callback ? : (err? : Error) => void, retries? : number) : void {
+
+    private flushDatabase(callback ? : (err? : Error) => void, retries? : number) : void {
+
+        // lazily load sequelize context
+        if (!this.context) {
+            this.connectToDB(() => this.flushDatabase(callback, retries));
+            return;
+        }
+
         const websiteInserts = [];
         const containsInserts = [];
         this.websites.forEach(website => {
@@ -153,7 +173,7 @@ export class Storer {
                 url: website.url,
                 blob_url: website.blobUrl
             });
-            website.occurences.forEach(occ => {
+            website.occurrences.forEach(occ => {
                 containsInserts.push({
                     occurrences: JSON.stringify({
                         term: occ.term.value,
@@ -178,7 +198,7 @@ export class Storer {
             }
         }).catch(err => {
             if (retries > 0) {
-                setTimeout(() => this.flushDatabase(callback, retries - 1), 60000);
+                setTimeout(() => this.connectToDB(() => this.flushDatabase(callback, retries - 1)), 60000);
             } else {
                 if (callback) callback(err);
             }
