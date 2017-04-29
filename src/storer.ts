@@ -16,7 +16,7 @@ export class Storer {
     private blobPrefix : string;
 
     private blob : {name : string, entries : Array<WebPage>};
-    private websites : Array<{id : any, url : string, blobUrl : string, occurrences : Array<Occurrence>}> = [];
+    private websites : Array<{id : string, url : string, blobUrl : string, occurrences : Array<Occurrence>}> = [];
 
     constructor(blobParams : {[param : string] : string }, dbParams : {[param : string] : string}){
 
@@ -33,7 +33,7 @@ export class Storer {
         this.container = blobContainer;
         this.blobService.createContainerIfNotExists(blobContainer, err => {
             if (err) {
-                winston.error(err);
+                winston.error("Couldn't create blob container!", err);
             }
         });
 
@@ -46,7 +46,7 @@ export class Storer {
     }
 
 
-    private connectToDB(callback : (err? : Error) => void) : void {
+    private connectToDB(callback : (err? : Error) => void, retries? : number) : void {
 
         //Connect to database using api's index
         require('../api/database').connect(this.dbConnectionString, context => {
@@ -58,10 +58,16 @@ export class Storer {
              existing tables.
              */
             context.sequelize.sync().then(() => {
+                winston.info("Connection to DB established!");
                 callback();
             }, (err) => {
-                winston.error(err);
-                setTimeout(() => this.connectToDB(callback), 6000);
+                if (retries > 0) {
+                    winston.error("Failed to connect to DB. Retrying in 60 seconds!", err);
+                    setTimeout(() => this.connectToDB(callback, retries - 1), 6000);
+                } else {
+                    winston.error("Finally failed to connect to DB. Calling Callback!", err);
+                    callback(err);
+                }
             });
         });
     }
@@ -144,11 +150,14 @@ export class Storer {
             }
             this.blobService.createBlockBlobFromText(this.container, blobName, compressedBlobContent, (err) => {
                 if (!err) {
+                    winston.info("Successfully offloaded blob!");
                     this.blob = undefined;
                     if (callback) callback();
                 } else if (retries > 0) {
+                    winston.error("Failed to offload blob! Retrying in 60 seconds!", err);
                     setTimeout(() => this.flushBlob(callback, retries - 1), 60000);
                 } else {
+                    winston.error("Finally failed to offload blob! Calling callback!", err);
                     if (callback) callback(err);
                 }
             });
@@ -160,7 +169,7 @@ export class Storer {
 
         // lazily load sequelize context
         if (!this.context) {
-            this.connectToDB(() => this.flushDatabase(callback, retries));
+            this.connectToDB(() => this.flushDatabase(callback, retries), 60);
             return;
         }
 
@@ -192,14 +201,17 @@ export class Storer {
                 return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
             })
         }).then(() => {
+            winston.info("Successfully offloaded data to DB!");
             this.websites = [];
             if(callback) {
                 callback();
             }
         }).catch(err => {
             if (retries > 0) {
+                winston.error("Failed to offload data to DB! Retrying in 60 seconds!", err);
                 setTimeout(() => this.connectToDB(() => this.flushDatabase(callback, retries - 1)), 60000);
             } else {
+                winston.error("Finally failed to offload data to DB! Calling callback!", err);
                 if (callback) callback(err);
             }
         });

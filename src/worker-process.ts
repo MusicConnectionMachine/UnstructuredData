@@ -293,7 +293,7 @@ class Worker {
         let onFileFinished = () => {
             this.storer.flush((err) => {
                 if (callback) callback(err);
-            });
+            }, 60);
         };
 
         // start processing chain
