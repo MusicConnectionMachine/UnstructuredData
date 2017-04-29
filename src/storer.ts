@@ -194,19 +194,7 @@ export class Storer {
             });
         });
 
-        this.context.sequelize.transaction(transaction => {
-            return this.context.models.websites.bulkCreate(websiteInserts,
-                { transaction: transaction} ).then(() => {
-
-                return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
-            })
-        }).then(() => {
-            winston.info("Successfully offloaded data to DB!");
-            this.websites = [];
-            if(callback) {
-                callback();
-            }
-        }).catch(err => {
+        let onError = (err : Error) => {
             if (retries > 0) {
                 winston.error("Failed to offload data to DB! Retrying in 60 seconds!", err);
                 setTimeout(() => this.connectToDB(() => this.flushDatabase(callback, retries - 1)), 60000);
@@ -214,6 +202,20 @@ export class Storer {
                 winston.error("Finally failed to offload data to DB! Calling callback!", err);
                 if (callback) callback(err);
             }
-        });
+        };
+
+        this.context.sequelize.transaction(transaction => {
+            return this.context.models.websites.bulkCreate(websiteInserts,
+                { transaction: transaction} ).then(() => {
+
+                return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
+            }).catch(onError);
+        }).then(() => {
+            winston.info("Successfully offloaded data to DB!");
+            this.websites = [];
+            if(callback) {
+                callback();
+            }
+        }).catch(onError);
     }
 }
