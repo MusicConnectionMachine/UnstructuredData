@@ -20,8 +20,9 @@ describe("WebPage", () => {
         let expected = "WARC/1.0" +
             "\nWARC-Type: conversion" +
             "\nWARC-Target-URI: https://host.com/a/path.html" +
+            "\nContent-Length: " + 70 +
             "\n\nSome sample text, yay!\nA word.\nNow with more a lot more lines!\nAnother" +
-            "\n\n";
+            "\n\n\n";
         assert.strictEqual(new WebPage(generateDummyWARC("https://host.com/a/path.html")).toWARCString(), expected);
     });
     it("should return empty string as TLD of IPv4 address", () => {
