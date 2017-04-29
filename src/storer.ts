@@ -169,8 +169,13 @@ export class Storer {
 
         // lazily load sequelize context
         if (!this.context) {
-            this.connectToDB(() => this.flushDatabase(callback, retries), 60);
-            return;
+            this.connectToDB((err) => {
+                if (!err) {
+                    return this.flushDatabase(callback, retries);
+                } else if (callback) {
+                    return callback(err);
+                }
+            }, 60);
         }
 
         const websiteInserts = [];
