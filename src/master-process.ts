@@ -116,7 +116,7 @@ export class MasterProcess {
         let pushPath = (path: string, callback?: (err?: Error) => void, retries?: number) => {
             MasterProcess.queueService.createMessage(MasterProcess.queueName, path, (err) => {
                 if (!err) {
-                    winston.info("Successfully push to queue: " + path);
+                    winston.info("Successfully pushed to queue: " + path);
                     callback();
                 } else if (retries > 0) {
                     winston.error("Failed to push to queue! retrying in 20 seconds: " + path, err);
