@@ -169,11 +169,11 @@ export class Storer {
 
         // lazily load sequelize context
         if (!this.context) {
-            this.connectToDB((err) => {
+            return this.connectToDB((err) => {
                 if (!err) {
-                    return this.flushDatabase(callback, retries);
+                    this.flushDatabase(callback, retries);
                 } else if (callback) {
-                    return callback(err);
+                    callback(err);
                 }
             }, 60);
         }
