@@ -71,11 +71,18 @@ export class WebPage {
         // protocol
         let str : string = this.protocol + '\n';
         // properties
-        for (let property in this.headers) {
-            str += property + ': ' + this.headers[property] + '\n';
+        this.headers["Content-Length"] = Buffer.byteLength(this.content, 'utf8').toString();
+        const properties = [
+            "WARC-Type", "WARC-Target-URI", "WARC-Date", "WARC-Record-ID",
+            "WARC-Refers-To", "Content-Type", "Content-Length"
+        ];
+        for (let property of properties) {
+            if (this.headers.hasOwnProperty(property)) {
+                str += property + ': ' + this.headers[property] + '\n';
+            }
         }
         // content
-        str += '\n' + this.content + '\n\n';
+        str += '\n' + this.content + '\n\n\n';
         return str;
     }
 
