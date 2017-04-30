@@ -102,13 +102,11 @@ export class MasterProcess {
         let onPathsLoaded = () => {
             let pushed = 0;
 
-            // iterate over all paths and push then to the queue, 20 at a time
-            async.mapLimit(paths, 20, (path, cb) => {
+            // iterate over all paths and push then to the queue, 100 at a time
+            async.mapLimit(paths, 100, (path, cb) => {
                 pushPath(path, (err) => {
-                    if (err) {
-                        winston.error("Failed to push to queue: " + path, err);
-                    } else {
-                        winston.info("Pushed " + (++pushed) + "/" + paths.length + " successfully to queue: " + path);
+                    if (!err) {
+                        winston.info("Pushed " + (++pushed) + "/" + paths.length + " paths successfully to queue!");
                     }
                     cb();
                 }, 5);
@@ -117,9 +115,14 @@ export class MasterProcess {
 
         let pushPath = (path: string, callback?: (err?: Error) => void, retries?: number) => {
             MasterProcess.queueService.createMessage(MasterProcess.queueName, path, (err) => {
-                if (err && retries > 0) {
-                    setTimeout(() => pushPath(path, callback, retries - 1), 60000);
+                if (!err) {
+                    winston.info("Successfully pushed to queue: " + path);
+                    callback();
+                } else if (retries > 0) {
+                    winston.error("Failed to push to queue! retrying in 20 seconds: " + path, err);
+                    setTimeout(() => pushPath(path, callback, retries - 1), 20000);
                 } else {
+                    winston.error("Finally failed to push to queue: " + path, err);
                     callback(err);
                 }
             });
