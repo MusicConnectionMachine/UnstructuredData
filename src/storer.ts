@@ -12,7 +12,7 @@ export class Storer {
     private blobPrefix : string;
     private jsonContainer : string;
 
-    private saveMetadataJSON : boolean;
+    private saveMetadataAsJSON : boolean;
 
     private context;
     private connectToDB : (callback : (err? : Error) => void, retries? : number) => void = (callback) => {
@@ -25,12 +25,12 @@ export class Storer {
     /**
      * This object is responsible for saving web page content and metadata. Content will be stored in the
      * supplied Azure blob storage container. Metadata will be saved in a separate storage container or in
-     * a Postgres DB if supplied
+     * a Postgres DB if dbParams are supplied
      * @param blobParams                                    details of Azure storage account and containers
      * @param dbParams                                      (optional) credentials for Postgres DB
      */
-    constructor(blobParams : {blobAccount : string, blobKey : string, blobContainer : string, jsonContainer : string },
-                dbParams? : {dbUser : string, dbPW : string, dbHost : string, dbPort : string, dbName : string}){
+    constructor(blobParams : { blobAccount : string, blobKey : string, blobContainer : string, jsonContainer : string },
+                dbParams? : { dbUser : string, dbPW : string, dbHost : string, dbPort : string, dbName : string }){
 
         let blobAccount = blobParams.blobAccount;
         let blobKey = blobParams.blobKey;
@@ -76,7 +76,7 @@ export class Storer {
                 });
             };
         } else {
-            this.saveMetadataJSON = true;
+            this.saveMetadataAsJSON = true;
         }
     }
 
@@ -119,13 +119,12 @@ export class Storer {
         return this;
     }
 
-
-    public flush(callback? : (err? : Error) => void, retries? : number) : void {
+    public flush(callback? : (err? : Error) => void, retries? : number, saveMetaDataAsJSON? : boolean) : void {
         this.flushBlob(err => {
             if(err) {
                 return callback(err);
             }
-            if (this.saveMetadataJSON) {
+            if (this.saveMetadataAsJSON || saveMetaDataAsJSON) {
                 this.flushMetadataJSON(err => {
                     if(err) {
                         return callback(err);
@@ -144,7 +143,7 @@ export class Storer {
     }
 
 
-    private flushBlob(callback? : (err? : Error) => void, retries? : number) : void {
+    public flushBlob(callback? : (err? : Error) => void, retries? : number) : void {
 
         let blobName = this.blob.name;
         Unpacker.compressStringToBuffer(this.blob.content, (err, compressedBlobContent) => {
@@ -169,7 +168,7 @@ export class Storer {
     }
 
 
-    private flushMetadataJSON(callback ? : (err? : Error) => void, retries? : number) : void {
+    public flushMetadataJSON(callback ? : (err? : Error) => void, retries? : number) : void {
         let blobName = uuid() + ".json";
         let blobContent = JSON.stringify(this.websites);
         this.storageService.createBlockBlobFromText(this.jsonContainer, blobName, blobContent, (err) => {
@@ -186,7 +185,7 @@ export class Storer {
         });
     }
 
-    private flushMetadataDB(callback ? : (err? : Error) => void, retries? : number) : void {
+    public flushMetadataDB(callback ? : (err? : Error) => void, retries? : number) : void {
 
         // lazily load sequelize context
         if (!this.context) {

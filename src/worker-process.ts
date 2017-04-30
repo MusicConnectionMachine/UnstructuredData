@@ -38,13 +38,15 @@ export class WorkerProcess {
 
                 WorkerProcess.worker = new Worker(
                     msg.terms,
+                    new Storer(
+                        params.all.blobParams,
+                        (params.all.useJson) ? undefined : params.all.dbParams
+                    ),
                     {
                         heuristicThreshold: params.all.heuristicThreshold,
                         heuristicLimit: params.all.heuristicLimit,
                         avgLineLength: params.all.avgLineLength
                     },
-                    params.all.blobParams,
-                    (params.all.useJson) ? undefined : params.all.dbParams,
                     {
                         languageCodes: params.all.languageCodes,
                         caching: params.all.caching,
@@ -145,21 +147,18 @@ class Worker {
 
 
     /**
-     * @param blobParams                                    Azure blob storage access data
-     * @param dbParams                                      Database access data
      * @param terms                                         Array of entities to filter for
+     * @param storer                                        Storer for saving results
      * @param filterParams                                  Filter settings
-     * @param options                                       optional parameters
+     * @param options                                       (optional) optional parameters
      */
-    public constructor (terms : Array<Term>,
-                        filterParams : { heuristicThreshold : number, heuristicLimit : number, avgLineLength : number},
-                        blobParams : { blobAccount : string, blobKey : string, blobContainer : string, jsonContainer : string},
-                        dbParams? : {dbUser : string, dbPW : string, dbHost : string, dbPort : string, dbName : string},
-                        options? : {caching? : boolean, languageCodes: Array<string>, enablePreFilter : boolean}) {
+    public constructor (terms : Array<Term>, storer : Storer,
+                        filterParams : { heuristicThreshold : number, heuristicLimit : number, avgLineLength : number },
+                        options? : { caching? : boolean, languageCodes: Array<string>, enablePreFilter : boolean }) {
 
         this.webPageDigester = new WebPageDigester(terms).setFilter(PrefixTree);
 
-        this.storer = new Storer(blobParams, dbParams);
+        this.storer = storer;
         this.heuristicThreshold = filterParams.heuristicThreshold;
         this.heuristicLimit = filterParams.heuristicLimit;
         this.avgLineLength = filterParams.avgLineLength;
