@@ -169,8 +169,13 @@ export class Storer {
 
         // lazily load sequelize context
         if (!this.context) {
-            this.connectToDB(() => this.flushDatabase(callback, retries), 60);
-            return;
+            return this.connectToDB((err) => {
+                if (!err) {
+                    this.flushDatabase(callback, retries);
+                } else if (callback) {
+                    callback(err);
+                }
+            }, 60);
         }
 
         const websiteInserts = [];
@@ -195,11 +200,9 @@ export class Storer {
         });
 
         this.context.sequelize.transaction(transaction => {
-            return this.context.models.websites.bulkCreate(websiteInserts,
-                { transaction: transaction} ).then(() => {
-
-                return this.context.models.contains.bulkCreate(containsInserts, { transaction: transaction });
-            })
+            return this.context.models.websites.bulkCreate(websiteInserts, {transaction: transaction}).then(() => {
+                return this.context.models.contains.bulkCreate(containsInserts, {transaction: transaction});
+            });
         }).then(() => {
             winston.info("Successfully offloaded data to DB!");
             this.websites = [];
