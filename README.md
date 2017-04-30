@@ -95,10 +95,11 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "queueAccount": "parsertaskqueue",
   "queueName": "taskqueue",
   "queueKey": "AZURE_KEY_HERE",
-  "processes": 4,
   "heuristicThreshold": 3,
   "heuristicLimit": 7,
   "avgLineLength": 100,
+  "processes": 4,
+  "useJson": false,
   "languageCodes": [
     "de",
     "en",
