@@ -13,9 +13,9 @@ Once that's finished run `npm run compile` to compile everything to Javascript.
 
 ## Usage
 ```
-  Usage: app [options]
+$ Usage: app [options]
 
-  Options:
+> Options:
 
     -h, --help                                output usage information
     -P, --Process                             process queue items
@@ -26,12 +26,14 @@ Once that's finished run `npm run compile` to compile everything to Javascript.
     -a, --db-access [user]:[password]         database access, e.g. "USER:PASSWORD"
     -n, --db-name [name]                      database name, e.g. "ProductionDB"
     -b, --blob-access [account]:[accessKey]   blob storage credentials, e.g. "wetstorage:AZURE_KEY_HERE"
-    -c, --blob-container [containerName]      blob storage container name, e.g. "websites"
+    -c, --blob-container [containerName]      blob storage container name for website content, e.g. "websites"
+    -j, --json-container [containerName]      blob storage container name for metadata, e.g. "metadata"
     -q, --queue-access [account]:[accessKey]  task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"
     -s, --queue-name [queueName]              task queue name, e.g. "taskqueue"
-    --processes [number]                      number of worker threads, e.g. "4"
     -t, --heuristic [threshold]:[limit]       filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)
     -l, --avg-line-length [length]            remove short lines from content before filtering, e.g. "100"
+    --processes [number]                      number of worker threads, e.g. "4"
+    --use-json                                save metadata to json container instead of DB
     --languages [languageCodes]               languages to filter for in ISO 639-1, e.g. "['de', 'en', 'fr']"
     --enable-pre-filter                       enable bloom filter as pre filter
     --crawl-version [version]                 common crawl version, e.g. "CC-MAIN-2017-13"
@@ -61,17 +63,19 @@ Once that's finished run `npm run compile` to compile everything to Javascript.
     Defaults to the number of logical CPU cores.
   - `-t`, `--heuristic-threshold` sets the filter strictness, the higher the stricter.    
     Threshold defaults to 3, limit to infinity.   
+  - `--use-json` can be set to save the resulting metadata to the specified JSON container instead of the DB.   
   - `--wet-caching` can be used to save the downloaded and processed WET files to disk. (EXPERIMENTAL)
 - Option `-M`, `--Monitor` will constantly monitor the queue size.  
 - Option `--Delete-queue` will permanently delete the queue.   
 This mode can't be combined with any other operating mode. If multiple modes are selected only `--Delete-queue` will be run.
 
 The following arguments will only be used when using mode `-P`, `--Process`:
-- `-d`, `--db-location`
-- `-a`, `--db-access`
-- `-n`, `--db-name`
-- `-b`, `--blob-access`
-- `-c`, `--blob-container`
+- `-d`, `--db-location`, defaults to "localhost:5432"
+- `-a`, `--db-access`, has no default value
+- `-n`, `--db-name`, has no default value
+- `-b`, `--blob-access`, has no default value
+- `-c`, `--blob-container`, defaults to "websites"
+- `-j`, `--json-conatiner`, defaults to "metadata"
 
 
 
@@ -91,10 +95,11 @@ Alternatively to supplying all the arguments via the CLI they can be set via the
   "queueAccount": "parsertaskqueue",
   "queueName": "taskqueue",
   "queueKey": "AZURE_KEY_HERE",
-  "processes": 4,
   "heuristicThreshold": 3,
   "heuristicLimit": 7,
   "avgLineLength": 100,
+  "processes": 4,
+  "useJson": false,
   "languageCodes": [
     "de",
     "en",

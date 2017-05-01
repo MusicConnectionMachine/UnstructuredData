@@ -37,15 +37,21 @@ export class WorkerProcess {
                 winston.info("Received " + msg.terms.length + " terms!");
 
                 WorkerProcess.worker = new Worker(
-                    params.all.blobParams,
-                    params.all.dbParams,
                     msg.terms,
-                    params.all.heuristicThreshold,
-                    params.all.heuristicLimit,
-                    params.all.avgLineLength,
-                    params.all.languageCodes,
-                    params.all.caching,
-                    params.all.enablePreFilter
+                    new Storer(
+                        params.all.blobParams,
+                        (params.all.useJson) ? undefined : params.all.dbParams
+                    ),
+                    {
+                        heuristicThreshold: params.all.heuristicThreshold,
+                        heuristicLimit: params.all.heuristicLimit,
+                        avgLineLength: params.all.avgLineLength
+                    },
+                    {
+                        languageCodes: params.all.languageCodes,
+                        caching: params.all.caching,
+                        enablePreFilter: params.all.enablePreFilter,
+                    }
                 );
 
                 WorkerProcess.startProcessing();
@@ -141,36 +147,31 @@ class Worker {
 
 
     /**
-     * @param blobParams                                    Azure blob storage access data
-     * @param dbParams                                      database access data
      * @param terms                                         Array of entities to filter for
-     * @param heuristicThreshold                            threshold for heuristic
-     * @param heuristicLimit                                limit for heuristic
-     * @param avgLineLength                                 shrink web page content to avg line length
-     * @param languageCodes                                 (optional) Array of languages to filter for
-     * @param caching                                       (optional) enable WET file caching
-     * @param enablePreFilter                               (optional) enable pre filter
+     * @param storer                                        Storer for saving results
+     * @param filterParams                                  Filter settings
+     * @param options                                       (optional) optional parameters
      */
-    public constructor (blobParams : {[param : string] : string }, dbParams : {[param : string] : string },
-                        terms : Array<Term>, heuristicThreshold : number, heuristicLimit : number,
-                        avgLineLength : number, languageCodes? : Array<string>, caching? : boolean,
-                        enablePreFilter? : boolean) {
+    public constructor (terms : Array<Term>, storer : Storer,
+                        filterParams : { heuristicThreshold : number, heuristicLimit : number, avgLineLength : number },
+                        options? : { caching? : boolean, languageCodes: Array<string>, enablePreFilter : boolean }) {
 
         this.webPageDigester = new WebPageDigester(terms).setFilter(PrefixTree);
 
-        if (enablePreFilter) {
-            this.webPageDigester.setPreFilter(BloomFilter);
-        }
+        this.storer = storer;
+        this.heuristicThreshold = filterParams.heuristicThreshold;
+        this.heuristicLimit = filterParams.heuristicLimit;
+        this.avgLineLength = filterParams.avgLineLength;
 
-        if (languageCodes && languageCodes.length > 0) {
-            this.languageExtractor = new LanguageExtractor(new Set(languageCodes));
+        if (options) {
+            this.caching = options.caching || false;
+            if (options.languageCodes && options.languageCodes.length > 0) {
+                this.languageExtractor = new LanguageExtractor(new Set(options.languageCodes));
+            }
+            if (options.enablePreFilter) {
+                this.webPageDigester.setPreFilter(BloomFilter);
+            }
         }
-
-        this.caching = caching || false;
-        this.storer = new Storer(blobParams, dbParams);
-        this.heuristicThreshold = heuristicThreshold;
-        this.heuristicLimit = heuristicLimit;
-        this.avgLineLength = avgLineLength;
     }
 
 
