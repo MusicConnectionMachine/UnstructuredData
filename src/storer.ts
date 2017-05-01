@@ -173,6 +173,7 @@ export class Storer {
         let blobContent = JSON.stringify(this.websites);
         this.storageService.createBlockBlobFromText(this.jsonContainer, blobName, blobContent, (err) => {
             if (!err) {
+                this.websites = [];
                 winston.info("Successfully offloaded metadata blob!");
                 if (callback) callback();
             } else if (retries > 0) {
