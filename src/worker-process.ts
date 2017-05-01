@@ -212,7 +212,8 @@ class Worker {
                 let warcParser = new WARCStream();
                 response.pipe(warcParser)
                     .on("data", onWetEntry)
-                    .on('end', () => {
+                    .on("error", err => callback(err))
+                    .on("end", () => {
                         streamFinished = true;
                         if (pendingPages === 0) {
                             onFileFinished();

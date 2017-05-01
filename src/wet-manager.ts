@@ -31,21 +31,24 @@ export class WetManager {
         if (useCaching) {
             WetManager.openWithCaching(url, callback);
         } else {
-            WetManager.openWithoutCaching(url, callback);
+            WetManager.openWithoutCaching(url, callback, 60);
         }
     };
 
-    private static openWithoutCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void) : void {
+    private static openWithoutCaching(url : string, callback : (err? : Error, resp? : ReadableStream) => void,
+                                      retries? : number) : void {
         Downloader.getResponse(url, function (err, resp) {
-            if (err) {
+            if (!err) {
+                let decompressed = Unpacker.decompressGZipStream(resp);
+                winston.info("Download stream successfully started!");
+                callback(undefined, decompressed);
+            } else if (retries > 0) {
+                winston.error("Download failed! Retrying in 60 seconds!", err);
+                setTimeout(() => WetManager.openWithoutCaching(url, callback, retries - 1), 60000);
+            } else {
+                winston.error("Download finally failed! Calling callback!", err);
                 callback(err);
-                return;
             }
-            let decompressed = Unpacker.decompressGZipStream(resp);
-            decompressed.on('error', err => {
-                winston.error(err);
-            });
-            callback(null, decompressed);
         });
     }
 
