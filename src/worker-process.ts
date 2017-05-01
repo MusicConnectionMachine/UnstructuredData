@@ -163,8 +163,9 @@ class Worker {
         this.heuristicLimit = filterParams.heuristicLimit;
         this.avgLineLength = filterParams.avgLineLength;
 
+        this.caching = (options && options.caching) || false;
+
         if (options) {
-            this.caching = options.caching || false;
             if (options.languageCodes && options.languageCodes.length > 0) {
                 this.languageExtractor = new LanguageExtractor(new Set(options.languageCodes));
             }
