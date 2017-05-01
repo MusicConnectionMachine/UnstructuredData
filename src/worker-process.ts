@@ -77,10 +77,12 @@ export class WorkerProcess {
                         callback();
                     }
                 } else if (retries && retries > 0) {
+                    winston.error("Failed fetching queue item! Retrying in 60 seconds!", err);
                     setTimeout(() => {
                         getQueueItem(callback, retries - 1);
                     }, 60000);
                 } else {
+                    winston.error("Finally failed fetching queue item! Calling callback!", err);
                     callback(err);
                 }
             });
@@ -88,13 +90,15 @@ export class WorkerProcess {
 
         let deleteQueueItem = (item, callback?: (err?) => void, retries?: number) => {
             queueService.deleteMessage(queueName, item.messageId, item.popReceipt, (err) => {
-                if (!err) {
+                if (!err || err["code"] === "MessageNotFound") {
                     callback();
                 } else if (retries && retries > 0) {
+                    winston.error("Failed deleting queue item! Retrying in 60 seconds.", err);
                     setTimeout(() => {
                         deleteQueueItem(item, callback, retries - 1);
                     }, 60000);
                 } else {
+                    winston.error("Finally failed deleting queue item! Calling callback!", err);
                     callback(err);
                 }
             });
@@ -116,7 +120,7 @@ export class WorkerProcess {
                         winston.info("Finished work on: " + item.messageText);
                         deleteQueueItem(item, (err) => {
                             if (err) {
-                                winston.error("Failed deleting file from queue", err);
+                                winston.error("Failed removing file from queue: " + item.messageText, err);
                                 process.exit(1);
                             } else {
                                 winston.info("Removed from queue: " + item.messageText);
