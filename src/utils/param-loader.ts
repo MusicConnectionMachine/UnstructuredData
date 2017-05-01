@@ -20,9 +20,8 @@ export class ParamLoader {
     public DEFAULT ={
         dbHost: "localhost",
         dbPort: "5432",
-        dbDatabase: "mcm",
-        blobAccount: "wetstorage",
         blobContainer: "websites",
+        jsonContainer: "metadata",
         processes: os.cpus().length,
         crawlVersion: "CC-MAIN-2017-13",
         heuristicThreshold: 3,
@@ -53,7 +52,7 @@ export class ParamLoader {
         };
 
         group(["dbHost", "dbPort", "dbName", "dbUser", "dbPW"], "dbParams");
-        group(["blobAccount", "blobContainer", "blobKey"], "blobParams");
+        group(["blobAccount", "blobKey", "blobContainer", "jsonContainer"], "blobParams");
         group(["queueAccount", "queueName", "queueKey"], "queueParams");
     }
 

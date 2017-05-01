@@ -29,12 +29,14 @@ export class CLI {
             .option('-a, --db-access [user]:[password]', 'database access, e.g. "USER:PASSWORD"')
             .option('-n, --db-name [name]', 'database name, e.g. "ProductionDB"')
             .option('-b, --blob-access [account]:[accessKey]', 'blob storage credentials, e.g. "wetstorage:AZURE_KEY_HERE"')
-            .option('-c, --blob-container [containerName]', 'blob storage container name, e.g. "websites"')
+            .option('-c, --blob-container [containerName]', 'blob storage container name for website content, e.g. "websites"')
+            .option('-j, --json-container [containerName]', 'blob storage container name for metadata, e.g. "metadata"')
             .option('-q, --queue-access [account]:[accessKey]', 'task queue credentials, e.g. "queueservice:AZURE_KEY_HERE"')
             .option('-s, --queue-name [queueName]', 'task queue name, e.g. "taskqueue"')
-            .option('--processes [number]', 'number of worker threads, e.g. "4"')
             .option('-t, --heuristic [threshold]:[limit]', 'filter strictness, the higher the stricter, e.g. "3", "3:7" (inclusive:exclusive)')
             .option('-l, --avg-line-length [length]', 'remove short lines from content before filtering, e.g. "100"')
+            .option('--processes [number]', 'number of worker threads, e.g. "4"')
+            .option('--use-json', 'save metadata to json container instead of DB')
             .option('--languages [languageCodes]', 'languages to filter for in ISO 639-1, e.g. "[\'de\', \'en\', \'fr\']"')
             .option('--enable-pre-filter', 'enable bloom filter as pre filter')
             .option('--crawl-version [version]', 'common crawl version, e.g. "CC-MAIN-2017-13"')
@@ -98,6 +100,10 @@ export class CLI {
             this.parameters["blobContainer"] = this.commander.blobContainer;
         }
 
+        if (this.commander.jsonContainer) {
+            this.parameters["jsonContainer"] = this.commander.jsonContainer;
+        }
+
         if (this.commander.queueAccess) {
             let split = this.commander.queueAccess.split(":", 2);
             if (split.length < 2) {
@@ -112,11 +118,6 @@ export class CLI {
             this.parameters["queueName"] = this.commander.queueName;
         }
 
-        if (this.commander.processes) {
-            let processes = parseInt(this.commander.processes);
-            if (processes) this.parameters["processes"] = processes;
-        }
-
         if (this.commander.heuristic) {
             let split = this.commander.heuristic.split(":", 2);
             let threshold = parseFloat(split[0]);
@@ -128,6 +129,15 @@ export class CLI {
         if (this.commander.avgLineLength) {
             let length = parseFloat(this.commander.avgLineLength);
             if (length) this.parameters["avgLineLength"] = length;
+        }
+
+        if (this.commander.processes) {
+            let processes = parseInt(this.commander.processes);
+            if (processes) this.parameters["processes"] = processes;
+        }
+
+        if (this.commander.useJson) {
+            this.parameters["useJson"] = this.commander.useJson;
         }
 
         if (this.commander.languages) {
