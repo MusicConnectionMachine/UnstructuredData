@@ -131,10 +131,10 @@ export class WorkerProcess {
 
 class Worker {
 
+    private languageExtractor : LanguageExtractor;
     private webPageDigester : WebPageDigester;
     private storer : Storer;
     private caching : boolean;
-    private languageCodes : Array<string>;
     private heuristicThreshold : number;
     private heuristicLimit : number;
     private avgLineLength : number;
@@ -162,8 +162,11 @@ class Worker {
             this.webPageDigester.setPreFilter(BloomFilter);
         }
 
+        if (languageCodes && languageCodes.length > 0) {
+            this.languageExtractor = new LanguageExtractor(new Set(languageCodes));
+        }
+
         this.caching = caching || false;
-        this.languageCodes = languageCodes;
         this.storer = new Storer(blobParams, dbParams);
         this.heuristicThreshold = heuristicThreshold;
         this.heuristicLimit = heuristicLimit;
@@ -216,15 +219,34 @@ class Worker {
         };
 
         /**
-         * Gets called once a WET entry has been parsed. Converts WET entry into WebPAge object and adds occurrences
-         * Detects language and then calls 'onResult'
+         * Gets called once a WET entry has been parsed. Converts WET entry into WebPage object and detects language
          * @param data
          */
         let onWetEntry = (data : {protocol : string, headers : {[header : string] : string}, content : Buffer}) => {
             pendingPages++;
 
-            let webPage = new WebPage(data);
-            this.webPageDigester.digest(webPage.shrinkContent(this.avgLineLength));
+            let webPage = new WebPage(data).shrinkContent(this.avgLineLength);
+
+            if (this.languageExtractor) {
+                this.languageExtractor.matches(webPage, (result?) => {
+                    if(result) {
+                        onLanguageMatch(webPage);
+                    } else {
+                        onWetEntryFinished();
+                    }
+                });
+            } else {
+                onLanguageMatch(webPage);
+            }
+        };
+
+        /**
+         * Gets called when the page language matches
+         * Attaches occurrences to page and calculates heuristic
+         * @param webPage
+         */
+        let onLanguageMatch = (webPage : WebPage) => {
+            this.webPageDigester.digest(webPage);
 
             if (webPage.occurrences) {
 
@@ -241,47 +263,14 @@ class Worker {
                     && webPage.occurrences.length < this.heuristicLimit) ? numTerms : 0;
 
                 if (thresholdSquared <= heuristicScore && heuristicScore < limitSquared) {
-                    onHeuristicMatch(webPage);
-                } else {
-                    onWetEntryFinished();
+                    this.storer.storeWebsite(webPage);
                 }
-            } else {
-                onWetEntryFinished();
             }
-        };
-
-        /**
-         * Gets called when a web page matches a term. Does language detection if required
-         * @param webPage
-         */
-        let onHeuristicMatch = (webPage : WebPage) => {
-
-            // no language codes specified, we can skip language detection
-            if (!this.languageCodes || this.languageCodes.length === 0) {
-                onPageMatch(webPage);
-                return;
-            }
-
-            LanguageExtractor.isWebPageInLanguage(webPage, this.languageCodes, (err, result?) => {
-                if(result) {
-                    onPageMatch(webPage);
-                } else {
-                    onWetEntryFinished();
-                }
-            });
-        };
-
-        /**
-         * Gets called for every term and language matching WebPage object. Stores web page in cloud and DB
-         * @param webPage
-         */
-        let onPageMatch = (webPage : WebPage) => {
-            this.storer.storeWebsite(webPage);
             onWetEntryFinished();
         };
 
         /**
-         * Gets called when a WET entry has been processed. Emits event when work on WET file is finished
+         * Gets called when a WET entry has been processed.
          */
         let onWetEntryFinished = () => {
             pendingPages--;
@@ -290,6 +279,10 @@ class Worker {
             }
         };
 
+        /**
+         * Gets called when all entries have been processed
+         * Flushes Storer cache, so the web pages get finally offloaded to Azure / DB
+         */
         let onFileFinished = () => {
             this.storer.flush((err) => {
                 if (callback) callback(err);

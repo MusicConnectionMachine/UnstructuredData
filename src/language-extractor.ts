@@ -1,5 +1,4 @@
 import {WebPage} from "./classes/webpage";
-import {winston} from "./utils/logging";
 import * as cld from "cld";
 import * as franc from "franc";
 import * as langs from "langs";
@@ -9,6 +8,23 @@ export class LanguageExtractor {
 
     private static SAMPLE_SIZE = 900;
 
+    private languageCodes : Set<string>;
+
+    constructor(languageCodes : Set<string>){
+        // check language codes
+        for (let languageCode of languageCodes) {
+            if (!langs.has(1, languageCode)) {
+                throw new SyntaxError("Language code '" + languageCode + "' not in ISO 639-1!");
+            }
+        }
+        this.languageCodes = languageCodes;
+    }
+
+    public matches(webPage : WebPage, callback: (result : boolean) => void) {
+        LanguageExtractor.getPageLanguage(webPage, (result) => {
+            callback(this.languageCodes.has(result));
+        });
+    }
 
     /**
      * Calls the callback with the ISO 639-1 language code of the most likely language.
@@ -24,43 +40,11 @@ export class LanguageExtractor {
                 let francResult = franc(testString);
                 try {
                     langCode = langs.where("2", francResult)["1"];
-                } catch (e){
-                    winston.warn("Language code unknown: " + francResult);
-                }
+                } catch (e) {}
             } else {
                 langCode = result.languages[0].code;
             }
             callback(langCode);
-        });
-    }
-
-
-    /**
-     * Filter function. Returns true if the specified web page is most likely to be in the specified language.
-     * @param webPage                           WebPage object
-     * @param languageCodes                     language codes in ISO 639-1
-     * @param callback                          will called with TRUE if the web page is in the specified language
-     */
-    public static isWebPageInLanguage(webPage : WebPage, languageCodes : Array<string>,
-                                      callback: (err : Error, result : boolean) => void) {
-
-        // check language codes
-        for (let languageCode of languageCodes) {
-            if (!langs.has(1, languageCode)) {
-                callback(new SyntaxError("Language code '" + languageCode + "' not in ISO 639-1!"), undefined);
-                return;
-            }
-        }
-
-
-        LanguageExtractor.getPageLanguage(webPage, (result) => {
-            for (let languageCode of languageCodes) {
-                if (result === languageCode) {
-                    callback(undefined, true);
-                    return;
-                }
-            }
-            callback(undefined, false);
         });
     }
 
