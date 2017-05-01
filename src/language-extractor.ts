@@ -31,7 +31,7 @@ export class LanguageExtractor {
      * @param webPage                           WebPage object
      * @param callback                          Will be called with a ISO 639-1 language code
      */
-    public static getPageLanguage(webPage : WebPage, callback : (languageCode : string) => void) {
+    public static getPageLanguage(webPage : WebPage, callback : (languageCode? : string) => void) {
         const testString = LanguageExtractor.getTestSample(webPage, LanguageExtractor.SAMPLE_SIZE);
 
         cld.detect(testString, { isHTML: false, tldHint: webPage.getTLD()}, (err, result) => {
@@ -40,7 +40,9 @@ export class LanguageExtractor {
                 let francResult = franc(testString);
                 try {
                     langCode = langs.where("2", francResult)["1"];
-                } catch (e) {}
+                } catch (e) {
+                    // there's no ISO 639-1 language code for this language, ignore it
+                }
             } else {
                 langCode = result.languages[0].code;
             }
