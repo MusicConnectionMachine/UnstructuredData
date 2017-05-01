@@ -116,7 +116,7 @@ export class WorkerProcess {
                 }
                 winston.info("Will start working on: " + item.messageText);
                 WorkerProcess.worker.workOn(item.messageText, (err) => {
-                    if (!err) {
+                    if (!err || err["code"] === "Z_DATA_ERROR") {
                         winston.info("Finished work on: " + item.messageText);
                         deleteQueueItem(item, (err) => {
                             if (err) {
