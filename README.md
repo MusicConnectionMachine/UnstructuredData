@@ -121,3 +121,45 @@ All arguments can also be supplied via environment variables.
 The environment variable names have to match those in `config.json` with an added `MCM_`, e.g.:   
 `MCM_dbHost`, `MCM_dbPort`, `MCM_dbUser`, ...
 
+## Importing JSON into the DB
+
+When using the `--use-json` flag all resulting metadata will be saved as a series of JSON files instead of to the DB. In order to use that data it has to be imported to a new temporary table `import.final` where each entry is a single JSON object. The following script will then assign IDs to these objects and will then extract `website` and `contains` entries from them.
+
+```
+-- Drop old data in contains and website tables and all tables referencting said data
+-- THIS WILL DELETE ALL THE DATA IN THOSE TABLES!
+TRUNCATE TABLE websites, contains CASCADE;
+
+-- Add IDs
+ALTER TABLE import.final
+ADD COLUMN id TEXT NOT NULL DEFAULT gen_random_uuid();
+
+-- Populate websites table
+INSERT INTO websites
+    SELECT CAST(id AS UUID), 
+           data->>'url' AS url,
+           data->>'bloburl' AS blob_url,
+           current_timestamp AS createdAt,
+           current_timestamp AS updatedAt
+    FROM import.final;
+
+-- Populate contains table
+with occurences AS (
+    SELECT id, data->>'occurrences' AS occ 
+    FROM import.final
+), elems AS (
+    SELECT id, elems 
+    FROM occurences, json_array_elements(cast(occ AS json)) AS elems
+)
+INSERT INTO contains
+    SELECT gen_random_uuid() AS id,
+           json_build_object(
+                'term', e.elems->'term'->'value', 
+                'positions', e.elems->'positions'
+           ) AS occurences,
+           current_timestamp AS createdAt,
+           current_timestamp AS updatedAt,
+           CAST(e.id AS UUID) AS websiteId,
+           CAST(e.elems->'term'->>'entityId' AS UUID) AS entityId
+    FROM elems e;
+```
