@@ -1,0 +1,345 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Large Colored Title Article
+% LaTeX Template
+% Version 1.1 (25/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% Modified by:
+% Julian Kirsch, Nikita Basargin
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}
+
+\usepackage{lipsum}
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{booktabs}
+\usepackage{sectsty}
+\usepackage{url}
+\usepackage{csquotes}
+\usepackage{listings}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[font=small,format=plain,labelfont=bf,up,textfont=it,up]{caption}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\sloppy
+\hbadness 10000
+\renewcommand*\rmdefault{ppl}\normalfont\upshape
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\UrlFont}{\small\tt}
+\allsectionsfont{\color{tumblue}\usefont{OT1}{phv}{b}{n}}
+
+\usepackage[osf, sc]{mathpazo}
+\usepackage{helvet}
+
+\definecolor{tumblue}{RGB}{0,101,189}
+
+% https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
+\lstset{
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  rulecolor=\color{black},
+  tabsize=8,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  language=C,
+  keywordstyle=\bfseries\color{OliveGreen},
+  commentstyle=\itshape\color{Mahogany},
+  stringstyle=\color{BrickRed},
+  keywordstyle=[2]{\color{Cyan}},
+  escapechar=ß,
+  xleftmargin=8pt,
+  xrightmargin=3pt,
+  basicstyle=\scriptsize,
+  morekeywords={u32, __u32, __be32, __le32,
+  		u16, __u16, __be16, __le16,
+	        u8,  __u8,  __be8,  __le8,
+	        size_t, ssize_t}
+}
+
+% https://tex.stackexchange.com/questions/51645/
+%  x86-64-assembler-language-dialect-for-the-listings-package
+\lstdefinelanguage
+   [x86_64]{Assembler}
+   [x86masm]{Assembler}
+   % with these extra keywords:
+   {morekeywords={CDQE, CQO, CMPSQ, CMPXCHG16B, JRCXZ, LODSQ, MOVSXD,
+                  POPFQ, PUSHFQ, SCASQ, STOSQ, IRETQ, RDTSCP, SWAPGS,
+                  rax, rdx, rcx, rbx, rsi, rdi, rsp, rbp,
+                  r8, r8d, r8w, r8b, r9, r9d, r9w, r9b}}
+
+\usepackage{lettrine}
+\newcommand{\initial}[1]{
+\lettrine[lines=3,lhang=0.3,nindent=0em]{
+\color{tumblue}
+{\textsf{#1}}}{}}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\usepackage{titling}
+\newcommand{\HorRule}{\color{tumblue} \rule{\linewidth}{1pt}}
+
+\pretitle{\thispagestyle{noheadings}\vspace{-30pt}
+  \begin{flushleft} \HorRule \fontsize{25}{30} \usefont{OT1}{phv}{b}{n} \color{tumblue} \selectfont}
+
+\title{JavaScript Technology Seminar 2017 Group 2: Unstructured Data - Report}
+
+\posttitle{\par\end{flushleft}\vskip 0.5em}
+
+\preauthor{\begin{flushleft}\large \lineskip 0.5em \usefont{OT1}{phv}{b}{sl}
+  \color{tumblue}}
+
+% Please leave this as it is for the 1st draft as our "peer-review"
+% is supposed to take place anonymously (like in real life)
+\author{Felix Schorer, Lukas Streit, Nikita Basargin, Anshul Sharma}
+
+\postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
+, Technical University of Munich
+
+\par\end{flushleft}\HorRule}
+\date{}
+
+%----------------------------------------------------------------------------------------
+\makeatletter
+\let\docauthor\@author
+\makeatother
+\makeatletter
+\let\doctitle\@title
+\makeatother
+
+
+\fancypagestyle{headings}{
+  \lhead{}
+  \chead{}
+  \rhead{\usefont{OT1}{phv}{m}{sc}\footnotesize \doctitle }
+
+  % Footers
+  \lfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize \docauthor }
+  \cfoot{}
+  \rfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize Page \thepage\ of \pageref{LastPage}}
+
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+
+  % Footers
+  \lfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize \docauthor }
+  \cfoot{}
+  \rfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize Page \thepage\ of \pageref{LastPage}}
+
+  \renewcommand{\headrulewidth}{0.0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+\lfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize \docauthor }
+\cfoot{}
+\rfoot{\usefont{OT1}{phv}{m}{sc}\footnotesize Page \thepage\ of \pageref{LastPage}}
+
+
+\begin{document}
+
+% Stop whining, \maketitle
+\newcommand{\undefinedpagestyle}{}
+\maketitle
+\pagestyle{headings}
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+% The first character should be within \initial{}
+\initial{T}\textbf{he goal of the \texttt{MusicConnectionMachine} project is to create a \enquote{social} network for classical composers, music pieces and musicians. 
+There are a number of different relationships between them: 
+piece $A$ was written by composer $B$, musicians $C$ and $D$ both liked genre $E$, composers $F$ and $G$ lived in the city $H$ at the year $I$, etc. 
+Information is extracted from different internet sources. 
+After processing and classification, the results are visualized and made open to public by integration into a popular online resource.}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\section*{Sub-projects and teams}
+The seminar initially had three main sub-projects: 
+\emph{data aggregation}, \emph{information extraction} and \emph{visualization}. 
+Two independent teams with four members each were assigned to each sub-project. 
+During the seminar some structural changes were made. 
+Some members actively worked on the interfaces and the new \emph{API} sub-project. 
+Some teams were merged.
+
+
+%-----------------------------------------------
+\section*{Unstructured data}
+Our team was responsible for data aggregation on unstructured sources. 
+Data from \emph{CommonCrawl} (CC) was used. 
+This dataset is hosted on Amazon S3 and stores web page data from the last 7 years in different representations. 
+We decided to work with text extractions (WET files) from the latest crawl. 
+The biggest challenge was the size of the data. 
+The March 2017 crawl produced 66500 WET files and more than 9 TB text extractions (compressed). 
+Processing this amount of data on one machine would be too slow. 
+Therefore we used multiple VMs hosted on Microsoft Azure for parallel processing.
+
+A lot of data from CC is useless for us because it contains no information about classical music. 
+This data must be quickly filtered and should not be passed to the groups dealing with information extraction. 
+Otherwise it would significantly slow down the processing since natural language processing algorithms are quite slow. 
+The group working on structured data sources provides us with a list of relevant terms. 
+These terms are used for the filtering.
+
+
+%-----------------------------------------------
+\section*{Data processing pipeline}
+This section explains the basics of the data processing pipeline. 
+In order to keep is simple, we assume that only one machine is doing the processing. 
+Parallelization is described in the next section.
+
+Apart from the command line arguments and environment variables we have two main inputs: 
+terms provided by the structured data group and the actual data from CC. 
+The terms are stored in the database. 
+After loading, we remove those terms that are present on our blacklist. 
+Afterwards we download WET files from CC one at a time, unpack them and start filtering.
+
+We tried multiple filtering approaches such as naive string search, bloom filter, prefix tree and some combinations of those. 
+Currently we use a prefix tree constructed from the relevant terms. 
+For each web page in the WET file, we check how often relevant terms occur in the text. 
+We use a heuristics: 
+The web page is considered relevant only if $n$ distinct terms are found and there are at least $n^2$ total term occurrences.
+
+As an additional filtering step we use language detection. 
+Only web pages in English are passed. 
+If a web page passes the filtering step, the whole content is stored inside a blob storage on Azure. 
+The metadata (link to the blob, what and how many terms were found) are saved inside the database.
+
+
+%-----------------------------------------------
+\section*{Parallel processing}
+Each WET file is independent from others. 
+This allows very high parallelism. 
+On a single VM we have one master process and $m$ worker processes. 
+The master loads terms from the DB, spawns the workers and assigns tasks to them. 
+Each worker processes a single WET file at a time and informs the master once it is finished. 
+
+During the last seminar week shell scripts to spawn multiple VMs were added. A global queue is used to pass messages to all VMs.
+
+
+%-----------------------------------------------
+\section*{Internal task distribution}
+All team members worked on their parts of the presentation. 
+Detailed code statistics are available in the git repository. 
+
+%\paragraph{Felix Schorer}
+Felix Schorer mainly worked on filters, downloader, web page digester, master-worker processes, CLI. 
+He also helped to define the swagger schema in the API sub-project. 
+Most tests and refactoring were done by him.
+
+%\paragraph{Lukas Streit} 
+Lukas Streit mainly worked on storer, WET manager, term loader, database interaction, deployment scripts, blob storage and Azure infrastructure. 
+He also worked on the API sub-project.
+
+%\paragraph{Nikita Basargin} 
+Nikita Basargin mainly worked on filters, unpacker, CC-index, CLI, first test runs and provided sample data to information extraction groups. 
+He wrote this report and attended all meetings except the last week's hackathon.
+
+%\paragraph{Anshul Sharma}
+Anshul Sharma mainly worked on language extractor, docker file, TravisCI and some other minor issues.
+
+
+
+%-----------------------------------------------
+\section*{Timeline}
+%\paragraph{First steps}
+After the inspiring kick-off event we started to inform ourselves how to get access to the CC data. 
+Some basic functionality like downloading, unpacking and WET file parsing was implemented.
+
+%\paragraph{Presentations}
+In the middle of the project we had to switch to another topic: RESTful APIs.
+Presentation and the workshop preparation took some time. 
+Introduction to Azure after the presentations was very helpful.
+
+%\paragraph{Implementation}
+After the presentations the main implementation phase started.
+Some ideas like TF-IDF had to be dropped due the large amount of data.
+
+%\paragraph{Final steps}
+Scaling to mutiple VMs was implemented during the final week. Also, continuous improvements and refactoring took place.
+
+
+%-----------------------------------------------
+\section*{Problems and feedback}
+%\paragraph{Late introduction of API} 
+One of the problems was the late introduction of the API sub-project. 
+For a very long time interfaces were not defined and that slowed down some groups. 
+For the next project it might be helpful to have a group entirely responsible for interfaces and communication only.
+
+%\paragraph{Competition}
+At the beginning of the seminar there was a lot of competition not only between groups but also inside of those. 
+Competition sometimes can be motivating. 
+However, it also can have the opposite effect if a group or member can't keep up with others.
+
+%\paragraph{Meetings}
+Team meetings showed to be productive. 
+For the next seminar we could have more of them.
+
+
+\section*{Conclusion}
+The seminar was quite challenging and required a lot of new things to be learned.
+Fortunately, a lot of work has led to an impressive result. 
+We are able to process huge amounts of data from CommonCrawl using the computational power of many VMs.
+There are still a few things that can be improved and I'm happy to see that some team members continue to work on them even after the end of the seminar. 
+A special thanks to all JST mentors who supported us during the seminar and made everything possible.
+
+
+
+
+%------------------------------------------------
+%\subsection*{Subsection 1}
+%1231232
+%\section*{Section 2}
+%123213
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+% Feel free to use bibtex instead, this is just an example
+
+%\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+%
+%\bibitem[Figueredo and Wolf, 2009]{Figueredo:2009dg}
+%Figueredo, A.~J. and Wolf, P. S.~A. (2009).
+%\newblock Assortative pairing and life history strategy - a cross-cultural
+%  study.
+%\newblock {\em Human Nature}, 20:317--330.
+% 
+%\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
