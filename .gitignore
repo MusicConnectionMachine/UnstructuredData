@@ -1,5 +1,4 @@
 # Logs
-logs
 *.log
 npm-debug.log*
 
@@ -35,3 +34,36 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# Intellij
+.idea/misc.xml
+.idea/workspace.xml
+.idea/compiler.xml
+.idea/copyright
+
+#Ignore transpiled files
+out
+src/*.js
+src/filters/*.js
+src/utils/*.js
+
+#wet files
+*.wet.gz
+*.wet
+/cache/wet/*/
+
+#resolved url cache files
+/urls/previouslyResolvedWETs.json
+
+#custom config files
+config.json
+config_old.json
+
+#report
+report/report.aux
+report/report.bbl
+report/report.blg
+report/report.dvi
+report/report.log
+report/report.pdf
+report/report.synctex.gz

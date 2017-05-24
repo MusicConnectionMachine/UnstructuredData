@@ -1,0 +1,7 @@
+version: "2"
+services:
+  unstructureddata:
+    image: musicconnectionmachine/unstructureddata
+    build: .
+    ports:
+    - "8085:8085"

@@ -1,0 +1,35 @@
+{
+  "name": "mcm-unstructured-data",
+  "version": "0.0.1",
+  "dependencies": {
+    "azure": "0.10.6",
+    "bloem": "^0.2.4",
+    "cld": "^2.4.7",
+    "commander": "^2.9.0",
+    "crypto": "0.0.3",
+    "franc": "^3.0.0",
+    "langs": "^2.0.0",
+    "natural": "^0.5.0",
+    "unzip": "^0.1.11",
+    "warc": "^1.0.0",
+    "winston": "^2.3.1",
+    "uuid": "^3.0.1",
+    "azure-storage": "^2.1.0",
+    "async": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.0",
+    "@types/winston": "^2.3.1",
+    "@types/azure": "^0.9.18",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "typescript": "^2.2.0"
+  },
+  "scripts": {
+    "postinstall": "git submodule update --init && cd ./api && yarn install",
+    "test": "mocha \"out/test/**/*.js\"",
+    "compile": "tsc"
+  }
+}
